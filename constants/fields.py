@@ -11,8 +11,3 @@ fields_codes_elsevier={'Chemistry':['1500-1508','1600-1606'],
            'Computer Science': ['1700-1712'],
            'Engineering': ['1500-1502', '1909', '2102','2104','2200-2216', '1711','1603'],
            'Multidisciplinary':['1000']}
-
-
-
-fields_list = sorted([('Quantitative Finance','(1904)'),('Electrical Engineering','(3872)'), ('Machine Learning','(4199)'), ('Geophysics','(6011)'),
-                      ('Electronics','(2788)'), ('Computational Linguistics','(10572)'), ('Biology','(3259)'), ('Computer Vision','(8360)'),('Chemistry', '(2553)')])

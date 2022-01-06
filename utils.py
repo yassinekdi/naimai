@@ -35,6 +35,15 @@ def load_paper_dict(path):
     print('total length : ', len(all_paps['elements']))
     return all_paps
 
+def correct_abbrevs_pap(paper):
+    for k in paper.keys():
+        try:
+            paper[k] = correct_abbrevs_replacement(paper[k])
+        except:
+            pass
+    return paper
+
+
 def correct_abbrevs_replacement(parag):
   wrds_btween_brakets = re.findall(regex_words_in_brackets,parag)
   words_repeated = [words for words in wrds_btween_brakets if len(parag.split(words))>2]
