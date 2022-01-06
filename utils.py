@@ -28,21 +28,15 @@ import pickle, gzip
     # client.upload_file(Filename=dir + '/'+filename, Bucket="naimabucket", Key="Data Analysis/" + pdf_file)
 
 
-def load_paper_dict(path):
+def load_papers_dict(path):
     with gzip.open(path, 'rb') as f:
         p = pickle.Unpickler(f)
         all_paps = p.load()
-    print('total length : ', len(all_paps['elements']))
+    try:
+        print('total length : ', len(all_paps['elements']))
+    except:
+        print('total length : ', len(all_paps['naimai_elements']))
     return all_paps
-
-def correct_abbrevs_pap(paper):
-    for k in paper.keys():
-        try:
-            paper[k] = correct_abbrevs_replacement(paper[k])
-        except:
-            pass
-    return paper
-
 
 def correct_abbrevs_replacement(parag):
   wrds_btween_brakets = re.findall(regex_words_in_brackets,parag)
