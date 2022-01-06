@@ -10,7 +10,8 @@ import os
 # else:
 
 
-path_nlp = os.path.join('paper2','deps','SpaCy_Ner_data')
+# path_nlp = os.path.join('paper2','deps','SpaCy_Ner_data')
+path_nlp = 'drive/MyDrive/MyProject/paper2/deps/SpaCy_Ner_data'
 path_encoder = 'drive/MyDrive/MyProject/data/Intent_classif_data/distil_bert_obj_classifier'
 path_objective_classifier = os.path.join('paper2','models','papers_classification','objective classif')
 path_main_pipelines = os.path.join('main_pipelines_dir')

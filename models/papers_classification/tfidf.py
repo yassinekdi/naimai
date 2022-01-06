@@ -9,7 +9,7 @@ from pathlib import Path
 from tqdm.notebook import tqdm
 
 from paper2.processing import ArticleToProcess
-from paper2.constants import path_nlp
+from paper2.constants.paths import path_nlp
 
 class tfIdf_model:
 

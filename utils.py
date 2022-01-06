@@ -27,6 +27,14 @@ import pickle, gzip
 #     client.put_object(Body=file_ ,Bucket =Mybucket, Key=dir+'/'+filename)
     # client.upload_file(Filename=dir + '/'+filename, Bucket="naimabucket", Key="Data Analysis/" + pdf_file)
 
+
+def load_paper_dict(path):
+    with gzip.open(path, 'rb') as f:
+        p = pickle.Unpickler(f)
+        all_paps = p.load()
+    print('total length : ', len(all_paps['elements']))
+    return all_paps
+
 def correct_abbrevs_replacement(parag):
   wrds_btween_brakets = re.findall(regex_words_in_brackets,parag)
   words_repeated = [words for words in wrds_btween_brakets if len(parag.split(words))>2]
