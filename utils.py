@@ -3,7 +3,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
-from .constants.regex import regex_doi, regex_etal_and, regex_remove_nbs_from_end, regex_capital, regex_words_authors
+from .constants.regex import regex_doi, regex_etal_and, regex_remove_nbs_from_end, regex_capital, regex_words_authors, regex_words_in_brackets
 from .constants.nlp import this_year
 from .constants.paths import Mybucket
 import requests
@@ -27,12 +27,24 @@ import pickle, gzip
 #     client.put_object(Body=file_ ,Bucket =Mybucket, Key=dir+'/'+filename)
     # client.upload_file(Filename=dir + '/'+filename, Bucket="naimabucket", Key="Data Analysis/" + pdf_file)
 
+def correct_abbrevs_replacement(parag):
+  wrds_btween_brakets = re.findall(regex_words_in_brackets,parag)
+  words_repeated = [words for words in wrds_btween_brakets if len(parag.split(words))>2]
+  for words in words_repeated:
+    parag = re.sub(' \('+words+'\)', '',parag)
+  return parag
+
 def replace_abbreviations(pap):
     abbreviations_dict = pap.get_abbreviations_dict()
     if abbreviations_dict:
         pap.Abstract = multiple_replace(abbreviations_dict, pap.Abstract)
+        pap.Abstract = correct_abbrevs_replacement(pap.Abstract)
+
         pap.Conclusion = multiple_replace(abbreviations_dict, pap.Conclusion)
+        pap.Conclusion = correct_abbrevs_replacement(pap.Conclusion)
+
         pap.Keywords = multiple_replace(abbreviations_dict, pap.Keywords)
+        pap.Keywords = correct_abbrevs_replacement(pap.Keywords)
     return pap
 
 def find_root_verb(sentence):
