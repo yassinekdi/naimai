@@ -29,7 +29,7 @@ class papers_arxiv(papers):
             new_paper.database='arxiv'
             # new_paper.read_pdf(use_ocr)
             new_paper.Abstract = self.abstracts[idx].replace('-\n', '').replace('\n', ' ')
-            new_paper.Title = self.titles[idx]
+            new_paper.Title = self.titles[idx].replace('-\n', '').replace('\n', ' ')
             new_paper.Authors = ', '.join([' '.join(at[::-1]) for at in self.authors[idx]])
             new_paper.Publication_year = year_from_arxiv_fname(pdf_filename)
             # if new_paper.converted_text:

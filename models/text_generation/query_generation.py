@@ -18,7 +18,8 @@ class QueryGeneration:
         self.queries += two_random
 
     def from_title(self):
-        title = self.paper['Title']
+        #  remove .replace('-\n', '').replace('\n', ' ') after
+        title = self.paper['Title'].replace('-\n', '').replace('\n', ' ')
         stc_nlp = self.nlp(title)
         # extract noun& propn & adj
         pos_list = ['NOUN', 'ADJ', 'PROPN']
