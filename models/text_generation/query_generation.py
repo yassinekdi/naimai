@@ -14,8 +14,13 @@ class QueryGeneration:
         # 3 queries from keywords
         kwords = self.paper['Keywords'].split(',')
         kwords = [elt.strip() for elt in kwords]
-        two_random = random.sample(kwords, k=2)
-        self.queries += two_random
+        if len(kwords)>2:
+            result = random.sample(kwords, k=2)
+        elif len(kwords)==1:
+            result = kwords
+        else:
+            result = []
+        self.queries += result
 
     def from_title(self):
         #  remove .replace('-\n', '').replace('\n', ' ') after
