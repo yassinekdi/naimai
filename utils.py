@@ -32,10 +32,6 @@ def load_papers_dict(path):
     with gzip.open(path, 'rb') as f:
         p = pickle.Unpickler(f)
         all_paps = p.load()
-    try:
-        print('total length : ', len(all_paps['elements']))
-    except:
-        print('total length : ', len(all_paps['naimai_elements']))
     return all_paps
 
 def correct_abbrevs_replacement(parag):
@@ -55,7 +51,6 @@ def replace_abbreviations(pap):
         pap.Conclusion = correct_abbrevs_replacement(pap.Conclusion)
 
         pap.Keywords = multiple_replace(abbreviations_dict, pap.Keywords)
-        pap.Keywords = correct_abbrevs_replacement(pap.Keywords)
     return pap
 
 def find_root_verb(sentence):
