@@ -35,9 +35,9 @@ class QueryGeneration:
 
     def from_paragraphs(self, nb_queries_to_add):
 
-        paragraph = self.paper['Abstract'] + ' ' + self.paper['Conclusion']
+        paragraph = self.paper['Abstract'].strip() + ' ' + self.paper['Conclusion'].strip()
         if paragraph:
-            keywords = self.keybert.extract_keywords(paragraph, keyphrase_ngram_range=(1, 3))
+            keywords = self.keybert.extract_keywords(paragraph, keyphrase_ngram_range=(1, 3),top_n=nb_queries_to_add)
             queries = [elt[0] for elt in keywords]
             try:
                 three_random = random.sample(queries, k=nb_queries_to_add)

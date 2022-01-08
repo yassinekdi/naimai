@@ -59,10 +59,11 @@ class Search_Model:
             if len(pap['Abstract'].split())>10:
                 qgen.paper = pap
                 qgen.generate()
-                for qry in qgen.queries:
-                    training_data_dict['filename'].append(pap['file_name'])
-                    training_data_dict['Abstract'].append(pap['Abstract'])
-                    training_data_dict['Queries'].append(qry)
+                if qgen.queries:
+                    for qry in qgen.queries:
+                        training_data_dict['filename'].append(pap['file_name'])
+                        training_data_dict['Abstract'].append(pap['Abstract'])
+                        training_data_dict['Queries'].append(qry)
 
 
         self.training_sbert_data_df = pd.DataFrame(training_data_dict)
