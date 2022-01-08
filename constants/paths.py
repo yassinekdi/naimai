@@ -25,3 +25,6 @@ path_model_saving= 'drive/MyDrive/MyProject/models/PDF classif/'
 aws_root_pdfs = 'https://naimabucket.s3.amazonaws.com/PDFs/'
 Mybucket = "naimabucket"
 arxiv_database='arxiv'
+
+training_data_path = 'drive/MyDrive/MyProject/main_pipelines/all/total_training_papers'
+naimai_data_path = 'drive/MyDrive/MyProject/main_pipelines/all/total_naimai_papers'
