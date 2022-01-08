@@ -13,7 +13,7 @@ from paper2.models.text_generation.query_generation import QueryGeneration
 
 class Search_Model:
     def __init__(self, batch_size=16, n_epochs=10,
-                 checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3', path_save=''):
+                 checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
         # training_data = pd.DataFrame({'File_name': [],'Queries': [..], 'Abstract': [..]})
         # naimai_data = pd.DataFrame({'filename': [],'doi': [..], 'Objectives reported': [..], 'database': [..]})
         self.checkpoint = checkpoint
@@ -24,7 +24,6 @@ class Search_Model:
         self.processed_data = None
         self.batch_size = batch_size
         self.n_epochs = n_epochs
-        self.path_save = path_save
         self.create_model()
         self.faiss_index = None
         self.nlp = spacy.load(nlp_vocab)
@@ -81,12 +80,11 @@ class Search_Model:
         self.model.fit(train_objectives=[(self.processed_data, train_loss)], epochs=self.n_epochs,
                        warmup_steps=warmup_steps, show_progress_bar=True)
 
-    def write_faiss_index(self, index_path='encodings.index'):
+    def get_faiss_index(self):
         encoded_data = self.model.encode(self.training_papers_df.Abstract)
         encoded_data = np.asarray(encoded_data.astype('float32'))
         self.faiss_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.faiss_index.add_with_ids(encoded_data, np.array(range(len(self.training_papers_df))))
-        faiss.write_index(self.faiss_index, index_path)
 
     def fetch_doc(self,df_idx):
         df_row = self.naimai_papers_df.iloc[df_idx, :]
@@ -104,7 +102,7 @@ class Search_Model:
         return results
 
 
-    def fine_tune(self,write_faiss=False,faiss_path=''):
+    def fine_tune(self,model_path_saving='',faiss_path_saving=''):
         print('>> Data processing ..')
         self.load_and_prepare_data()
         self.process_data()
@@ -112,9 +110,10 @@ class Search_Model:
         print('>> Training...')
         self.train()
 
-        if self.path_save:
+        if model_path_saving:
             print('>> Model saving..')
-            self.model.save(self.path_save)
-
-        if write_faiss:
-            self.write_faiss_index(index_path=faiss_path)
+            self.model.save(model_path_saving)
+        print('>> Getting faiss index..')
+        self.get_faiss_index()
+        if faiss_path_saving:
+            self.faiss.write_index(self.faiss_index, faiss_path_saving)
