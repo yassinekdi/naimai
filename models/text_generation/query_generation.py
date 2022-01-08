@@ -34,12 +34,13 @@ class QueryGeneration:
             self.queries += [' '.join(kwords)]
 
     def from_paragraphs(self, nb_queries_to_add):
-        paragraph = self.paper['Abstract'] + ' ' + self.paper['Conclusion']
 
-        keywords = self.keybert.extract_keywords(paragraph, keyphrase_ngram_range=(1, 3))
-        queries = [elt[0] for elt in keywords]
-        three_random = random.sample(queries, k=nb_queries_to_add)
-        self.queries += three_random
+        paragraph = self.paper['Abstract'] + ' ' + self.paper['Conclusion']
+        if paragraph:
+            keywords = self.keybert.extract_keywords(paragraph, keyphrase_ngram_range=(1, 3))
+            queries = [elt[0] for elt in keywords]
+            three_random = random.sample(queries, k=nb_queries_to_add)
+            self.queries += three_random
 
     def generate(self):
         self.queries = []

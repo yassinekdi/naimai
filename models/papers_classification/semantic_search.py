@@ -12,11 +12,13 @@ from paper2.utils import load_papers_dict
 from paper2.models.text_generation.query_generation import QueryGeneration
 
 class Search_Model:
-    def __init__(self, batch_size=16, n_epochs=10,
+    def __init__(self, field,batch_size=16, n_epochs=10,
                  checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
         # training_data = pd.DataFrame({'File_name': [],'Queries': [..], 'Abstract': [..]})
         # naimai_data = pd.DataFrame({'filename': [],'doi': [..], 'Objectives reported': [..], 'database': [..]})
         self.checkpoint = checkpoint
+        self.training_papers_dict= {}
+        self.naimai_papers_dict= {}
         self.training_papers_df = None
         self.naimai_papers_df = None
         self.training_sbert_data_df = None
@@ -27,43 +29,45 @@ class Search_Model:
         self.create_model()
         self.faiss_index = None
         self.nlp = spacy.load(nlp_vocab)
+        self.field = field
+        # self.test = []
 
-    def load_and_prepare_data(self):
-        # loading data
-        training_papers= load_papers_dict(path=training_data_path)
-        naimai_papers= load_papers_dict(path=naimai_data_path)
 
-        # preparing data for FAISS
-        percentage = .09
+    def load_data(self):
+        self.training_papers_dict= load_papers_dict(path=training_data_path)
+        self.naimai_papers_dict= load_papers_dict(path=naimai_data_path)
+
+    def prepare_faiss_data(self):
+        self.training_papers_df =pd.DataFrame([self.training_papers_dict[self.field][elt] for elt in self.training_papers_dict[self.field]])
+        self.naimai_papers_df = pd.DataFrame([self.naimai_papers_dict[self.field][elt] for elt in self.naimai_papers_dict[self.field]])
+
+    def prepare_sbert_data(self):
+        percentage = .095
         training_data_papers = []
         naimai_data_papers = []
-        for field in training_papers.keys():
-            papers_field_elements = list(training_papers[field].keys())
+        for field in self.training_papers_dict.keys():
+            papers_field_elements = list(self.training_papers_dict[field].keys())
             nb_of_samples = int(percentage * len(papers_field_elements))
             random_elts = random.sample(papers_field_elements, nb_of_samples)
-            training_data_papers += [training_papers[field][elt] for elt in random_elts]
-            naimai_data_papers += [naimai_papers[field][elt] for elt in random_elts]
-
-        self.training_papers_df = pd.DataFrame(training_data_papers)
-        self.naimai_papers_df = pd.DataFrame(naimai_data_papers)
+            training_data_papers += [self.training_papers_dict[field][elt] for elt in random_elts]
+            naimai_data_papers += [self.naimai_papers_dict[field][elt] for elt in random_elts]
 
         # preparing data for Sbert
         qgen = QueryGeneration(training_paper_dict=training_data_papers[0], nlp=self.nlp)
         training_data_dict={'filename': [],'Abstract': [], 'Queries': []}
-
         for pap in tqdm(training_data_papers):
-            qgen.paper = pap
-            qgen.generate()
-            for qry in qgen.queries:
-                training_data_dict['filename'].append(pap['file_name'])
-                training_data_dict['Abstract'].append(pap['Abstract'])
-                training_data_dict['Queries'].append(qry)
+            if pap['Abstract']:
+                qgen.paper = pap
+                qgen.generate()
+                for qry in qgen.queries:
+                    training_data_dict['filename'].append(pap['file_name'])
+                    training_data_dict['Abstract'].append(pap['Abstract'])
+                    training_data_dict['Queries'].append(qry)
 
 
         self.training_sbert_data_df = pd.DataFrame(training_data_dict)
 
-
-    def process_data(self):
+    def process_sbert_data(self):
         query, abstracts = self.training_sbert_data_df['Queries'].to_list(), self.training_sbert_data_df['Abstract'].to_list()
         train_examples = [InputExample(texts=[qry, parag]) for qry, parag in zip(query, abstracts)]
         random.shuffle(train_examples)
@@ -80,11 +84,17 @@ class Search_Model:
         self.model.fit(train_objectives=[(self.processed_data, train_loss)], epochs=self.n_epochs,
                        warmup_steps=warmup_steps, show_progress_bar=True)
 
-    def get_faiss_index(self):
-        encoded_data = self.model.encode(self.training_papers_df.Abstract)
+    def get_faiss_index(self,faiss_path_saving=''):
+        self.prepare_faiss_data()
+        to_encode = [title + '. '+ abstract for title,abstract in zip(self.training_papers_df.Abstract,self.training_papers_df.Title)]
+        encoded_data = self.model.encode(to_encode)
         encoded_data = np.asarray(encoded_data.astype('float32'))
         self.faiss_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.faiss_index.add_with_ids(encoded_data, np.array(range(len(self.training_papers_df))))
+
+        if faiss_path_saving:
+            print('faiss index saved')
+            self.faiss.write_index(self.faiss_index, faiss_path_saving)
 
     def fetch_doc(self,df_idx):
         df_row = self.naimai_papers_df.iloc[df_idx, :]
@@ -104,8 +114,9 @@ class Search_Model:
 
     def fine_tune(self,model_path_saving='',faiss_path_saving=''):
         print('>> Data processing ..')
-        self.load_and_prepare_data()
-        self.process_data()
+        self.load_data()
+        self.prepare_sbert_data()
+        self.process_sbert_data()
 
         print('>> Training...')
         self.train()
@@ -114,6 +125,4 @@ class Search_Model:
             print('>> Model saving..')
             self.model.save(model_path_saving)
         print('>> Getting faiss index..')
-        self.get_faiss_index()
-        if faiss_path_saving:
-            self.faiss.write_index(self.faiss_index, faiss_path_saving)
+        self.get_faiss_index(faiss_path_saving=faiss_path_saving)

@@ -11,3 +11,18 @@ fields_codes_elsevier={'Chemistry':['1500-1508','1600-1606'],
            'Computer Science': ['1700-1712'],
            'Engineering': ['1500-1502', '1909', '2102','2104','2200-2216', '1711','1603'],
            'Multidisciplinary':['1000']}
+
+all_fields=['Economics and Finance',
+ 'Chemistry',
+ 'Artificial Intelligence',
+ 'Life Science',
+ 'Material Science',
+ 'Physics',
+ 'Mathematics',
+ 'Social Sciences',
+ 'Health Sciences',
+ 'Computer Science',
+ 'Engineering',
+ 'Environmental Science and Renewable Energy',
+ 'Management, Policy, Law',
+ 'Linguistics']
