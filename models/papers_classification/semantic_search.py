@@ -56,7 +56,7 @@ class Search_Model:
         qgen = QueryGeneration(training_paper_dict=training_data_papers[0], nlp=self.nlp)
         training_data_dict={'filename': [],'Abstract': [], 'Queries': []}
         for pap in tqdm(training_data_papers):
-            if pap['Abstract']:
+            if len(pap['Abstract'].split())>10:
                 qgen.paper = pap
                 qgen.generate()
                 for qry in qgen.queries:

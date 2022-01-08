@@ -39,8 +39,12 @@ class QueryGeneration:
         if paragraph:
             keywords = self.keybert.extract_keywords(paragraph, keyphrase_ngram_range=(1, 3))
             queries = [elt[0] for elt in keywords]
-            three_random = random.sample(queries, k=nb_queries_to_add)
-            self.queries += three_random
+            try:
+                three_random = random.sample(queries, k=nb_queries_to_add)
+                self.queries += three_random
+            except:
+                print('problem in paper {}, data base {}'.format(self.paper['file_name'],self.paper['database']))
+
 
     def generate(self):
         self.queries = []
