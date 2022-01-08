@@ -12,24 +12,26 @@ class QueryGeneration:
 
     def from_keywords(self):
         # 3 queries from keywords
-        kwords = self.paper['Keywords'].split(',')
-        kwords = [elt.strip() for elt in kwords]
-        if len(kwords)>2:
-            result = random.sample(kwords, k=2)
-        elif len(kwords)==1:
-            result = kwords
-        else:
-            result = []
-        self.queries += result
+        if self.paper['Keywords']:
+            kwords = self.paper['Keywords'].split(',')
+            kwords = [elt.strip() for elt in kwords if elt]
+            if len(kwords)>2:
+                result = random.sample(kwords, k=2)
+            elif len(kwords)==1:
+                result = kwords
+            else:
+                result = []
+            self.queries += result
 
     def from_title(self):
         #  remove .replace('-\n', '').replace('\n', ' ') after
-        title = self.paper['Title'].replace('-\n', '').replace('\n', ' ')
-        stc_nlp = self.nlp(title)
-        # extract noun& propn & adj
-        pos_list = ['NOUN', 'ADJ', 'PROPN']
-        kwords = [word.text.strip() for word in stc_nlp if word.pos_ in pos_list]
-        self.queries += [' '.join(kwords)]
+        if self.paper['Title']:
+            title = self.paper['Title'].replace('-\n', '').replace('\n', ' ')
+            stc_nlp = self.nlp(title)
+            # extract noun& propn & adj
+            pos_list = ['NOUN', 'ADJ', 'PROPN']
+            kwords = [word.text.strip() for word in stc_nlp if word.pos_ in pos_list]
+            self.queries += [' '.join(kwords)]
 
     def from_paragraphs(self, nb_queries_to_add):
         paragraph = self.paper['Abstract'] + ' ' + self.paper['Conclusion']
@@ -43,6 +45,7 @@ class QueryGeneration:
         self.queries = []
         self.from_keywords()
         self.from_title()
+        self.queries = [elt for elt in self.queries if elt]
         len_queries = len(self.queries)
         nb_queries_to_add = self.nb_queries - len_queries
         self.from_paragraphs(nb_queries_to_add)
