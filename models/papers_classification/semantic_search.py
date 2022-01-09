@@ -95,7 +95,7 @@ class Search_Model:
 
         if faiss_path_saving:
             print('faiss index saved')
-            self.faiss.write_index(self.faiss_index, faiss_path_saving)
+            faiss.write_index(self.faiss_index, faiss_path_saving)
 
     def fetch_doc(self,df_idx):
         df_row = self.naimai_papers_df.iloc[df_idx, :]
@@ -112,15 +112,21 @@ class Search_Model:
         results = [self.fetch_doc(idx) for idx in top_k_ids]
         return results
 
+    def load_model(self,path):
+        self.model = SentenceTransformer(path)
+
+    def load_faiss_index(self,path):
+        self.faiss_index.read_index(path)
 
     def fine_tune(self,model_path_saving='',faiss_path_saving=''):
-        print('>> Data processing ..')
-        self.load_data()
-        self.prepare_sbert_data()
-        self.process_sbert_data()
+        if not self.model:
+            print('>> Data processing ..')
+            self.load_data()
+            self.prepare_sbert_data()
+            self.process_sbert_data()
 
-        print('>> Training...')
-        self.train()
+            print('>> Training...')
+            self.train()
 
         if model_path_saving:
             print('>> Model saving..')
