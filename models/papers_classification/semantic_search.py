@@ -98,6 +98,10 @@ class Search_Model:
             faiss.write_index(self.faiss_index, faiss_path_saving)
 
     def fetch_doc(self,df_idx):
+        if not isinstance(self.naimai_papers_df,pd.DataFrame):
+            print('Data not loaded! Loading data..')
+            self.load_data()
+            self.prepare_faiss_data()
         df_row = self.naimai_papers_df.iloc[df_idx, :]
         result = {}
         result['filename'] = df_row['file_name']
@@ -108,15 +112,16 @@ class Search_Model:
         query_vector = self.model.encode([query])
         top_k = self.faiss_index.search(query_vector, top_k)
         top_k_ids = top_k[1].tolist()[0]
+        distances = top_k[0].tolist()[0]
         top_k_ids = list(np.unique(top_k_ids))
-        results = [self.fetch_doc(idx) for idx in top_k_ids]
+        results = [(dist,self.fetch_doc(idx)) for dist,idx in zip(distances,top_k_ids)]
         return results
 
     def load_model(self,path):
         self.model = SentenceTransformer(path)
 
     def load_faiss_index(self,path):
-        self.faiss_index.read_index(path)
+        self.faiss_index = faiss.read_index(path)
 
     def fine_tune(self,model_path_saving='',faiss_path_saving=''):
         if not self.model:
