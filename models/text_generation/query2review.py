@@ -102,5 +102,3 @@ class Query_Reviewer:
             return self.write_by_relevance(list_objs)
         else:
             return self.write_by_time(list_objs)
-
-    test

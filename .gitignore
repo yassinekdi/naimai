@@ -1,5 +1,5 @@
 __pycache__/
-dep/
+dep/*
 crawlers/__pycache__/
 models/__pycache__/
 models/papers_classification/.ipynb_checkpoints/
