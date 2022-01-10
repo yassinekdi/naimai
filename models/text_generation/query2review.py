@@ -4,11 +4,17 @@ from paper2.constants.paths import aws_root_pdfs, arxiv_pdfs_url, doi_url
 import os
 import re
 import numpy as np
+import pandas as pd 
 
 class Query_Reviewer:
-    def __init__(self, field):
+    def __init__(self, field,encoder=None):
         self.field = field
-        self.search_model = Search_Model(field=field)
+        self.search_model = Search_Model(field=field, encoder=encoder)
+
+        path_faiss = os.path.join('drive/MyDrive/MyProject/main_pipelines', field, 'encodings.index')
+        path_papers = os.path.join('drive/MyDrive/MyProject/main_pipelines', field, 'df_naimai')
+        self.search_model.load_naimai_data(path_papers)
+        self.search_model.load_faiss_index(path_faiss)
 
 
     def choose_obj_in_mean_lengths_range(self,mean_objs):
@@ -76,7 +82,7 @@ class Query_Reviewer:
         return
 
     def write_by_relevance(self,list_objs,prod=False):
-        formulations = np.unique([self.obj_formulation(obj,prod=prod) for obj in list_objs])
+        formulations = pd.unique([self.obj_formulation(obj,prod=prod) for obj in list_objs])
         text = ' '.join(formulations)
         return text
 
@@ -85,17 +91,7 @@ class Query_Reviewer:
         text = self.write_by_relevance(list_objs,prod=prod)
         return text
 
-    def load_models(self):
-        path_model = os.path.join('drive/MyDrive/MyProject/main_pipelines', 'search_model')
-        path_faiss = os.path.join('drive/MyDrive/MyProject/main_pipelines', self.field, 'encodings.index')
-        path_papers = os.path.join('drive/MyDrive/MyProject/main_pipelines', self.field, 'df_naimai')
-        self.search_model.load_model(path_model)
-        self.search_model.load_naimai_data(path_papers)
-        self.search_model.load_faiss_index(path_faiss)
     def review(self, query,top_n=7,order='Relevance',prod=False):
-        if not self.search_model.model:
-            print('loading models')
-            self.load_models()
         objs_query = self.search_model.search(query=query,top_n=top_n)
         list_objs = [{'filename': elt[1]['filename'],
                         'objective': self.choose_objective(elt[1]['reported']),

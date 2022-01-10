@@ -12,8 +12,8 @@ from paper2.utils import load_papers_dict
 from paper2.models.text_generation.query_generation import QueryGeneration
 
 class Search_Model:
-    def __init__(self, field,batch_size=16, n_epochs=10,
-                 checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
+    def __init__(self, field,encoder=None,create_model=False,batch_size=16, n_epochs=10,
+                 checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3',):
         # training_data = pd.DataFrame({'File_name': [],'Queries': [..], 'Abstract': [..]})
         # naimai_data = pd.DataFrame({'filename': [],'doi': [..], 'Objectives reported': [..], 'database': [..]})
         self.checkpoint = checkpoint
@@ -22,15 +22,15 @@ class Search_Model:
         self.training_papers_df = None
         self.naimai_papers_df = None
         self.training_sbert_data_df = None
-        self.model = None
+        self.model = encoder
         self.processed_data = None
         self.batch_size = batch_size
         self.n_epochs = n_epochs
-        self.create_model()
         self.faiss_index = None
         self.nlp = spacy.load(nlp_vocab)
         self.field = field
-        # self.test = []
+        if create_model:
+            self.create_model()
 
 
     def load_data(self):
