@@ -4,7 +4,7 @@ from paper2.constants.paths import aws_root_pdfs, arxiv_pdfs_url, doi_url
 import os
 import re
 import numpy as np
-import pandas as pd 
+import pandas as pd
 
 class Query_Reviewer:
     def __init__(self, field,encoder=None):
