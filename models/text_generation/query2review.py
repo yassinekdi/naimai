@@ -1,6 +1,5 @@
 from paper2.models.papers_classification.semantic_search import Search_Model
 from paper2.utils import transform_field_name
-from paper2.constants.regex import regex_paper_year
 from paper2.constants.paths import aws_root_pdfs, arxiv_pdfs_url, doi_url
 import os
 import re
@@ -20,10 +19,8 @@ class Query_Reviewer:
     def choose_obj_in_mean_lengths_range(self,mean_objs):
         mean_lens = 22
         if len(mean_objs) == 1:
-            print('21')
             return mean_objs[0]
         else:
-            print('22')
             # take the closest len to the mean 22
             closest_to_mean = min(mean_objs, key=lambda x: abs(len(x.split()) - mean_lens))
             return closest_to_mean
@@ -50,7 +47,7 @@ class Query_Reviewer:
         return
 
     def get_year(self,obj):
-        year = re.findall(regex_paper_year, obj)
+        year = re.findall('\d+', obj)
         if year:
             return int(year[0])
         return 0
@@ -83,22 +80,22 @@ class Query_Reviewer:
             return authors_part + objective_part
         return
 
-    def write_by_relevance(self,list_objs):
-        formulations = np.unique([self.obj_formulation(obj) for obj in list_objs])
+    def write_by_relevance(self,list_objs,prod=False):
+        formulations = np.unique([self.obj_formulation(obj,prod=prod) for obj in list_objs])
         text = ' '.join(formulations)
         return text
 
-    def write_by_time(self,list_objs):
+    def write_by_time(self,list_objs,prod=False):
         list_objs = sorted(list_objs, key=lambda x: self.get_year(x['objective']), reverse=True)
-        text = self.write_by_relevance(list_objs)
+        text = self.write_by_relevance(list_objs,prod=prod)
         return text
 
-    def review(self, query,top_n=7,order='Relevance'):
+    def review(self, query,top_n=7,order='Relevance',prod=False):
         objs_query = self.search_model.search(query=query,top_n=top_n)
         list_objs = [{'filename': elt[1]['filename'],
                         'objective': self.choose_objective(elt[1]['reported']),
                         'database': elt[1]['database']} for elt in objs_query]
         if order=='Relevance':
-            return self.write_by_relevance(list_objs)
+            return self.write_by_relevance(list_objs,prod=prod)
         else:
-            return self.write_by_time(list_objs)
+            return self.write_by_time(list_objs,prod=prod)

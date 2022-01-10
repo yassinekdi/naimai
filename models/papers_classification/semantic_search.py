@@ -111,11 +111,11 @@ class Search_Model:
             result['database'] = df_row['database']
             return result
 
-    def search(self,query, top_k):
+    def search(self, query, top_n):
         query_vector = self.model.encode([query])
-        top_k = self.faiss_index.search(query_vector, top_k)
-        top_k_ids = top_k[1].tolist()[0]
-        distances = top_k[0].tolist()[0]
+        top_n = self.faiss_index.search(query_vector, top_n)
+        top_k_ids = top_n[1].tolist()[0]
+        distances = top_n[0].tolist()[0]
         top_k_ids = list(np.unique(top_k_ids))
         results = [(dist,self.fetch_doc(idx)) for dist,idx in zip(distances,top_k_ids)]
         return results
