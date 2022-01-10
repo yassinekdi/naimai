@@ -27,6 +27,13 @@ import pickle, gzip
 #     client.put_object(Body=file_ ,Bucket =Mybucket, Key=dir+'/'+filename)
     # client.upload_file(Filename=dir + '/'+filename, Bucket="naimabucket", Key="Data Analysis/" + pdf_file)
 
+def transform_field_name(field_name):
+    dic_replace = {
+        ' ': '%20',
+        '(': '%28',
+        ')': '%29'
+    }
+    return multiple_replace(dic_replace, field_name)
 
 def load_papers_dict(path):
     with gzip.open(path, 'rb') as f:

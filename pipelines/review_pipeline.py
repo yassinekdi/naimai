@@ -5,38 +5,35 @@ from paper2.constants import nlp_vocab
 import re
 
 class ReviewPipeline:
-    def __init__(self ,model ,all_papers, field, topn,complexity=False,uploaded=False):
+    def __init__(self ,model ,all_papers, field, topn):
         self.similar_papers =[]
         self.model = model
         self.field=field
         self.topn = topn
         self.all_papers =all_papers
         self.nlp = spacy.load(nlp_vocab)
-        self.complexity = complexity
-        self.uploaded=uploaded
         self.paper_cited = []
         self.iter_max = topn +7
 
-    def search_papers(self, query):
-        result = self.model.sentence_in_docs(query,topn=self.iter_max)
-        similar_papers_fnames = [elt[0] for elt in result]
-        return similar_papers_fnames
+    # def search_papers(self, query):
+    #     result = self.model.sentence_in_docs(query,topn=self.iter_max)
+    #     similar_papers_fnames = [elt[0] for elt in result]
+    #     return similar_papers_fnames
 
-    @review_paper_error_log_decorator
-    def review_paper(self, pap, client, review_nb):
-        review = Paper2Reported(pap,
-                                field=self.field,
-                                client=client,
-                                nlp=self.nlp,
-                                complexity=self.complexity)
+    # @review_paper_error_log_decorator
+    # def review_paper(self, pap, client, review_nb):
+    #     review = Paper2Reported(pap,
+    #                             field=self.field,
+    #                             client=client,
+    #                             nlp=self.nlp,)
+    #
+    #     review.generate(uploaded=self.uploaded, review_nb=review_nb)
+    #     if review.reported:
+    #         return review.reported
+    #     return
 
-        review.generate(uploaded=self.uploaded, review_nb=review_nb)
-        if review.reported:
-            return review.reported
-        return
-
-    def get_similar_papers(self ,fname_list):
-        self.similar_papers = [self.all_papers['elements'][fname] for fname in fname_list]
+    # def get_similar_papers(self ,fname_list):
+    #     self.similar_papers = [self.all_papers['elements'][fname] for fname in fname_list]
 
     def review_query(self, query,client):
         review_nb = 0

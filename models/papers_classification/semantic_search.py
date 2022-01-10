@@ -12,7 +12,7 @@ from paper2.utils import load_papers_dict
 from paper2.models.text_generation.query_generation import QueryGeneration
 
 class Search_Model:
-    def __init__(self, field,batch_size=16, n_epochs=10,
+    def __init__(self, field,encoder=None,batch_size=16, n_epochs=10,
                  checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
         # training_data = pd.DataFrame({'File_name': [],'Queries': [..], 'Abstract': [..]})
         # naimai_data = pd.DataFrame({'filename': [],'doi': [..], 'Objectives reported': [..], 'database': [..]})
@@ -22,7 +22,7 @@ class Search_Model:
         self.training_papers_df = None
         self.naimai_papers_df = None
         self.training_sbert_data_df = None
-        self.model = None
+        self.model = encoder
         self.processed_data = None
         self.batch_size = batch_size
         self.n_epochs = n_epochs
@@ -40,6 +40,9 @@ class Search_Model:
     def prepare_faiss_data(self):
         self.training_papers_df =pd.DataFrame([self.training_papers_dict[self.field][elt] for elt in self.training_papers_dict[self.field]])
         self.naimai_papers_df = pd.DataFrame([self.naimai_papers_dict[self.field][elt] for elt in self.naimai_papers_dict[self.field]])
+
+    def load_naimai_data(self,path):
+        self.naimai_papers_df = pd.read_parquet(path)
 
     def prepare_sbert_data(self):
         percentage = .095
@@ -99,14 +102,14 @@ class Search_Model:
 
     def fetch_doc(self,df_idx):
         if not isinstance(self.naimai_papers_df,pd.DataFrame):
-            print('Data not loaded! Loading data..')
-            self.load_data()
-            self.prepare_faiss_data()
-        df_row = self.naimai_papers_df.iloc[df_idx, :]
-        result = {}
-        result['filename'] = df_row['file_name']
-        result['reported'] = df_row['Objectives_reported']
-        return result
+            print('No naimai data')
+        else:
+            df_row = self.naimai_papers_df.iloc[df_idx, :]
+            result = {}
+            result['filename'] = df_row['file_name']
+            result['reported'] = df_row['Objectives_reported']
+            result['database'] = df_row['database']
+            return result
 
     def search(self,query, top_k):
         query_vector = self.model.encode([query])
