@@ -12,7 +12,7 @@ from paper2.utils import load_papers_dict
 from paper2.models.text_generation.query_generation import QueryGeneration
 
 class Search_Model:
-    def __init__(self, field,encoder=None,batch_size=16, n_epochs=10,
+    def __init__(self, field,batch_size=16, n_epochs=10,
                  checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
         # training_data = pd.DataFrame({'File_name': [],'Queries': [..], 'Abstract': [..]})
         # naimai_data = pd.DataFrame({'filename': [],'doi': [..], 'Objectives reported': [..], 'database': [..]})
@@ -22,7 +22,7 @@ class Search_Model:
         self.training_papers_df = None
         self.naimai_papers_df = None
         self.training_sbert_data_df = None
-        self.model = encoder
+        self.model = None
         self.processed_data = None
         self.batch_size = batch_size
         self.n_epochs = n_epochs
