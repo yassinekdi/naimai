@@ -82,7 +82,12 @@ class Query_Reviewer:
         return
 
     def write_by_relevance(self,list_objs,prod=False):
-        formulations = pd.unique([self.obj_formulation(obj,prod=prod) for obj in list_objs])
+        formulations =[]
+        for obj in list_objs:
+            formulated = self.obj_formulation(obj,prod=prod)
+            if formulated :
+                formulations.append(formulated)
+        formulations = pd.unique(formulations)
         text = ' '.join(formulations)
         return text
 
