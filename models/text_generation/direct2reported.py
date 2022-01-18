@@ -2,11 +2,11 @@ from spacy.symbols import VERB, dobj, nsubjpass, pobj, auxpass, xcomp, advcl, pr
 import re
 import pyinflect
 import spacy
-from paper2.constants.nlp import past_tense, nlp_vocab,root_dep,conj_dep, nlp_disabled_direct2reported
-from paper2.constants.regex import study_terms, regex_arxiv_filename
-from paper2.constants.paths import aws_root_pdfs
-from paper2.constants.replacements import reported_corrections
-from paper2.utils import multiple_replace, reinsert_commas
+from naimai.constants.nlp import past_tense, nlp_vocab,root_dep,conj_dep, nlp_disabled_direct2reported
+from naimai.constants.regex import study_terms, regex_arxiv_filename
+#from naimai.constants.paths import aws_root_pdfs
+from naimai.constants.replacements import reported_corrections
+from naimai.utils import multiple_replace, reinsert_commas
 
 
 class Direct2Reported:

@@ -1,9 +1,9 @@
 import os
 from tqdm.notebook import tqdm
-from paper2.utils import year_from_arxiv_fname
-from paper2.papers.raw import papers, paper
-from paper2.utils import replace_abbreviations
-from paper2.decorators import paper_reading_error_log_decorator
+from naimai.utils import year_from_arxiv_fname
+from naimai.papers.raw import papers, paper
+from naimai.utils import replace_abbreviations
+from naimai.decorators import paper_reading_error_log_decorator
 
 
 

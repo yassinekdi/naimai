@@ -4,19 +4,19 @@ import pickle, gzip, pickletools
 import os
 from tqdm.notebook import tqdm
 import spacy
-from paper2.processing import SentenceToProcess
-from paper2.utils import convert_pdf_to_txt, get_pattern, \
+from naimai.processing import SentenceToProcess
+from naimai.utils import convert_pdf_to_txt, get_pattern, \
     str1_str2_from_txt, filter_min_length, starts_with_capital, doi_in_text, get_duplicates, multiple_replace, \
     clean_objectives, clean_authors, year_from_arxiv_fname, replace_abbreviations
-from paper2.constants.regex import regex_email, regex_not_converted,regex_references, regex_abstract1, \
+from naimai.constants.regex import regex_email, regex_not_converted,regex_references, regex_abstract1, \
     regex_abstract2, regex_words_numbers_some, regex_cid, regex_objectives,regex_paper_year,regex_filtered_words_obj
-from paper2.constants.replacements import parsing_corrections
-from paper2.constants.paths import path_objective_classifier, path_errors_log, path_author_classifier, path_encoder
-from paper2.constants.nlp import this_year, nlp_vocab, max_len_objective_sentence
-from paper2.models.abbreviation import extract_abbreviation_definition_pairs
-from paper2.classifiers import Objective_classifiers
-from paper2.models.text_generation.paper2reported import Paper2Reported
-from paper2.decorators import paper_reading_error_log_decorator
+from naimai.constants.replacements import parsing_corrections
+from naimai.constants.paths import path_objective_classifier, path_errors_log, path_author_classifier, path_encoder
+from naimai.constants.nlp import this_year, nlp_vocab, max_len_objective_sentence
+from naimai.models.abbreviation import extract_abbreviation_definition_pairs
+from naimai.classifiers import Objective_classifiers
+from naimai.models.text_generation.paper2reported import Paper2Reported
+#from naimai.decorators import paper_reading_error_log_decorator
 
 class paper_base:
     def __init__(self,obj_classifier_model=None,nlp=None,load_nlp=False):
@@ -83,6 +83,9 @@ class paper_base:
         review.generate()
         if review.reported:
             self.Objectives_reported= review.reported
+
+    def is_in_database(self):
+        pass
 
     def save_paper_for_naimai(self):
         attr_to_save = ['file_name', 'doi', 'Objectives_reported', 'database']

@@ -1,9 +1,9 @@
 import os
-from paper2.crawlers.arxiv_crawler import ArXiv_Crawler
-from paper2.papers.arxiv import papers_arxiv
-from paper2.papers.raw import papers
-from paper2.constants import arxiv_database
-from paper2.models.papers_classification.tfidf import tfIdf_model
+from naimai.crawlers.arxiv_crawler import ArXiv_Crawler
+from naimai.papers.arxiv import papers_arxiv
+from naimai.papers.raw import papers
+from naimai.constants import arxiv_database
+from naimai.models.papers_classification.tfidf import tfIdf_model
 
 class MainPipeline:
     def __init__(self,database='',pdfs_dir='',params=[], papers=None, model=None,get_ArXiv_manifest=True):

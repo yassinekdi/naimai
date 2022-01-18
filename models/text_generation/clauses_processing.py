@@ -1,5 +1,5 @@
-from paper2.constants.nlp import root_dep,verb_pos
-from paper2.utils import find_root_verb
+from naimai.constants.nlp import root_dep,verb_pos
+from naimai.utils import find_root_verb
 from spacy.symbols import VERB, nsubjpass
 import re
 

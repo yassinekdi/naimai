@@ -1,7 +1,7 @@
-from paper2.decorators import review_paper_error_log_decorator
-from paper2.models.text_generation.paper2reported import Paper2Reported
+from naimai.decorators import review_paper_error_log_decorator
+from naimai.models.text_generation.paper2reported import Paper2Reported
 import spacy
-from paper2.constants import nlp_vocab
+from naimai.constants import nlp_vocab
 import re
 
 class ReviewPipeline:

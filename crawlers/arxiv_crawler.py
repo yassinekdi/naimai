@@ -4,7 +4,7 @@ import subprocess
 # from tqdm.notebook import tqdm
 from bs4 import BeautifulSoup
 import re
-from paper2.utils import str_in_list
+from naimai.utils import str_in_list
 import os
 # import tarfile
 

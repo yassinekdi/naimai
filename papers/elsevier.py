@@ -4,9 +4,9 @@ from tqdm.notebook import tqdm
 from collections import Counter
 import re
 
-from paper2.constants.fields import fields_codes_elsevier
-from paper2.papers.raw import paper_base,papers
-from paper2.utils import multiple_replace
+from naimai.constants.fields import fields_codes_elsevier
+from naimai.papers.raw import paper_base,papers
+from naimai.utils import multiple_replace
 
 class elsevier_data:
   def __init__(self,myfield_dict):

@@ -1,6 +1,6 @@
-from paper2.models.papers_classification.semantic_search import Search_Model
-from paper2.utils import transform_field_name
-from paper2.constants.paths import aws_root_pdfs, arxiv_pdfs_url, doi_url
+from naimai.models.papers_classification.semantic_search import Search_Model
+from naimai.utils import transform_field_name
+from naimai.constants.paths import aws_root_pdfs, arxiv_pdfs_url, doi_url
 import os
 import re
 import numpy as np
