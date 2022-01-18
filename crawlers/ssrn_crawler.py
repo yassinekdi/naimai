@@ -26,7 +26,7 @@ class SSRN_Crawler:
 
     def get_page_path(self, nb_page):
         split = self.path.split('cfm?')
-        page_path = split[0] + 'npage={}&'.format(nb_page) + split[1]
+        page_path = split[0] + 'cfm?'+ 'npage={}&'.format(nb_page) + split[1]
         return page_path
 
     def get_all_soups(self):
