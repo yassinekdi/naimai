@@ -70,8 +70,8 @@ class SSRN_Crawler:
         return authors
 
     def get_docs(self):
-        # if not self.soup:
-        #   self.get_all_soups()
+        if not self.soup:
+            self.get_all_soups()
         for page in range(1, self.total_pages + 1):
-            page_data = self.get_description_data_npage(page)
+            self.get_description_data_npage(page)
 
