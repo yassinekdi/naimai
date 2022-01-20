@@ -3,13 +3,17 @@ from tqdm.notebook import tqdm
 from bs4 import BeautifulSoup
 import requests
 import time
-import random
 
 def select_span(list_spans):
     for elt in list_spans:
         if 'Posted' in elt.string:
             return elt.string
 
+def find_kwords(soup):
+  all_p = soup.find_all(name='p')
+  for p in all_p:
+    if 'Keywords' in p.getText():
+      return p.getText()
 
 class SSRN_Crawler:
     def __init__(self, field, path):
@@ -17,14 +21,14 @@ class SSRN_Crawler:
         self.path = path
         self.soup = {}
         self.total_pages = 999
-        self.docs = {'title': [], 'abstract_id': [], 'authors': [], 'date': [], 'field': [], 'nb_page': [],"abstract_box":[]}
+        self.docs = {'title': [], 'abstract_id': [], 'authors': [], 'date': [], 'field': [], 'nb_page': [],"abstract_box":[], "abstract_text":[],"keywords":[]}
 
     def get_soup(self, path):
         header = {}
         header[
             'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
         soup = BeautifulSoup(requests.get(path, headers=header, timeout=10).content, 'html.parser')
-        slp=random.randint(2,5)
+        slp=random.randint(3,6)
         time.sleep(slp)
         return soup
 
@@ -37,6 +41,9 @@ class SSRN_Crawler:
           print('problem with abstract id : ', id)
           print('abst box : ', abstract_box)
         return abstract_box[0]
+
+    def get_abstract_text(self,abstract_box):
+        return abstract_box.find_all(name='div', attrs={"class": "abstract-text"})[0].find('p').getText()
 
     def get_page_path(self, nb_page):
         split = self.path.split('cfm?')
@@ -62,7 +69,13 @@ class SSRN_Crawler:
                 if id not in self.docs['abstract_id'] and title not in self.docs['title']:
                   self.docs['title'].append(title)
                   self.docs['abstract_id'].append(id)
-                  self.docs['abstract_box'].append(self.get_abstract_box(id))
+                  abs_box= self.get_abstract_box(id)
+                  self.docs['abstract_box'].append(abs_box)
+                  try:
+                    self.docs['abstract_text'].append(self.get_abstract_text(abs_box))
+                  except:
+                    print('problem of abstract text in id ', id)
+                  self.docs['keywords'].append(find_kwords(abs_box))
                   self.docs['authors'].append(self.get_authors(des))
                   self.docs['date'].append(self.get_date(des))
                   self.docs['field'].append(self.field)
