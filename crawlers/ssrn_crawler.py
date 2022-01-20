@@ -1,7 +1,7 @@
 import re
 from tqdm.notebook import tqdm
 from bs4 import BeautifulSoup
-import random 
+import random
 import requests
 import time
 
