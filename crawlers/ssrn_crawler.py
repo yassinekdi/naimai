@@ -64,6 +64,7 @@ class SSRN_Crawler:
         descriptions = soup.find_all(name="div", attrs={"class": "description"})
 
         for des in descriptions:
+          try:
             title = self.get_title(des)
             if title:
                 id =  self.get_abstract_id(des)
@@ -91,6 +92,9 @@ class SSRN_Crawler:
                       self.docs['date'].append('')
                   self.docs['field'].append(self.field)
                   self.docs['nb_page'].append(npage)
+          except:
+            print('passed in page ', npage)
+            pass
 
     def get_title(self, description_soup):
         title= description_soup.find_all(name="a", attrs={"class": "title optClickTitle"})[0].string
