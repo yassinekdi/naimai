@@ -74,10 +74,20 @@ class SSRN_Crawler:
                   try:
                     self.docs['abstract_text'].append(self.get_abstract_text(abs_box))
                   except:
+                    self.docs['abstract_text'].append('')
                     print('problem of abstract text in id ', id)
-                  self.docs['keywords'].append(find_kwords(abs_box))
-                  self.docs['authors'].append(self.get_authors(des))
-                  self.docs['date'].append(self.get_date(des))
+                  try:
+                      self.docs['keywords'].append(find_kwords(abs_box))
+                  except:
+                      self.docs['keywords'].append('')
+                  try:
+                      self.docs['authors'].append(self.get_authors(des))
+                  except:
+                      self.docs['authors'].append('')
+                  try:
+                      self.docs['date'].append(self.get_date(des))
+                  except:
+                      self.docs['date'].append('')
                   self.docs['field'].append(self.field)
                   self.docs['nb_page'].append(npage)
 
