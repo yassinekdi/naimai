@@ -64,23 +64,32 @@ class SSRN_Crawler:
         descriptions = soup.find_all(name="div", attrs={"class": "description"})
 
         for des in descriptions:
-          try:
             title = self.get_title(des)
             if title:
                 id =  self.get_abstract_id(des)
                 if id not in self.docs['abstract_id'] and title not in self.docs['title']:
                   self.docs['title'].append(title)
                   self.docs['abstract_id'].append(id)
-                  abs_box= self.get_abstract_box(id)
-                  self.docs['abstract_box'].append(abs_box)
                   try:
-                    self.docs['abstract_text'].append(self.get_abstract_text(abs_box))
+                      abs_box = self.get_abstract_box(id)
+                      self.docs['abstract_box'].append(abs_box)
                   except:
-                    self.docs['abstract_text'].append('')
-                    print('problem of abstract text in id ', id)
-                  try:
-                      self.docs['keywords'].append(find_kwords(abs_box))
-                  except:
+                      print('no abs_box')
+                      abs_box=""
+                      self.docs['abstract_box'].append(abs_box)
+
+                  if abs_box:
+                      try:
+                        self.docs['abstract_text'].append(self.get_abstract_text(abs_box))
+                      except:
+                        self.docs['abstract_text'].append('')
+                        print('problem of abstract text in id ', id)
+                      try:
+                          self.docs['keywords'].append(find_kwords(abs_box))
+                      except:
+                          self.docs['keywords'].append('')
+                  else:
+                      self.docs['abstract_text'].append('cd Pych    ')
                       self.docs['keywords'].append('')
                   try:
                       self.docs['authors'].append(self.get_authors(des))
@@ -92,9 +101,6 @@ class SSRN_Crawler:
                       self.docs['date'].append('')
                   self.docs['field'].append(self.field)
                   self.docs['nb_page'].append(npage)
-          except:
-            print('passed in page ', npage)
-            pass
 
     def get_title(self, description_soup):
         title= description_soup.find_all(name="a", attrs={"class": "title optClickTitle"})[0].string
