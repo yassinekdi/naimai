@@ -89,7 +89,7 @@ class SSRN_Crawler:
                       except:
                           self.docs['keywords'].append('')
                   else:
-                      self.docs['abstract_text'].append('cd Pych    ')
+                      self.docs['abstract_text'].append('')
                       self.docs['keywords'].append('')
                   try:
                       self.docs['authors'].append(self.get_authors(des))
