@@ -105,7 +105,10 @@ class SSRN_Crawler:
     def get_title(self, description_soup):
         title= description_soup.find_all(name="a", attrs={"class": "title optClickTitle"})[0].string
         if not title:
-            title = description_soup.find_all(name="a", attrs={"class": "title optClickTitle"})[0].find_all(name="span")[0].string
+            try:
+                title = description_soup.find_all(name="a", attrs={"class": "title optClickTitle"})[0].find_all(name="span")[0].string
+            except:
+                title=''
         return title
 
     def get_abstract_id(self, description_soup):
