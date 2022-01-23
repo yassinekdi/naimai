@@ -12,10 +12,10 @@ class ISSN_crawler:
         self.docs = {'title': [], 'authors': [], 'date': [], 'field_paper': [], "abstract": [], "doi": [],
                      "numCitedBy": [], "numCiting": [], "field_issn": []}
 
-    def get_dois(self):
+    def get_dois(self,idx_start,idx_finish):
         journals = Journals()
         works = journals.works(self.issn)
-        self.docs["doi"] = [elt['DOI'] for elt in works.select('DOI')]
+        self.docs["doi"] = [elt['DOI'] for elt in works.select('DOI')][idx_start:idx_finish]
         print('Len dois : ', len(self.docs['doi']))
 
     def get_authors(self, authors_list):
@@ -28,10 +28,10 @@ class ISSN_crawler:
             return ""
 
     def get_docs(self,idx_start=0, idx_finish=-1,t_min=3, t_max=6):
-        self.get_dois()
+        self.get_dois(idx_start,idx_finish)
         sch = SemanticScholar(timeout=15)
         dois_to_remove = []
-        for doi in tqdm(self.docs['doi'][idx_start:idx_finish]):
+        for doi in tqdm(self.docs['doi']):
             paper = sch.paper(doi)
             slp = random.randint(t_min, t_max)
             time.sleep(slp)
