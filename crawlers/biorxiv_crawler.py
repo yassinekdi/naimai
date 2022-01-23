@@ -4,9 +4,12 @@ from tqdm.notebook import tqdm
 import re
 
 def get_authors(authors_contrib):
-  last_name = authors_contrib.find('surname').string
-  first_name = authors_contrib.find('given-names').string
-  return first_name + ' ' + last_name
+  last_name = authors_contrib.find('surname')
+  first_name = authors_contrib.find('given-names')
+  if last_name:
+      return first_name.string + ' ' + last_name.string
+  else:
+      return ''
 
 
 class bioRxiv_xml_data:
@@ -18,24 +21,39 @@ class bioRxiv_xml_data:
         return bs.find_all(name="article-id")[0].string
 
     def get_topic(self, bs):
-        return bs.find_all(name="subj-group", attrs={'subj-group-type': 'hwp-journal-coll'})[0].find('subject').string
+        try:
+            return bs.find_all(name="subj-group", attrs={'subj-group-type': 'hwp-journal-coll'})[0].find('subject').string
+        except:
+            return ''
 
     def get_title(self, bs):
-        return bs.find_all(name="title-group")[0].find('article-title').text
+        try :
+            return bs.find_all(name="title-group")[0].find('article-title').text
+        except:
+            return ''
 
     def get_authors(self, bs):
-        authors_contrib = bs.find_all(name="contrib-group")[0].find_all(name="contrib",
-                                                                        attrs={"contrib-type": "author"})
-        authors = ', '.join([get_authors(elt) for elt in authors_contrib])
+        try:
+            authors_contrib = bs.find_all(name="contrib-group")[0].find_all(name="contrib",
+                                                                            attrs={"contrib-type": "author"})
+            authors = ', '.join([get_authors(elt) for elt in authors_contrib])
+        except:
+            authors=""
         return authors
 
     def get_year(self, bs):
-        return bs.find("year").string
+        try :
+            return bs.find("year").string
+        except:
+            return ''
 
     def get_abstract(self, bs):
-        abstract = bs.find("abstract").text
-        abstract2 = re.sub('abstract', '', abstract, flags=re.I)
-        return abstract2.replace('\n', ' ').strip()
+        abstract = bs.find("abstract")
+        if abstract:
+            abstract = abstract.text
+            abstract2 = re.sub('abstract', '', abstract, flags=re.I)
+            return abstract2.replace('\n', ' ').strip()
+        return ''
 
     def get_kwords(self, bs):
         kwords = bs.find("kwd-group")
@@ -50,19 +68,20 @@ class bioRxiv_xml_data:
 
     def get_file_data(self, xml_file, xml_file_name):
         bs4_xml = BeautifulSoup(xml_file, "lxml")
-
-        self.docs['title'].append(self.get_title(bs4_xml))
-        self.docs['authors'].append(self.get_authors(bs4_xml))
-        self.docs['date'].append(self.get_year(bs4_xml))
-        self.docs['field_paper'].append(self.get_topic(bs4_xml))
-        self.docs['abstract'].append(self.get_abstract(bs4_xml))
-        self.docs['doi'].append(self.get_doi(bs4_xml))
-        self.docs['database'].append("bioRxiv")
-        self.docs['file_name'].append(xml_file_name)
+        abstract = self.get_abstract(bs4_xml)
+        if abstract:
+            self.docs['title'].append(self.get_title(bs4_xml))
+            self.docs['authors'].append(self.get_authors(bs4_xml))
+            self.docs['date'].append(self.get_year(bs4_xml))
+            self.docs['field_paper'].append(self.get_topic(bs4_xml))
+            self.docs['abstract'].append(abstract)
+            self.docs['doi'].append(self.get_doi(bs4_xml))
+            self.docs['database'].append("bioRxiv")
+            self.docs['file_name'].append(xml_file_name)
 
     def get_docs(self, path):
         archive = zipfile.ZipFile(path, 'r')
-        list_xml_files = self.get_xml_files(archive)[:10]
+        list_xml_files = self.get_xml_files(archive)
 
         for fle in tqdm(list_xml_files):
             xml_file = archive.read(fle)
