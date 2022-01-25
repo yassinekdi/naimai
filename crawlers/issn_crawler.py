@@ -28,33 +28,37 @@ class ISSN_crawler:
             return ""
 
     def get_docs(self,idx_start=0, idx_finish=-1,t_min=3, t_max=6):
-        self.get_dois(idx_start,idx_finish)
+        if not self.docs['doi']:
+            self.get_dois(idx_start, idx_finish)
         sch = SemanticScholar(timeout=15)
         dois_to_remove = []
         for doi in tqdm(self.docs['doi']):
-            paper = sch.paper(doi)
-            slp = random.randint(t_min, t_max)
-            time.sleep(slp)
+            try:
+                paper = sch.paper(doi)
+                slp = random.randint(t_min, t_max)
+                time.sleep(slp)
 
-            if paper:
-                abstract = self.correct_result(paper["abstract"])
-                if abstract:
-                    self.docs['title'].append(self.correct_result(paper["title"]))
-                    authors = self.get_authors(paper["authors"])
-                    self.docs['authors'].append(self.correct_result(authors))
-                    self.docs['date'].append(self.correct_result(paper["year"]))
-                    if paper["fieldsOfStudy"]:
-                        field = ", ".join(paper["fieldsOfStudy"])
+                if paper:
+                    abstract = self.correct_result(paper["abstract"])
+                    if abstract:
+                        self.docs['title'].append(self.correct_result(paper["title"]))
+                        authors = self.get_authors(paper["authors"])
+                        self.docs['authors'].append(self.correct_result(authors))
+                        self.docs['date'].append(self.correct_result(paper["year"]))
+                        if paper["fieldsOfStudy"]:
+                            field = ", ".join(paper["fieldsOfStudy"])
+                        else:
+                            field = ""
+                        self.docs['field_paper'].append(field)
+                        self.docs['abstract'].append(abstract)
+                        self.docs['numCitedBy'].append(self.correct_result(paper["numCitedBy"]))
+                        self.docs['numCiting'].append(self.correct_result(paper["numCiting"]))
+                        self.docs['field_issn'].append(self.correct_result(self.field_issn))
                     else:
-                        field = ""
-                    self.docs['field_paper'].append(field)
-                    self.docs['abstract'].append(abstract)
-                    self.docs['numCitedBy'].append(self.correct_result(paper["numCitedBy"]))
-                    self.docs['numCiting'].append(self.correct_result(paper["numCiting"]))
-                    self.docs['field_issn'].append(self.correct_result(self.field_issn))
+                        dois_to_remove.append(doi)
                 else:
                     dois_to_remove.append(doi)
-            else:
+            except:
                 dois_to_remove.append(doi)
 
         for doi in dois_to_remove:
