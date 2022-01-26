@@ -51,10 +51,10 @@ class SSRN_Crawler:
         page_path = split[0] + 'cfm?'+ 'npage={}&'.format(nb_page) + split[1]
         return page_path
 
-    def get_all_soups(self,idx_start=0, idx_finish=-1):
+    def get_all_soups(self):
         self.soup[1] = self.get_soup(self.path)
         self.total_pages = int(self.soup[1].find_all(name="a", attrs={"class": "jeljour_pagination_number"})[-1].string)
-        self.total_pages = self.total_pages[idx_start:idx_finish]
+        self.total_pages = self.total_pages
         for npage in tqdm(range(2, self.total_pages + 1)):
             path = self.get_page_path(npage)
             self.soup[npage] = self.get_soup(path)
@@ -126,10 +126,10 @@ class SSRN_Crawler:
             authors = ', '.join([elt.string for elt in elt.find_all(name='a')])
         return authors
 
-    def get_docs(self,idx_start=0, idx_finish=-1):
+    def get_docs(self):
         if not self.soup:
             print('Getting soups..')
-            self.get_all_soups(idx_start=idx_start, idx_finish=idx_finish)
+            self.get_all_soups()
         print('Getting description..')
         for page in tqdm(range(1, self.total_pages + 1)):
             self.get_description_data_npage(page)
