@@ -478,7 +478,7 @@ class papers:
         self.elements = {}
         self.naimai_elements = {}
         self.path_errors_log = 'drive/MyDrive/MyProject/errors_log/'
-        # self.version=''
+        self.database='mine'
         self.obj_classifier_model = obj_classifier_model
         self.author_classifier_model = author_classifier_model
         self.nlp = nlp

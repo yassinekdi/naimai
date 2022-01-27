@@ -29,7 +29,7 @@ class SSRN_Crawler:
         header[
             'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
         soup = BeautifulSoup(requests.get(path, headers=header, timeout=10).content, 'html.parser')
-        slp=random.randint(3,6)
+        slp=random.randint(2,5)
         time.sleep(slp)
         return soup
 
