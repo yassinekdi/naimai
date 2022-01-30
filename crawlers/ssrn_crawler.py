@@ -17,19 +17,21 @@ def find_kwords(soup):
       return p.getText()
 
 class SSRN_Crawler:
-    def __init__(self, field, path):
+    def __init__(self, field, path,t_min=1,t_max=4):
         self.field = field
         self.path = path
         self.soup = {}
         self.total_pages = 999
         self.docs = {'title': [], 'abstract_id': [], 'authors': [], 'date': [], 'field': [], 'nb_page': [],"abstract_box":[], "abstract_text":[],"keywords":[]}
+        self.t_min=t_min
+        self.t_max=t_max
 
     def get_soup(self, path):
         header = {}
         header[
             'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
         soup = BeautifulSoup(requests.get(path, headers=header, timeout=10).content, 'html.parser')
-        slp=random.randint(2,5)
+        slp=random.randint(self.t_min,self.t_max)
         time.sleep(slp)
         return soup
 
