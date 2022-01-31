@@ -17,7 +17,7 @@ def find_kwords(soup):
       return p.getText()
 
 class SSRN_Crawler:
-    def __init__(self, field, path,t_min=1,t_max=4):
+    def __init__(self, field, path,t_min=2,t_max=5):
         self.field = field
         self.path = path
         self.soup = {}
@@ -134,6 +134,6 @@ class SSRN_Crawler:
             print('Getting soups..')
             self.get_all_soups(first_page=first_page,last_page=last_page)
         print('Getting description..')
-        for page in tqdm(range(1, self.total_pages + 1)):
+        for page in tqdm(range(first_page, self.total_pages + 1)):
             self.get_description_data_npage(page)
 
