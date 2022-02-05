@@ -24,6 +24,10 @@ class paper_base:
         self.database='raw'
         self.file_name = ''
         self.raw_text = ''
+        self.field = ''
+        self.subfield= ''
+        self.numCitedBy = .5
+        self.numCiting = .5
         self.Introduction = ''
         self.Abstract = ''
         self.Conclusion = ''
@@ -87,16 +91,21 @@ class paper_base:
     def is_in_database(self):
         pass
 
-    def save_paper_for_naimai(self):
-        attr_to_save = ['file_name', 'doi', 'Objectives_reported', 'database']
+    def save_dict(self):
+        attr_to_save = ['doi', 'Authors', 'Publication_year','database','field','subfield','Abstract','Conclusion','Keywords', 'Title','numCitedBy','numCiting']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
-
-    def save_paper_for_training(self):
-        attr_to_save = ['pdf_path', 'file_name', 'Abstract', 'Conclusion', 'Keywords', 'Title','database']
-        paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
-        return paper_to_save
+    # def save_paper_for_naimai(self):
+    #     attr_to_save = ['file_name', 'doi', 'Objectives_reported', 'database']
+    #     paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
+    #     return paper_to_save
+    #
+    #
+    # def save_paper_for_training(self):
+    #     attr_to_save = ['pdf_path', 'file_name', 'Abstract', 'Conclusion', 'Keywords', 'Title','database']
+    #     paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
+    #     return paper_to_save
 
 
 
@@ -530,7 +539,7 @@ class papers:
                     new_paper.report_objectives()
                 if save_dict:
                     self.elements[new_paper.file_name] = new_paper.save_paper_for_training()
-                    self.naimai_elements[new_paper.file_name] = new_paper.save_paper_for_naimai()
+                    # self.naimai_elements[new_paper.file_name] = new_paper.save_paper_for_naimai()
                 else:
                     self.elements[new_paper.file_name] = new_paper
             else:

@@ -225,14 +225,13 @@ class papers_elsevier(papers):
         if field in v:
           self.files.append(k)
 
-    def add_papers(self,paper_nb,save_dict=True,report=True):
+    def add_papers(self,paper_nb,field,save_dict=True,report=True):
      json_data=self.elsevier_data_obj.file_nb2data(paper_nb)
      new_paper = paper_elsevier(file_nb=paper_nb,json_data=json_data,obj_classifier_model=self.obj_classifier_model)
      new_paper.database= 'elsevier_kaggle'
+     new_paper.field = field
      new_paper.get_Abstract()
-     #new_paper.get_Introduction()
      new_paper.get_Conslusion()
-     #new_paper.get_raw_text()
      new_paper.get_Title()
      new_paper.get_Authors()
      new_paper.get_kwords()
@@ -245,7 +244,7 @@ class papers_elsevier(papers):
          new_paper.report_objectives()
      if save_dict:
          self.elements[paper_nb] = new_paper.save_paper_for_training()
-         self.naimai_elements[paper_nb] = new_paper.save_paper_for_naimai()
+         # self.naimai_elements[paper_nb] = new_paper.save_paper_for_naimai()
      else:
          self.elements[paper_nb] = new_paper
 
@@ -259,7 +258,7 @@ class papers_elsevier(papers):
         self.get_fields_files(field)
         for f in tqdm(self.files):
             try:
-                self.add_papers(paper_nb=f, save_dict=save_dict,report=report)
+                self.add_papers(paper_nb=f, field=field, save_dict=save_dict,report=report)
             except:
                 print('problem in paper ', f)
         print('Objs problem exported in objectives_pbs.txt')
