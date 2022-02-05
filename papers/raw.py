@@ -7,11 +7,11 @@ import spacy
 from naimai.processing import SentenceToProcess
 from naimai.utils import convert_pdf_to_txt, get_pattern, \
     str1_str2_from_txt, filter_min_length, starts_with_capital, doi_in_text, get_duplicates, multiple_replace, \
-    clean_objectives, clean_authors, year_from_arxiv_fname, replace_abbreviations
+    clean_objectives, clean_authors, year_from_arxiv_fname, replace_abbreviations, load_gzip
 from naimai.constants.regex import regex_email, regex_not_converted,regex_references, regex_abstract1, \
     regex_abstract2, regex_words_numbers_some, regex_cid, regex_objectives,regex_paper_year,regex_filtered_words_obj
 from naimai.constants.replacements import parsing_corrections
-from naimai.constants.paths import path_objective_classifier, path_errors_log, path_author_classifier, path_encoder
+from naimai.constants.paths import path_objective_classifier, path_errors_log, path_author_classifier, path_encoder, naimai_dois_path
 from naimai.constants.nlp import this_year, nlp_vocab, max_len_objective_sentence
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
 from naimai.classifiers import Objective_classifiers
@@ -25,7 +25,7 @@ class paper_base:
         self.file_name = ''
         self.raw_text = ''
         self.field = ''
-        self.subfield= ''
+        self.subfields= ''
         self.numCitedBy = .5
         self.numCiting = .5
         self.Introduction = ''
@@ -52,7 +52,11 @@ class paper_base:
         conclusion_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Conclusion)
         abstract_abbrevs.update(intro_abbrevs)
         abstract_abbrevs.update(conclusion_abbrevs)
-        return abstract_abbrevs
+
+        corrected_abbrevs = {}
+        for k in abstract_abbrevs:
+            corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
+        return corrected_abbrevs
 
     def get_objectives_with_regex(self):
         gathered = self.Abstract + self.Conclusion
@@ -88,11 +92,13 @@ class paper_base:
         if review.reported:
             self.Objectives_reported= review.reported
 
-    def is_in_database(self):
-        pass
+    def is_in_database(self,list_dois):
+        if self.doi in list_dois:
+            return True
+        return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'Publication_year','database','field','subfield','Abstract','Conclusion','Keywords', 'Title','numCitedBy','numCiting']
+        attr_to_save = ['doi', 'Authors', 'Publication_year','database','field','subfields','Abstract','Conclusion','Keywords', 'Title','numCitedBy','numCiting']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
@@ -491,6 +497,10 @@ class papers:
         self.obj_classifier_model = obj_classifier_model
         self.author_classifier_model = author_classifier_model
         self.nlp = nlp
+        if os.path.exists(naimai_dois_path):
+            self.naimai_dois = load_gzip(naimai_dois_path)
+        else:
+            self.naimai_dois=[]
 
         if load_obj_classifier_model and not self.obj_classifier_model:
             self.obj_classifier_model = Objective_classifiers(dir=path_objective_classifier)
@@ -517,7 +527,6 @@ class papers:
         rds = random.sample(elts, k)
         papers_list = [self.elements[el] for el in rds]
         return papers_list
-
 
     # @paper_reading_error_log_decorator
     def add_paper(self,pdf_filename,portion=1/6,use_ocr=False,save_dict=True,report=True):
@@ -561,80 +570,86 @@ class papers:
                 idx+=1
         print('Objs problem exported in objectives_pbs.txt')
 
-    def save_training_elements(self, file_dir):
-        attr_to_save = ['pdfs_dir', 'elements']
-        papers_to_save = {key: self.__dict__[key] for key in attr_to_save}
+    def save_elements(self, file_dir):
+        # attr_to_save = ['pdfs_dir', ]
+        papers_to_save = self.__dict__['elements']
 
-        with gzip.open(file_dir, "wb") as f:
+        with gzip.open(file_dir, "ab") as f:
             pickled = pickle.dumps(papers_to_save)
             optimized_pickle = pickletools.optimize(pickled)
             f.write(optimized_pickle)
 
-    def save_naimai_elements(self, file_dir):
-        attr_to_save = ['pdfs_dir', 'naimai_elements']
-        papers_to_save = {key: self.__dict__[key] for key in attr_to_save}
+    def update_naimai_dois(self):
+        if self.naimai_dois:
+            with gzip.open(naimai_dois_path, "ab") as f:
+                pickled = pickle.dumps(self.naimai_dois)
+                optimized_pickle = pickletools.optimize(pickled)
+                f.write(optimized_pickle)
+    # def save_naimai_elements(self, file_dir):
+    #     attr_to_save = ['pdfs_dir', 'naimai_elements']
+    #     papers_to_save = {key: self.__dict__[key] for key in attr_to_save}
+    #
+    #     with gzip.open(file_dir, "wb") as f:
+    #         pickled = pickle.dumps(papers_to_save)
+    #         optimized_pickle = pickletools.optimize(pickled)
+    #         f.write(optimized_pickle)
 
-        with gzip.open(file_dir, "wb") as f:
-            pickled = pickle.dumps(papers_to_save)
-            optimized_pickle = pickletools.optimize(pickled)
-            f.write(optimized_pickle)
-
-    def load(self, file_dir):
-        with gzip.open(file_dir, 'rb') as f:
-            p = pickle.Unpickler(f)
-            return p.load()
-
-
-class papers_distil(papers):
-    def __init__(self, all_papers_to_update_dir='', pdfs_dir='', obj_classifier_model=None, author_classifier_model=None,
-                 load_obj_classifier_model=True, load_author_classifier_model=False, load_nlp=True):
-        super().__init__(pdfs_dir=pdfs_dir,obj_classifier_model=obj_classifier_model, author_classifier_model=author_classifier_model,
-                         load_obj_classifier_model=load_obj_classifier_model,
-                         load_author_classifier_model=load_author_classifier_model,
-                         load_nlp=load_nlp)
-        paps_load = self.load(all_papers_to_update_dir)
-        self.all_papers_old = paps_load['elements']
-        self.pdfs_files_names = list(self.all_papers_old.keys())
+    # def load(self, file_dir):
+    #     with gzip.open(file_dir, 'rb') as f:
+    #         p = pickle.Unpickler(f)
+    #         return p.load()
 
 
-
-    def add_paper(self,pdf_filename,save_dict=True,report=True):
-            pdf_path =self.all_papers_old[pdf_filename]['pdf_path']
-            new_paper = paper(path=pdf_path,
-                              obj_classifier_model=self.obj_classifier_model)
-            new_paper.database='mine'
-            # for abstract, take only the 200 first words
-            try:
-                new_paper.Abstract =' '.join(self.all_papers_old[pdf_filename]['Abstract'].split()[:200])
-            except:
-                new_paper.Abstract =' '.join(self.all_papers_old[pdf_filename]['Objective_paper'])
-            new_paper.Authors =self.all_papers_old[pdf_filename]['Authors']
-            new_paper.Publication_year = self.all_papers_old[pdf_filename]['Publication_year']
-            new_paper.Keywords = self.all_papers_old[pdf_filename]['Keywords']
-            # for conclusions, take only one with < 3000 words
-            if len(self.all_papers_old[pdf_filename]['Conclusion'].split()) <3000:
-                new_paper.Conclusion = self.all_papers_old[pdf_filename]['Conclusion']
-            else:
-                new_paper.Conclusion = ''
-            new_paper = replace_abbreviations(new_paper)
-            new_paper.get_objective_paper()
-            if report:
-                new_paper.report_objectives()
-            if save_dict:
-                self.elements[new_paper.file_name] = new_paper.save_paper_for_training()
-                self.naimai_elements[new_paper.file_name] = new_paper.save_paper_for_naimai()
-            else:
-                self.elements[new_paper.file_name] = new_paper
-
-    def get_papers(self,path_chunks='',save_dict=True, report=True):
-        idx=0
-        for pdf_filename in tqdm(self.pdfs_files_names):
-            try:
-                self.add_paper(pdf_filename,save_dict=save_dict,report=report)
-            except:
-                pass
-            if idx % 500 == 0 and path_chunks:
-                print('  Saving idx {} for filename {}'.format(idx, pdf_filename))
-                self.save(path_chunks)
-            idx += 1
-        print('Objs problem exported in objectives_pbs.txt')
+# class papers_distil(papers):
+#     def __init__(self, all_papers_to_update_dir='', pdfs_dir='', obj_classifier_model=None, author_classifier_model=None,
+#                  load_obj_classifier_model=True, load_author_classifier_model=False, load_nlp=True):
+#         super().__init__(pdfs_dir=pdfs_dir,obj_classifier_model=obj_classifier_model, author_classifier_model=author_classifier_model,
+#                          load_obj_classifier_model=load_obj_classifier_model,
+#                          load_author_classifier_model=load_author_classifier_model,
+#                          load_nlp=load_nlp)
+#         paps_load = self.load(all_papers_to_update_dir)
+#         self.all_papers_old = paps_load['elements']
+#         self.pdfs_files_names = list(self.all_papers_old.keys())
+#
+#
+#
+#     def add_paper(self,pdf_filename,save_dict=True,report=True):
+#             pdf_path =self.all_papers_old[pdf_filename]['pdf_path']
+#             new_paper = paper(path=pdf_path,
+#                               obj_classifier_model=self.obj_classifier_model)
+#             new_paper.database='mine'
+#             # for abstract, take only the 200 first words
+#             try:
+#                 new_paper.Abstract =' '.join(self.all_papers_old[pdf_filename]['Abstract'].split()[:200])
+#             except:
+#                 new_paper.Abstract =' '.join(self.all_papers_old[pdf_filename]['Objective_paper'])
+#             new_paper.Authors =self.all_papers_old[pdf_filename]['Authors']
+#             new_paper.Publication_year = self.all_papers_old[pdf_filename]['Publication_year']
+#             new_paper.Keywords = self.all_papers_old[pdf_filename]['Keywords']
+#             # for conclusions, take only one with < 3000 words
+#             if len(self.all_papers_old[pdf_filename]['Conclusion'].split()) <3000:
+#                 new_paper.Conclusion = self.all_papers_old[pdf_filename]['Conclusion']
+#             else:
+#                 new_paper.Conclusion = ''
+#             new_paper = replace_abbreviations(new_paper)
+#             new_paper.get_objective_paper()
+#             if report:
+#                 new_paper.report_objectives()
+#             if save_dict:
+#                 self.elements[new_paper.file_name] = new_paper.save_paper_for_training()
+#                 self.naimai_elements[new_paper.file_name] = new_paper.save_paper_for_naimai()
+#             else:
+#                 self.elements[new_paper.file_name] = new_paper
+#
+#     def get_papers(self,path_chunks='',save_dict=True, report=True):
+#         idx=0
+#         for pdf_filename in tqdm(self.pdfs_files_names):
+#             try:
+#                 self.add_paper(pdf_filename,save_dict=save_dict,report=report)
+#             except:
+#                 pass
+#             if idx % 500 == 0 and path_chunks:
+#                 print('  Saving idx {} for filename {}'.format(idx, pdf_filename))
+#                 self.save(path_chunks)
+#             idx += 1
+#         print('Objs problem exported in objectives_pbs.txt')

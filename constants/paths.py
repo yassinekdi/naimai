@@ -16,7 +16,8 @@ path_encoder = 'drive/MyDrive/MyProject/data/Intent_classif_data/distil_bert_obj
 path_objective_classifier = os.path.join('paper2','models','papers_classification','objective classif')
 path_main_pipelines = os.path.join('main_pipelines_dir')
 path_author_classifier = os.path.join('paper2','models','papers_classification','authors classif','authors_classif_GP')
-
+codes_fields_path = "drive/MyDrive/MyProject/data_pipeline/landing_zone/Elsevier_Open_Journals/ASJC.xlsx"
+naimai_dois_path = "drive/MyDrive/MyProject/data_pipeline/naimai_zone/naimai_dois"
 
 path_google_search='https://google.com/search?q='
 path_errors_log = 'drive/MyDrive/MyProject/errors_log/'

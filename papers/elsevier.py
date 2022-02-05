@@ -3,8 +3,10 @@ import json
 from tqdm.notebook import tqdm
 from collections import Counter
 import re
+import pandas as pd
 
 from naimai.constants.fields import fields_codes_elsevier
+from naimai.constants.paths import codes_fields_path
 from naimai.papers.raw import paper_base,papers
 from naimai.utils import multiple_replace
 
@@ -126,7 +128,6 @@ class paper_elsevier(paper_base):
         if 'abstract' in self.json_data.keys():
             self.Abstract = self.json_data['abstract']
 
-
     def get_highlights(self):
         if 'author_highlights' in self.json_data.keys():
             self.highlights_in = True
@@ -177,6 +178,17 @@ class paper_elsevier(paper_base):
         if 'title' in self.json_data['metadata'].keys():
             self.Title = self.json_data['metadata']['title']
 
+    def code2subfields(self,code,df_codes):
+        return list(df_codes[df_codes['Code'] == int(code)][['Field', 'Subject area']].values[0])
+
+    def get_subfields(self):
+        result = []
+
+        codes_fields_df = pd.read_excel(codes_fields_path)
+        paper_codes = self.json_data['metadata']['asjc']
+        for code in paper_codes:
+            result += self.code2subfields(code, codes_fields_df)
+        self.subfields= list(set(result))
 
     def get_Authors(self):
         if 'authors' in self.json_data['metadata'].keys():
@@ -225,31 +237,42 @@ class papers_elsevier(papers):
         if field in v:
           self.files.append(k)
 
-    def add_papers(self,paper_nb,field,save_dict=True,report=True):
-     json_data=self.elsevier_data_obj.file_nb2data(paper_nb)
-     new_paper = paper_elsevier(file_nb=paper_nb,json_data=json_data,obj_classifier_model=self.obj_classifier_model)
-     new_paper.database= 'elsevier_kaggle'
-     new_paper.field = field
-     new_paper.get_Abstract()
-     new_paper.get_Conslusion()
-     new_paper.get_Title()
-     new_paper.get_Authors()
-     new_paper.get_kwords()
-     new_paper.get_doi()
-     new_paper.get_Publication_year()
-     new_paper.replace_abbreviations()
-     new_paper.get_highlights()
-     new_paper.get_objective_paper(add_sentences=new_paper.authors_highlights)
-     if report:
-         new_paper.report_objectives()
-     if save_dict:
-         self.elements[paper_nb] = new_paper.save_paper_for_training()
-         # self.naimai_elements[paper_nb] = new_paper.save_paper_for_naimai()
-     else:
-         self.elements[paper_nb] = new_paper
+    def add_papers(self,paper_nb,field):
+        json_data=self.elsevier_data_obj.file_nb2data(paper_nb)
+        new_paper = paper_elsevier(file_nb=paper_nb,json_data=json_data)
+        new_paper.database= 'elsevier_kaggle'
+        new_paper.get_doi()
+        if not new_paper.is_in_database(self.naimai_dois):
+             self.naimai_dois.append(new_paper.doi)
+             new_paper.field = field
+             new_paper.get_subfields()
+             new_paper.get_Abstract()
+             new_paper.get_Conslusion()
+             new_paper.get_Title()
+             new_paper.get_Authors()
+             new_paper.get_kwords()
+             new_paper.get_Publication_year()
+             new_paper.get_highlights()
+             new_paper.replace_abbreviations()
+             self.elements[paper_nb] = new_paper.save_dict()
+
+        else:
+            print('DOI {} already exists..'.format(new_paper.doi))
 
 
-    def get_papers(self,field, save_dict=True,reset=True, report=True):
+
+
+     # if report:
+     #     new_paper.get_objective_paper(add_sentences=new_paper.authors_highlights)
+     #     new_paper.report_objectives()
+     # if save_dict:
+     #     self.elements[paper_nb] = new_paper.save_dict()
+     #     # self.naimai_elements[paper_nb] = new_paper.save_paper_for_naimai()
+     # else:
+     #     self.elements[paper_nb] = new_paper
+
+
+    def get_papers(self,field, reset=True,update_dois=False):
         if reset:
             self.elements={}
         if not self.elsevier_data_obj:
@@ -258,7 +281,10 @@ class papers_elsevier(papers):
         self.get_fields_files(field)
         for f in tqdm(self.files):
             try:
-                self.add_papers(paper_nb=f, field=field, save_dict=save_dict,report=report)
+                self.add_papers(paper_nb=f, field=field)
             except:
                 print('problem in paper ', f)
-        print('Objs problem exported in objectives_pbs.txt')
+        if update_dois:
+            print('>> Updating naimai dois..')
+            self.update_naimai_dois()
+        # print('Objs problem exported in objectives_pbs.txt')
