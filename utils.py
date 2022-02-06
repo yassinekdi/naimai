@@ -35,11 +35,6 @@ def transform_field_name(field_name):
     }
     return multiple_replace(dic_replace, field_name)
 
-def load_papers_dict(path):
-    with gzip.open(path, 'rb') as f:
-        p = pickle.Unpickler(f)
-        all_paps = p.load()
-    return all_paps
 
 def correct_abbrevs_replacement(parag):
   wrds_btween_brakets = re.findall(regex_words_in_brackets,parag)
@@ -417,6 +412,8 @@ def load_gzip(path):
     with gzip.open(path, 'rb') as f:
         p = pickle.Unpickler(f)
         return p.load()
+
+
 
 def save_gzip(path,obj):
     with gzip.open(path, "wb") as f:

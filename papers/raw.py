@@ -24,8 +24,7 @@ class paper_base:
         self.database='raw'
         self.file_name = ''
         self.raw_text = ''
-        self.field = ''
-        self.subfields= ''
+        self.fields = []
         self.numCitedBy = .5
         self.numCiting = .5
         self.Introduction = ''
@@ -98,7 +97,7 @@ class paper_base:
         return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'Publication_year','database','field','subfields','Abstract','Keywords', 'Title','numCitedBy','numCiting']
+        attr_to_save = ['doi', 'Authors', 'Publication_year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
@@ -572,7 +571,7 @@ class papers:
 
     def save_elements(self, file_dir,update=False):
         papers_to_save = self.__dict__['elements']
-        if update :
+        if update and os.path.exists(file_dir):
             loaded_papers = load_gzip(file_dir)
             loaded_papers.update(papers_to_save)
             save_gzip(file_dir,loaded_papers)

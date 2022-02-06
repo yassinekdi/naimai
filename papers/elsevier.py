@@ -180,14 +180,13 @@ class paper_elsevier(paper_base):
     def code2subfields(self,code,df_codes):
         return list(df_codes[df_codes['Code'] == int(code)][['Field', 'Subject area']].values[0])
 
-    def get_subfields(self):
-        result = []
-
+    def get_fields(self,field=''):
+        result = [field,]
         codes_fields_df = pd.read_excel(codes_fields_path)
         paper_codes = self.json_data['metadata']['asjc']
         for code in paper_codes:
             result += self.code2subfields(code, codes_fields_df)
-        self.subfields= list(set(result))
+        self.fields = list(set(result))
 
     def get_Authors(self):
         if 'authors' in self.json_data['metadata'].keys():
@@ -243,8 +242,8 @@ class papers_elsevier(papers):
         new_paper.get_doi()
         if not new_paper.is_in_database(self.naimai_dois):
              self.naimai_dois.append(new_paper.doi)
-             new_paper.field = field
-             new_paper.get_subfields()
+             # new_paper.field = field
+             new_paper.get_fields(field)
              new_paper.get_Abstract()
              # new_paper.get_Conslusion()
              new_paper.get_Title()
