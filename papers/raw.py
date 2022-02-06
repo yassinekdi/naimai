@@ -574,8 +574,8 @@ class papers:
         papers_to_save = self.__dict__['elements']
         if update :
             loaded_papers = load_gzip(file_dir)
-            papers_updated = loaded_papers.update(papers_to_save)
-            save_gzip(file_dir,papers_updated)
+            loaded_papers.update(papers_to_save)
+            save_gzip(file_dir,loaded_papers)
         else:
             save_gzip(file_dir,papers_to_save)
 
