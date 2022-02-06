@@ -69,6 +69,7 @@ class Dispatcher:
             self.save_field_elements(field=field, update=update)
 
     def dispatch(self, save=False, update=False):
+        print('>> Initialization..')
         self.load_model()
         self.get_fields_index()
         print('>> Dispatching..')
