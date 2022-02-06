@@ -98,7 +98,7 @@ class paper_base:
         return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'Publication_year','database','field','subfields','Abstract','Conclusion','Keywords', 'Title','numCitedBy','numCiting']
+        attr_to_save = ['doi', 'Authors', 'Publication_year','database','field','subfields','Abstract','Keywords', 'Title','numCitedBy','numCiting']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 

@@ -118,7 +118,6 @@ class paper_elsevier(paper_base):
         abbreviations_dict = self.get_abbreviations_dict()
         if abbreviations_dict:
             self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
-            self.Conclusion = multiple_replace(abbreviations_dict, self.Conclusion)
             self.Introduction = multiple_replace(abbreviations_dict, self.Introduction)
             self.Title = multiple_replace(abbreviations_dict, self.Title)
             self.Keywords = multiple_replace(abbreviations_dict, self.Keywords)
@@ -247,7 +246,7 @@ class papers_elsevier(papers):
              new_paper.field = field
              new_paper.get_subfields()
              new_paper.get_Abstract()
-             new_paper.get_Conslusion()
+             # new_paper.get_Conslusion()
              new_paper.get_Title()
              new_paper.get_Authors()
              new_paper.get_kwords()

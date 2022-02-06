@@ -53,9 +53,8 @@ def replace_abbreviations(pap):
     if abbreviations_dict:
         pap.Abstract = multiple_replace(abbreviations_dict, pap.Abstract)
         pap.Abstract = correct_abbrevs_replacement(pap.Abstract)
-
-        pap.Conclusion = multiple_replace(abbreviations_dict, pap.Conclusion)
-        pap.Conclusion = correct_abbrevs_replacement(pap.Conclusion)
+        # pap.Conclusion = multiple_replace(abbreviations_dict, pap.Conclusion)
+        # pap.Conclusion = correct_abbrevs_replacement(pap.Conclusion)
 
         pap.Keywords = multiple_replace(abbreviations_dict, pap.Keywords)
     return pap
