@@ -1,13 +1,13 @@
 import re
 import random
-import pickle, gzip, pickletools
+import pickle
 import os
 from tqdm.notebook import tqdm
 import spacy
 from naimai.processing import SentenceToProcess
 from naimai.utils import convert_pdf_to_txt, get_pattern, \
     str1_str2_from_txt, filter_min_length, starts_with_capital, doi_in_text, get_duplicates, multiple_replace, \
-    clean_objectives, clean_authors, year_from_arxiv_fname, replace_abbreviations, load_gzip
+    clean_objectives, clean_authors, year_from_arxiv_fname, replace_abbreviations, load_gzip, save_gzip
 from naimai.constants.regex import regex_email, regex_not_converted,regex_references, regex_abstract1, \
     regex_abstract2, regex_words_numbers_some, regex_cid, regex_objectives,regex_paper_year,regex_filtered_words_obj
 from naimai.constants.replacements import parsing_corrections
@@ -570,34 +570,19 @@ class papers:
                 idx+=1
         print('Objs problem exported in objectives_pbs.txt')
 
-    def save_elements(self, file_dir):
-        # attr_to_save = ['pdfs_dir', ]
+    def save_elements(self, file_dir,update=False):
         papers_to_save = self.__dict__['elements']
+        if update :
+            loaded_papers = load_gzip(file_dir)
+            papers_updated = loaded_papers.update(papers_to_save)
+            save_gzip(file_dir,papers_updated)
+        else:
+            save_gzip(file_dir,papers_to_save)
 
-        with gzip.open(file_dir, "ab") as f:
-            pickled = pickle.dumps(papers_to_save)
-            optimized_pickle = pickletools.optimize(pickled)
-            f.write(optimized_pickle)
 
     def update_naimai_dois(self):
         if self.naimai_dois:
-            with gzip.open(naimai_dois_path, "ab") as f:
-                pickled = pickle.dumps(self.naimai_dois)
-                optimized_pickle = pickletools.optimize(pickled)
-                f.write(optimized_pickle)
-    # def save_naimai_elements(self, file_dir):
-    #     attr_to_save = ['pdfs_dir', 'naimai_elements']
-    #     papers_to_save = {key: self.__dict__[key] for key in attr_to_save}
-    #
-    #     with gzip.open(file_dir, "wb") as f:
-    #         pickled = pickle.dumps(papers_to_save)
-    #         optimized_pickle = pickletools.optimize(pickled)
-    #         f.write(optimized_pickle)
-
-    # def load(self, file_dir):
-    #     with gzip.open(file_dir, 'rb') as f:
-    #         p = pickle.Unpickler(f)
-    #         return p.load()
+            save_gzip(naimai_dois_path,self.naimai_dois)
 
 
 # class papers_distil(papers):

@@ -16,7 +16,7 @@ import re
 from sys import platform
 import pdf2image
 import pytesseract
-import pickle, gzip
+import pickle, gzip, pickletools
 
 # def generate_url(client,fname):
 #     url = client.generate_presigned_url('get_object', Params={'Bucket': Mybucket,
@@ -417,3 +417,9 @@ def load_gzip(path):
     with gzip.open(path, 'rb') as f:
         p = pickle.Unpickler(f)
         return p.load()
+
+def save_gzip(path,obj):
+    with gzip.open(path, "wb") as f:
+        pickled = pickle.dumps(obj)
+        optimized_pickle = pickletools.optimize(pickled)
+        f.write(optimized_pickle)

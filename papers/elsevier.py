@@ -256,7 +256,8 @@ class papers_elsevier(papers):
              self.elements[paper_nb] = new_paper.save_dict()
 
         else:
-            print('DOI {} already exists..'.format(new_paper.doi))
+            pass
+            # print('DOI {} already exists..'.format(new_paper.doi))
 
 
 
@@ -286,4 +287,5 @@ class papers_elsevier(papers):
         if update_dois:
             print('>> Updating naimai dois..')
             self.update_naimai_dois()
+            print('Done !')
         # print('Objs problem exported in objectives_pbs.txt')
