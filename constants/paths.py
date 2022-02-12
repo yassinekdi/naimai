@@ -20,6 +20,7 @@ codes_fields_path = "drive/MyDrive/MyProject/data_pipeline/landing_zone/Elsevier
 naimai_dois_path = "drive/MyDrive/MyProject/data_pipeline/naimai_zone/naimai_dois"
 path_formatted='drive/MyDrive/MyProject/data_pipeline/naimai_zone/Formatted_data/'
 path_dispatched = 'drive/MyDrive/MyProject/data_pipeline/naimai_zone/Dispatched_data/'
+path_produced = 'drive/MyDrive/MyProject/data_pipeline/naimai_zone/Production_data/'
 path_similarity_model = os.path.join('drive/MyDrive/MyProject/data_pipeline','search_model')
 
 path_google_search='https://google.com/search?q='

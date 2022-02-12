@@ -200,6 +200,7 @@ class paper_elsevier(paper_base):
                 self.Authors += ' ' + first+ ' '+ last +','
             if self.Authors[-1]==',':
                 self.Authors= self.Authors[:-1]
+        self.Authors = self.Authors.strip()
 
     def get_kwords(self):
         if 'keywords' in self.json_data['metadata'].keys():
