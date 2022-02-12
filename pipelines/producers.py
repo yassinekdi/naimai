@@ -139,6 +139,7 @@ class Field_Producer:
         self.load_objective_model()
         self.load_nlp()
         self.load_encoder()
+        self.load_field_papers()
 
         for fname in tqdm(self.field_papers):
             pap = self.field_papers[fname]
