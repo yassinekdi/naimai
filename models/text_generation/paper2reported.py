@@ -6,8 +6,9 @@ import spacy
 import numpy as np
 
 class Paper2Reported:
-    def __init__(self, paper, paper_objectives, nlp=None):
+    def __init__(self, paper, paper_objectives, paper_name='',nlp=None):
         self.paper = paper
+        self.paper_name = paper_name
         self.paper_objectives = paper_objectives
         self.paper_year = 999
         self.paper_authors = ''
@@ -107,7 +108,7 @@ class Paper2Reported:
                     self.list_reported.append(writer.reported)
             except:
                 with open('objectives_pbs.txt', 'a') as f:
-                    f.write('problem with objective : {} // doi : {} - dbase : {} \n\n'.format(obj,self.paper['doi'],self.paper['database']))
+                    f.write('problem with objective : {} // paper : {} - dbase : {} \n\n'.format(obj,self.paper_name,self.paper['database']))
 
     def choose_obj_in_mean_lengths_range(self,mean_objs):
         mean_lens = 22
