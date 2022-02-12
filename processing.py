@@ -37,6 +37,7 @@ class SentenceToProcess:
         return False
 
     def remove_NE(self):
+        print('REMOVE NE SHOULD BE CORRECTED SHIT')
         NEs = self.get_NE()
         NEs_list = [elt.text for elt in NEs]
         if NEs_list:

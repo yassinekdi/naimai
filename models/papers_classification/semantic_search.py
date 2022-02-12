@@ -8,7 +8,7 @@ import faiss
 
 from paper2.constants.paths import naimai_data_path, training_data_path
 from paper2.constants.nlp import nlp_vocab
-from paper2.utils import load_papers_dict
+from paper2.utils import load_gzip
 from paper2.models.text_generation.query_generation import QueryGeneration
 
 class Search_Model:
@@ -17,10 +17,10 @@ class Search_Model:
         # training_data = pd.DataFrame({'File_name': [],'Queries': [..], 'Abstract': [..]})
         # naimai_data = pd.DataFrame({'filename': [],'doi': [..], 'Objectives reported': [..], 'database': [..]})
         self.checkpoint = checkpoint
-        self.training_papers_dict= {}
-        self.naimai_papers_dict= {}
-        self.training_papers_df = None
-        self.naimai_papers_df = None
+        self.papers_dict= {}
+        self.xx= {}
+        self.papers_df = None
+        self.xx_df = None
         self.training_sbert_data_df = None
         self.model = encoder
         self.processed_data = None
@@ -34,26 +34,26 @@ class Search_Model:
 
 
     def load_data(self):
-        self.training_papers_dict= load_papers_dict(path=training_data_path)
-        self.naimai_papers_dict= load_papers_dict(path=naimai_data_path)
+        self.papers_dict= load_gzip(path=training_data_path)
+        self.xx= load_gzip(path=naimai_data_path)
 
     def prepare_faiss_data(self):
-        self.training_papers_df =pd.DataFrame([self.training_papers_dict[self.field][elt] for elt in self.training_papers_dict[self.field]])
-        self.naimai_papers_df = pd.DataFrame([self.naimai_papers_dict[self.field][elt] for elt in self.naimai_papers_dict[self.field]])
+        self.papers_df =pd.DataFrame([self.papers_dict[self.field][elt] for elt in self.papers_dict[self.field]])
+        self.xx_df = pd.DataFrame([self.xx[self.field][elt] for elt in self.xx[self.field]])
 
     def load_naimai_data(self,path):
-        self.naimai_papers_df = pd.read_parquet(path)
+        self.xx_df = pd.read_parquet(path)
 
     def prepare_sbert_data(self):
         percentage = .095
         training_data_papers = []
         naimai_data_papers = []
-        for field in self.training_papers_dict.keys():
-            papers_field_elements = list(self.training_papers_dict[field].keys())
+        for field in self.papers_dict.keys():
+            papers_field_elements = list(self.papers_dict[field].keys())
             nb_of_samples = int(percentage * len(papers_field_elements))
             random_elts = random.sample(papers_field_elements, nb_of_samples)
-            training_data_papers += [self.training_papers_dict[field][elt] for elt in random_elts]
-            naimai_data_papers += [self.naimai_papers_dict[field][elt] for elt in random_elts]
+            training_data_papers += [self.papers_dict[field][elt] for elt in random_elts]
+            naimai_data_papers += [self.xx[field][elt] for elt in random_elts]
 
         # preparing data for Sbert
         qgen = QueryGeneration(training_paper_dict=training_data_papers[0], nlp=self.nlp)
@@ -90,21 +90,21 @@ class Search_Model:
 
     def get_faiss_index(self,faiss_path_saving=''):
         self.prepare_faiss_data()
-        to_encode = [title + '. '+ abstract for title,abstract in zip(self.training_papers_df.Abstract,self.training_papers_df.Title)]
+        to_encode = [title + '. ' + abstract for title,abstract in zip(self.papers_df.Abstract, self.papers_df.Title)]
         encoded_data = self.model.encode(to_encode)
         encoded_data = np.asarray(encoded_data.astype('float32'))
         self.faiss_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
-        self.faiss_index.add_with_ids(encoded_data, np.array(range(len(self.training_papers_df))))
+        self.faiss_index.add_with_ids(encoded_data, np.array(range(len(self.papers_df))))
 
         if faiss_path_saving:
             print('faiss index saved')
             faiss.write_index(self.faiss_index, faiss_path_saving)
 
     def fetch_doc(self,df_idx):
-        if not isinstance(self.naimai_papers_df,pd.DataFrame):
+        if not isinstance(self.xx_df, pd.DataFrame):
             print('No naimai data')
         else:
-            df_row = self.naimai_papers_df.iloc[df_idx, :]
+            df_row = self.xx_df.iloc[df_idx, :]
             result = {}
             result['filename'] = df_row['file_name']
             result['reported'] = df_row['Objectives_reported']

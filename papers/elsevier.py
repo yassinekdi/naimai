@@ -209,9 +209,9 @@ class paper_elsevier(paper_base):
         if 'doi' in self.json_data['metadata'].keys():
             self.doi = self.json_data['metadata']['doi']
 
-    def get_Publication_year(self):
+    def get_year(self):
         if 'pub_year' in self.json_data['metadata'].keys():
-            self.Publication_year = self.json_data['metadata']['pub_year']
+            self.year = self.json_data['metadata']['pub_year']
 
 
 class papers_elsevier(papers):
@@ -249,7 +249,7 @@ class papers_elsevier(papers):
              new_paper.get_Title()
              new_paper.get_Authors()
              new_paper.get_kwords()
-             new_paper.get_Publication_year()
+             new_paper.get_year()
              new_paper.get_highlights()
              new_paper.replace_abbreviations()
              self.elements[paper_nb] = new_paper.save_dict()

@@ -2,7 +2,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from .constants.paths import path_encoder
 import torch
 
-class Objective_classifiers:
+class Objective_classifier:
     def __init__(self,dir,model=None,tokenizer=None):
         self.dir = dir
         if model and tokenizer:

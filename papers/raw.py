@@ -14,8 +14,8 @@ from naimai.constants.replacements import parsing_corrections
 from naimai.constants.paths import path_objective_classifier, path_errors_log, path_author_classifier, path_encoder, naimai_dois_path
 from naimai.constants.nlp import this_year, nlp_vocab, max_len_objective_sentence
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
-from naimai.classifiers import Objective_classifiers
-from naimai.models.text_generation.paper2reported import Paper2Reported
+# from naimai.classifiers import Objective_classifiers
+# from naimai.models.text_generation.paper2reported import Paper2Reported
 #from naimai.decorators import paper_reading_error_log_decorator
 
 class paper_base:
@@ -33,17 +33,17 @@ class paper_base:
         self.Keywords = ''
         self.Authors = ''
         self.Title = ''
-        self.Publication_year = 999
+        self.year = 999
         self.References = []
         self.Emails = []
-        self.Objectives_with_regex = []
-        self.Objectives_with_classifier = []
-        self.Objectives_reported=[]
-        self.obj_classifier_model = obj_classifier_model
+        # self.Objectives_with_regex = []
+        # self.Objectives_with_classifier = []
+        # self.Objectives_reported=[]
+        # self.obj_classifier_model = obj_classifier_model
         self.doi = ''
-        self.nlp = nlp
-        if load_nlp:
-            self.nlp = spacy.load(nlp_vocab)
+        # self.nlp = nlp
+        # if load_nlp:
+        #     self.nlp = spacy.load(nlp_vocab)
 
     def get_abbreviations_dict(self):
         abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
@@ -57,39 +57,39 @@ class paper_base:
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
 
-    def get_objectives_with_regex(self):
-        gathered = self.Abstract + self.Conclusion
-        objective_phrases = list(set(re.findall(regex_objectives, gathered, flags=re.I)))
-        self.Objectives_with_regex = clean_objectives(objective_phrases)
+    # def get_objectives_with_regex(self):
+    #     gathered = self.Abstract + self.Conclusion
+    #     objective_phrases = list(set(re.findall(regex_objectives, gathered, flags=re.I)))
+    #     self.Objectives_with_regex = clean_objectives(objective_phrases)
+    #
+    #
+    # def get_objective_model(self):
+    #     if not self.obj_classifier_model:
+    #         self.obj_classifier_model = Objective_classifiers(dir=path_objective_classifier)
 
+    # def get_objectives_with_classifier(self,add_sentences=[]):
+    #     if self.Objectives_with_regex:
+    #         list_sentences = self.Objectives_with_regex + add_sentences
+    #     else:
+    #         list_sentences = self.Abstract.split('.') + self.Conclusion.split('.') + add_sentences
+    #     list_sentences = [elt for elt in list_sentences if len(elt.split())<max_len_objective_sentence]
+    #     objectives = self.obj_classifier_model.predict(list_sentences)
+    #     self.Objectives_with_classifier = [obj for obj in objectives if
+    #                      not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
+    #
+    #
+    # def get_objective_paper(self,add_sentences=[]):
+    #     self.get_objective_model()
+    #     self.get_objectives_with_regex()
+    #     self.get_objectives_with_classifier(add_sentences=add_sentences)
 
-    def get_objective_model(self):
-        if not self.obj_classifier_model:
-            self.obj_classifier_model = Objective_classifiers(dir=path_objective_classifier)
-
-    def get_objectives_with_classifier(self,add_sentences=[]):
-        if self.Objectives_with_regex:
-            list_sentences = self.Objectives_with_regex + add_sentences
-        else:
-            list_sentences = self.Abstract.split('.') + self.Conclusion.split('.') + add_sentences
-        list_sentences = [elt for elt in list_sentences if len(elt.split())<max_len_objective_sentence]
-        objectives = self.obj_classifier_model.predict(list_sentences)
-        self.Objectives_with_classifier = [obj for obj in objectives if
-                         not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
-
-
-    def get_objective_paper(self,add_sentences=[]):
-        self.get_objective_model()
-        self.get_objectives_with_regex()
-        self.get_objectives_with_classifier(add_sentences=add_sentences)
-
-    def report_objectives(self):
-        review = Paper2Reported(paper=self,
-                                nlp=self.nlp,
-                                )
-        review.generate()
-        if review.reported:
-            self.Objectives_reported= review.reported
+    # def report_objectives(self):
+    #     review = Paper2Reported(paper=self,
+    #                             nlp=self.nlp,
+    #                             )
+    #     review.generate()
+    #     if review.reported:
+    #         self.Objectives_reported= review.reported
 
     def is_in_database(self,list_dois):
         if self.doi in list_dois:
@@ -97,7 +97,7 @@ class paper_base:
         return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'Publication_year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting']
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
@@ -465,24 +465,24 @@ class paper(paper_base):
     #         self.Authors = re.sub(' [a-zA-Z],| [a-zA-Z] | [a-zA-Z]$', '', authors_list[0])
 
 
-    def get_Publication_year(self):
+    def get_year(self):
         years = re.findall(regex_paper_year, self.Introduction)
         years_list=[int(elt) for elt in years]
         if years_list:
             year = max(years_list)
             if year < this_year:
-                self.Publication_year = year
+                self.year = year
             else:
-                self.Publication_year = this_year
+                self.year = this_year
         else:
             years = re.findall(regex_paper_year, self.raw_text)
             years_list = [int(elt) for elt in years]
             if years_list:
                 year = max(years_list)
                 if year < this_year:
-                    self.Publication_year = year
+                    self.year = year
                 else:
-                    self.Publication_year = this_year
+                    self.year = this_year
 
 
 class papers:
@@ -540,7 +540,7 @@ class papers:
                 new_paper.get_Abstract()
                 # new_paper.get_authors()
                 new_paper.get_Conclusion()
-                new_paper.get_Publication_year()
+                new_paper.get_year()
                 new_paper.get_kwords()
                 new_paper.get_objective_paper()
                 if report:

@@ -6,12 +6,11 @@ import spacy
 
 
 class Paper2Reported:
-    def __init__(self, paper, nlp=None, complexity=False):
+    def __init__(self, paper, paper_objectives, nlp=None):
         self.paper = paper
-        self.paper_objectives = []
+        self.paper_objectives = paper_objectives
         self.paper_year = 999
         self.paper_authors = ''
-        self.complexity = complexity  # True: long objectives, False: brief ones
         self.reported = []
         self.objective_queue = []
         if nlp:
@@ -20,15 +19,15 @@ class Paper2Reported:
             self.nlp = spacy.load(nlp_vocab)
 
     def get_paper_year(self):
-        paper_year = self.paper.Publication_year
+        paper_year = self.paper['year']
         if paper_year != 999:
             self.paper_year = paper_year
         else:
             self.paper_year = ''
 
     def get_paper_authors(self):
-        if self.paper.Authors:
-            self.paper_authors = self.paper.Authors
+        if self.paper['Authors']:
+            self.paper_authors = self.paper['Authors']
         else:
             self.paper_authors = 'Some authors'
 
@@ -52,21 +51,21 @@ class Paper2Reported:
                     else:
                         result = 'Some authors ' + str_year
             except:
-                print('problem authors with paper ', self.paper.file_name)
+                print('problem authors with paper of doi {} - dbase {} '.format(self.paper['doi'],self.paper['database']))
         return result
 
-    def choose_objective(self):
-        len_objs = len(self.paper_objectives)
-        idx_obj = 0
-        if len_objs > 1:
-            len_obj_elts = [len(el.split()) for el in self.paper_objectives]
-            if self.complexity:  # long objectives
-                idx_obj = len_obj_elts.index(max(len_obj_elts))
-            else:
-                idx_obj = len_obj_elts.index(min(len_obj_elts))
-        chosen = self.paper_objectives[idx_obj]
-        self.objective_queue = [obj for obj in self.paper_objectives if obj != chosen]
-        return chosen
+    # def choose_objective(self):
+    #     len_objs = len(self.paper_objectives)
+    #     idx_obj = 0
+    #     if len_objs > 1:
+    #         len_obj_elts = [len(el.split()) for el in self.paper_objectives]
+    #         if self.complexity:  # long objectives
+    #             idx_obj = len_obj_elts.index(max(len_obj_elts))
+    #         else:
+    #             idx_obj = len_obj_elts.index(min(len_obj_elts))
+    #     chosen = self.paper_objectives[idx_obj]
+    #     self.objective_queue = [obj for obj in self.paper_objectives if obj != chosen]
+    #     return chosen
 
     # def gather_authors_objectives(self):
     #     if self.paper_objectives:
@@ -89,7 +88,7 @@ class Paper2Reported:
         authors = self.process_authors()
 
 
-        for obj in self.paper.Objectives_with_classifier:
+        for obj in self.paper_objectives:
             try :
                 obj_processor = objective_sentence_processor(sentence=obj, nlp=self.nlp)
                 obj_processor.process()
@@ -107,7 +106,7 @@ class Paper2Reported:
                     self.reported.append(writer.reported)
             except:
                 with open('objectives_pbs.txt', 'a') as f:
-                    f.write('problem with objective : {} // paper : {}\n\n'.format(obj,self.paper.file_name))
+                    f.write('problem with objective : {} // doi : {} - dbase : {} \n\n'.format(obj,self.paper['doi'],self.paper['database']))
 
 
 
