@@ -17,35 +17,35 @@ class Query_Reviewer:
         self.search_model.load_faiss_index(path_faiss)
 
 
-    def choose_obj_in_mean_lengths_range(self,mean_objs):
-        mean_lens = 22
-        if len(mean_objs) == 1:
-            return mean_objs[0]
-        else:
-            # take the closest len to the mean 22
-            closest_to_mean = min(mean_objs, key=lambda x: abs(len(x.split()) - mean_lens))
-            return closest_to_mean
-
-    def choose_obj_beyond_mean_lengths_range(self, references):
-        mean_lens_radius = np.arange(20, 26)
-        closest_to_min_radius = min(references, key=lambda x: abs(len(x.split()) - mean_lens_radius[0]))
-        return closest_to_min_radius
-
-    def choose_objective(self, references):
-        mean_lens_radius = np.arange(20, 26)
-        if len(references) == 1:  # if only one ref, take it
-            chosen = references[0]
-            return chosen
-        if len(references) > 1:  # keep lengths in mean lengths radius 20-25
-            mean_objs = [elt for elt in references if len(elt.split()) in mean_lens_radius]
-            if mean_objs:  # we have objs in the lengths radius:
-                chosen = self.choose_obj_in_mean_lengths_range(mean_objs)
-                return chosen
-            else:  # so len(references)>1 and lengths of all refs are either < 20 (so we take the one with max length)
-                # or > 26 (so we take the one with min length)
-                chosen = self.choose_obj_beyond_mean_lengths_range(references)
-                return chosen
-        return
+    # def choose_obj_in_mean_lengths_range(self,mean_objs):
+    #     mean_lens = 22
+    #     if len(mean_objs) == 1:
+    #         return mean_objs[0]
+    #     else:
+    #         # take the closest len to the mean 22
+    #         closest_to_mean = min(mean_objs, key=lambda x: abs(len(x.split()) - mean_lens))
+    #         return closest_to_mean
+    #
+    # def choose_obj_beyond_mean_lengths_range(self, references):
+    #     mean_lens_radius = np.arange(20, 26)
+    #     closest_to_min_radius = min(references, key=lambda x: abs(len(x.split()) - mean_lens_radius[0]))
+    #     return closest_to_min_radius
+    #
+    # def choose_objective(self, references):
+    #     mean_lens_radius = np.arange(20, 26)
+    #     if len(references) == 1:  # if only one ref, take it
+    #         chosen = references[0]
+    #         return chosen
+    #     if len(references) > 1:  # keep lengths in mean lengths radius 20-25
+    #         mean_objs = [elt for elt in references if len(elt.split()) in mean_lens_radius]
+    #         if mean_objs:  # we have objs in the lengths radius:
+    #             chosen = self.choose_obj_in_mean_lengths_range(mean_objs)
+    #             return chosen
+    #         else:  # so len(references)>1 and lengths of all refs are either < 20 (so we take the one with max length)
+    #             # or > 26 (so we take the one with min length)
+    #             chosen = self.choose_obj_beyond_mean_lengths_range(references)
+    #             return chosen
+    #     return
 
     def get_year(self,obj):
         year = re.findall('\d+', obj)

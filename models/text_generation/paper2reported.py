@@ -3,7 +3,7 @@ from .clauses_processing import objective_sentence_processor
 from naimai.constants.nlp import nlp_vocab
 from naimai.utils import authors_with_commas, authors_with_period, authors_with_full_name
 import spacy
-
+import numpy as np
 
 class Paper2Reported:
     def __init__(self, paper, paper_objectives, nlp=None):
@@ -11,7 +11,8 @@ class Paper2Reported:
         self.paper_objectives = paper_objectives
         self.paper_year = 999
         self.paper_authors = ''
-        self.reported = []
+        self.list_reported = []
+        self.reported_objective = ''
         self.objective_queue = []
         if nlp:
             self.nlp = nlp
@@ -99,33 +100,37 @@ class Paper2Reported:
                 writer = Direct2Reported(authors=authors, sentence=obj_transformed, nlp=self.nlp)
                 writer.generate()
                 if writer.reported:
-                    self.reported.append(writer.reported)
+                    self.list_reported.append(writer.reported)
                 else:
                     writer = Direct2Reported(authors=authors, sentence=obj, nlp=self.nlp)
                     writer.generate()
-                    self.reported.append(writer.reported)
+                    self.list_reported.append(writer.reported)
             except:
                 with open('objectives_pbs.txt', 'a') as f:
                     f.write('problem with objective : {} // doi : {} - dbase : {} \n\n'.format(obj,self.paper['doi'],self.paper['database']))
 
+    def choose_obj_in_mean_lengths_range(self,mean_objs):
+        mean_lens = 22
+        if len(mean_objs) == 1:
+            return mean_objs[0]
+        else:
+            # take the closest len to the mean 22
+            closest_to_mean = min(mean_objs, key=lambda x: abs(len(x.split()) - mean_lens))
+            return closest_to_mean
 
+    def choose_obj_beyond_mean_lengths_range(self, references):
+        mean_lens_radius = np.arange(20, 26)
+        closest_to_min_radius = min(references, key=lambda x: abs(len(x.split()) - mean_lens_radius[0]))
+        return closest_to_min_radius
 
-
-        # collect = self.gather_authors_objectives()
-        # if collect:
-        #     authors, paper_obj = collect
-        #     try:
-        #         writer = Direct2Reported(authors=authors, sentence=paper_obj, nlp=self.nlp)
-        #         writer.generate()
-        #     except:
-        #         reported = False
-        #         while self.objective_queue and not reported:
-        #             new_obj = self.change_objective()
-        #             writer = Direct2Reported(authors=authors, sentence=new_obj, nlp=self.nlp)
-        #             try:
-        #                 writer.generate()
-        #                 reported = True
-        #             except:
-        #                 reported = False
-        #     if writer:
-        #         self.reported = writer.reported
+    def choose_objective(self):
+        mean_lens_radius = np.arange(20, 26)
+        if len(self.list_reported) == 1:  # if only one ref, take it
+            self.reported_objective= self.list_reported[0]
+        if len(self.list_reported) > 1:  # keep lengths in mean lengths radius 20-25
+            mean_objs = [elt for elt in self.list_reported if len(elt.split()) in mean_lens_radius]
+            if mean_objs:  # we have objs in the lengths radius:
+                self.reported_objective = self.choose_obj_in_mean_lengths_range(mean_objs)
+            else:  # so len(references)>1 and lengths of all refs are either < 20 (so we take the one with max length)
+                # or > 26 (so we take the one with min length)
+                self.reported_objective=  self.choose_obj_beyond_mean_lengths_range(self.list_reported)
