@@ -1,8 +1,8 @@
 from naimai.classifiers import Objective_classifier
 from naimai.constants.nlp import max_len_objective_sentence, nlp_vocab
-from naimai.constants.paths import path_objective_classifier, path_similarity_model, path_produced
+from naimai.constants.paths import path_objective_classifier, path_similarity_model, path_produced, path_dispatched
 from naimai.constants.regex import regex_objectives, regex_filtered_words_obj
-from naimai.utils import clean_objectives, save_gzip
+from naimai.utils import clean_objectives, save_gzip, load_gzip
 from naimai.models.text_generation.paper2reported import Paper2Reported
 
 import os
@@ -88,9 +88,9 @@ class Field_Producer:
     '''
     Takes formatted papers of a field and transform them to a produced paper using Paper Producer obj
     '''
-    def __init__(self, field, field_papers, obj_classifier_model=None, nlp=None, field_index=None, encoder=None):
+    def __init__(self, field, obj_classifier_model=None, nlp=None, field_index=None, encoder=None):
         self.field = field
-        self.field_papers = field_papers
+        self.field_papers = {}
         self.obj_classifier_model = obj_classifier_model
         self.nlp = nlp
         self.production_field = {}
@@ -110,6 +110,9 @@ class Field_Producer:
     def load_encoder(self, path=path_similarity_model):
         if not self.encoder:
             self.encoder = SentenceTransformer(path)
+    def load_field_papers(self):
+        path = os.path.join(path_dispatched,self.field,"all_papers")
+        self.field_papers = load_gzip(path)
 
     def produce_paper(self, paper, paper_name):
         pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,

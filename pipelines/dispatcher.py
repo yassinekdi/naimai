@@ -60,7 +60,7 @@ class Dispatcher:
 
     def save_field_elements(self, field, update=False):
         papers_field = self.fields_elements[field]
-        path_field = os.path.join(path_dispatched, field, 'papers')
+        path_field = os.path.join(path_dispatched, field, 'all_papers')
         if update and os.path.exists(path_field):
             loaded_papers = load_gzip(path_field)
             loaded_papers.update(papers_field)
