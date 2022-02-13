@@ -106,8 +106,8 @@ class elsevier_data:
 
 
 class paper_elsevier(paper_base):
-    def __init__(self, file_nb,json_data, obj_classifier_model=None):
-        super().__init__(obj_classifier_model)
+    def __init__(self, file_nb,json_data):
+        super().__init__()
         self.file_name=file_nb
         self.json_data = json_data
         self.highlights_in = None
