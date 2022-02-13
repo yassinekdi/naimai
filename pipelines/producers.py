@@ -99,18 +99,20 @@ class Field_Producer:
 
     def load_objective_model(self):
         if not self.obj_classifier_model:
-            print('>> Loading obj model..')
+            print(' - obj model..')
             self.obj_classifier_model = Objective_classifier(dir=path_objective_classifier)
 
     def load_nlp(self):
         if not self.nlp:
-            print('>> Loading nlp..')
+            print(' - nlp..')
             self.nlp = spacy.load(nlp_vocab)
 
     def load_encoder(self, path=path_similarity_model):
+        print(' - encoder..')
         if not self.encoder:
             self.encoder = SentenceTransformer(path)
     def load_field_papers(self):
+        print(' - field paper..')
         path = os.path.join(path_dispatched,self.field,"all_papers")
         self.field_papers = load_gzip(path)
 
@@ -136,6 +138,7 @@ class Field_Producer:
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
 
     def produce(self):
+        print('>> Loading..')
         self.load_objective_model()
         self.load_nlp()
         self.load_encoder()

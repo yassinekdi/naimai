@@ -12,7 +12,7 @@ class Objective_classifier:
             self.model = AutoModelForSequenceClassification.from_pretrained(path_encoder,num_labels=2)
             self.tokenizer = AutoTokenizer.from_pretrained(path_encoder)
             if torch.cuda.is_available():
-                print('>> GPU Used in objective classification !')
+                print('  >> GPU Used in objective classification !')
                 self.model = self.model.to('cuda')
 
     def sentence_is_objective(self,sentence):
