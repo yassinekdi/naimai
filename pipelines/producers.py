@@ -120,7 +120,7 @@ class Field_Producer:
     def produce_paper(self, paper, paper_name):
         pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,
                                       obj_classifier_model=self.obj_classifier_model, nlp=self.nlp)
-        pap_producer.produce_paper()
+        pap_producer.produce_paper(add_sentences=paper['highlights'])
         prod = pap_producer.production_paper
         if prod['reported']:
             return prod
