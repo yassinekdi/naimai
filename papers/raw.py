@@ -19,7 +19,7 @@ from naimai.models.abbreviation import extract_abbreviation_definition_pairs
 #from naimai.decorators import paper_reading_error_log_decorator
 
 class paper_base:
-    def __init__(self,obj_classifier_model=None,nlp=None,load_nlp=False):
+    def __init__(self):
         self.pdf_path=''
         self.database='raw'
         self.file_name = ''
@@ -36,14 +36,8 @@ class paper_base:
         self.year = 999
         self.References = []
         self.Emails = []
-        # self.Objectives_with_regex = []
-        # self.Objectives_with_classifier = []
-        # self.Objectives_reported=[]
-        # self.obj_classifier_model = obj_classifier_model
         self.doi = ''
-        # self.nlp = nlp
-        # if load_nlp:
-        #     self.nlp = spacy.load(nlp_vocab)
+
 
     def get_abbreviations_dict(self):
         abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
@@ -56,40 +50,6 @@ class paper_base:
         for k in abstract_abbrevs:
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
-
-    # def get_objectives_with_regex(self):
-    #     gathered = self.Abstract + self.Conclusion
-    #     objective_phrases = list(set(re.findall(regex_objectives, gathered, flags=re.I)))
-    #     self.Objectives_with_regex = clean_objectives(objective_phrases)
-    #
-    #
-    # def get_objective_model(self):
-    #     if not self.obj_classifier_model:
-    #         self.obj_classifier_model = Objective_classifiers(dir=path_objective_classifier)
-
-    # def get_objectives_with_classifier(self,add_sentences=[]):
-    #     if self.Objectives_with_regex:
-    #         list_sentences = self.Objectives_with_regex + add_sentences
-    #     else:
-    #         list_sentences = self.Abstract.split('.') + self.Conclusion.split('.') + add_sentences
-    #     list_sentences = [elt for elt in list_sentences if len(elt.split())<max_len_objective_sentence]
-    #     objectives = self.obj_classifier_model.predict(list_sentences)
-    #     self.Objectives_with_classifier = [obj for obj in objectives if
-    #                      not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
-    #
-    #
-    # def get_objective_paper(self,add_sentences=[]):
-    #     self.get_objective_model()
-    #     self.get_objectives_with_regex()
-    #     self.get_objectives_with_classifier(add_sentences=add_sentences)
-
-    # def report_objectives(self):
-    #     review = Paper2Reported(paper=self,
-    #                             nlp=self.nlp,
-    #                             )
-    #     review.generate()
-    #     if review.reported:
-    #         self.Objectives_reported= review.reported
 
     def is_in_database(self,list_dois):
         if self.doi in list_dois:
@@ -116,9 +76,8 @@ class paper_base:
 
 class paper(paper_base):
 
-    def __init__(self, path='',obj_classifier_model=None,verbose=True,write_errors=False,
-                 author_classifier_model=None,nlp=None,load_nlp=False):
-        super().__init__(obj_classifier_model=obj_classifier_model, nlp=nlp, load_nlp=load_nlp)
+    def __init__(self, path=''):
+        super().__init__()
         self.pdf_path = path
         self.file_name = self.pdf_path.split('/')[-1]
         self.intro_term = 'introduction'
@@ -126,10 +85,8 @@ class paper(paper_base):
         self.references_term = 'references'
         self.conclusion_term  = 'conclusion'
         self.path_errors_log = path_errors_log
-        self.verbose=verbose
-        self.write_errors=write_errors
         self.Citations=[]
-        self.author_classifier_model=author_classifier_model
+        # self.author_classifier_model=author_classifier_model
         self.converted_text=''
 
 
@@ -267,12 +224,7 @@ class paper(paper_base):
                 abstract = self.get_str_from_txt(patrn, idx=0)
 
         if not abstract:
-            if self.write_errors:
-                txt_error='No abstract in ' + str(self.file_name) + '\n'
-                with open(self.root+'errors_log.txt', 'a') as f:
-                    f.write(txt_error)
-                if self.verbose:
-                    print(txt_error)
+            print('no abstract')
 
         if abstract:
             split = abstract.split('\n\n')
@@ -486,30 +438,16 @@ class paper(paper_base):
 
 
 class papers:
-    def __init__(self, pdfs_dir='',obj_classifier_model=None, author_classifier_model=None, nlp=None,
-                 load_obj_classifier_model=True, load_author_classifier_model=False,load_nlp=True):
-        self.pdfs_dir = pdfs_dir
+    def __init__(self):
         self.elements = {}
         self.naimai_elements = {}
         self.path_errors_log = 'drive/MyDrive/MyProject/errors_log/'
         self.database='mine'
-        self.obj_classifier_model = obj_classifier_model
-        self.author_classifier_model = author_classifier_model
-        self.nlp = nlp
         if os.path.exists(naimai_dois_path):
             self.naimai_dois = load_gzip(naimai_dois_path)
         else:
             self.naimai_dois=[]
 
-        if load_obj_classifier_model and not self.obj_classifier_model:
-            self.obj_classifier_model = Objective_classifiers(dir=path_objective_classifier)
-
-        if load_author_classifier_model and not self.author_classifier_model:
-                filehandler = open(path_author_classifier, 'rb')
-                self.author_classifier_model = pickle.load(filehandler)
-
-        if load_nlp and not self.nlp:
-            self.nlp = spacy.load(nlp_vocab)
 
     def __len__(self):
         return len(self.elements.keys())
@@ -528,12 +466,8 @@ class papers:
         return papers_list
 
     # @paper_reading_error_log_decorator
-    def add_paper(self,pdf_filename,portion=1/6,use_ocr=False,save_dict=True,report=True):
-            pdf_path = self.pdfs_dir + '/' + pdf_filename
-            new_paper = paper(path=pdf_path,
-                              obj_classifier_model=self.obj_classifier_model,
-                              author_classifier_model=self.author_classifier_model,
-                              nlp=self.nlp)
+    def add_paper(self,portion=1/6,use_ocr=False):
+            new_paper = paper()
             new_paper.read_pdf(use_ocr)
             if new_paper.converted_text:
                 new_paper.get_Introduction(portion=portion)
@@ -542,27 +476,20 @@ class papers:
                 new_paper.get_Conclusion()
                 new_paper.get_year()
                 new_paper.get_kwords()
-                new_paper.get_objective_paper()
-                if report:
-                    new_paper.report_objectives()
-                if save_dict:
-                    self.elements[new_paper.file_name] = new_paper.save_paper_for_training()
-                    # self.naimai_elements[new_paper.file_name] = new_paper.save_paper_for_naimai()
-                else:
-                    self.elements[new_paper.file_name] = new_paper
+                self.elements[new_paper.file_name] = new_paper.save_dict()
             else:
                 self.elements[new_paper.file_name] = "USE OCR"
 
 
     def get_papers(self,portion=1/6,list_files=[],path_chunks='',use_ocr=False):
+        all_files=[]
         if list_files:
             all_files = list_files
-        else:
-            all_files = os.listdir(self.pdfs_dir)
+
         idx=0
         for file_name in tqdm(all_files):
             if re.findall('pdf', file_name, flags=re.I):
-                self.add_paper(file_name, portion=portion,use_ocr=use_ocr)
+                self.add_paper(portion=portion,use_ocr=use_ocr)
                 if idx % 500 == 0 and path_chunks:
                     print('  Saving papers - idx {} for filename {}'.format(idx, file_name))
                     self.save(path_chunks)

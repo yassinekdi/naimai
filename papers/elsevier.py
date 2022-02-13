@@ -216,11 +216,8 @@ class paper_elsevier(paper_base):
 
 
 class papers_elsevier(papers):
-    def __init__(self,elsevier_data_obj=None,obj_classifier_model=None, author_classifier_model=None,
-                 load_obj_classifier_model=True, load_author_classifier_model=False,load_nlp=True):
-      super().__init__(obj_classifier_model=obj_classifier_model, author_classifier_model=author_classifier_model,
-                       load_obj_classifier_model=load_obj_classifier_model,load_author_classifier_model=load_author_classifier_model,
-                       load_nlp=load_nlp)
+    def __init__(self,elsevier_data_obj=None):
+      super().__init__()
       self.fields_dict = fields_codes_elsevier
       self.elsevier_data_obj = elsevier_data_obj
       self.files = []

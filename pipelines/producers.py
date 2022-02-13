@@ -88,13 +88,13 @@ class Field_Producer:
     '''
     Takes formatted papers of a field and transform them to a produced paper using Paper Producer obj
     '''
-    def __init__(self, field, obj_classifier_model=None, nlp=None, field_index=None, encoder=None):
+    def __init__(self, field, obj_classifier_model=None, nlp=None, encoder=None):
         self.field = field
         self.field_papers = {}
         self.obj_classifier_model = obj_classifier_model
         self.nlp = nlp
         self.production_field = {}
-        self.field_index = field_index
+        self.field_index = None
         self.encoder = encoder
 
     def load_objective_model(self):
@@ -111,7 +111,7 @@ class Field_Producer:
         print(' - encoder..')
         if not self.encoder:
             self.encoder = SentenceTransformer(path)
-            
+
     def load_field_papers(self):
         print(' - field paper..')
         path = os.path.join(path_dispatched,self.field,"all_papers")
