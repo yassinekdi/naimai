@@ -70,7 +70,8 @@ class Dispatcher:
 
     def save_elements(self, update=False):
         for field in tqdm(self.fields_elements):
-            self.save_field_elements(field=field, update=update)
+            if self.fields_elements[field]:
+                self.save_field_elements(field=field, update=update)
 
     def dispatch(self, save=False, update=False):
         print('>> Initialization..')

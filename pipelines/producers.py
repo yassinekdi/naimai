@@ -111,6 +111,7 @@ class Field_Producer:
         print(' - encoder..')
         if not self.encoder:
             self.encoder = SentenceTransformer(path)
+            
     def load_field_papers(self):
         print(' - field paper..')
         path = os.path.join(path_dispatched,self.field,"all_papers")
@@ -137,18 +138,32 @@ class Field_Producer:
         self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
 
-    def produce(self):
+    def produce(self,save_papers=False,save_field_index=False):
         print('>> Loading..')
         self.load_objective_model()
         self.load_nlp()
         self.load_encoder()
         self.load_field_papers()
-
+        print(' ')
+        print('>> Producing (objective+format)..')
         for fname in tqdm(self.field_papers):
             pap = self.field_papers[fname]
             production_paper = self.produce_paper(paper=pap, paper_name=fname)
             if production_paper:
                 self.production_field[fname] = production_paper
+        print(' ')
+        print('>> Computing Faiss Index..')
+        self.get_field_index()
+        print(' ')
+        if save_papers:
+            print('>> Saving papers..')
+            self.save_papers()
+
+        if save_field_index:
+            print('>> Saving field index..')
+            self.save_field_index()
+        print(' ')
+        print('>> Done!')
         print('>> Papers with reported obj problems are stored in reported_pbs.txt')
 
     def save_field_index(self):

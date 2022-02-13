@@ -23,16 +23,32 @@ class Zone:
             os.mkdir(path)
 
     def reset_all(self):
+        '''
+        clear the zone
+        :return:
+        '''
         elements = os.listdir(self.zone_path)
         for elt in elements:
             path = os.path.join(self.zone_path, elt)
-            os.remove(path)
+            if os.path.isdir(path):
+                os.rmdir(path)
+            else:
+                os.remove(path)
 
     def reset_all_elements(self):
+        '''
+        clear all elements (folders) of the zone
+        :return:
+        '''
         for element in self.elements:
             self.reset_element(element)
 
     def reset_element(self, element):
+        '''
+        clear the elements of the input element (field/folder)
+        :param element: field/folder of the zone
+        :return:
+        '''
         if element in self.elements:
             path_element = os.path.join(self.zone_path, element)
             if os.path.isdir(path_element):
