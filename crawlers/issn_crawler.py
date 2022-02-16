@@ -15,7 +15,12 @@ class ISSN_crawler:
     def get_dois(self,idx_start,idx_finish):
         journals = Journals()
         works = journals.works(self.issn)
-        self.docs["doi"] = [elt['DOI'] for elt in works.select('DOI')][idx_start:idx_finish]
+        for elt in works.select('DOI'):
+          try:
+            self.docs["doi"].append(elt["DOI"])
+          except:
+            pass
+        self.docs["doi"] = self.docs["doi"][idx_start:idx_finish]
         print('Len dois : ', len(self.docs['doi']))
 
     def get_authors(self, authors_list):
