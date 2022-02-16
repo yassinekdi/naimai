@@ -32,10 +32,10 @@ class ISSN_crawler:
         else:
             return ""
 
-    def get_docs(self,idx_start=0, idx_finish=-1,t_min=1, t_max=4):
+    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=5):
         if not self.docs['doi']:
             self.get_dois(idx_start, idx_finish)
-        sch = SemanticScholar(timeout=15)
+        sch = SemanticScholar(timeout=20)
         dois_to_remove = []
         for doi in tqdm(self.docs['doi']):
             try:
