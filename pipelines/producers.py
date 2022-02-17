@@ -132,7 +132,7 @@ class Field_Producer:
 
     def get_field_index(self):
         fnames = list(self.production_field.keys())
-        to_encode = [self.field_papers[fn]['Title'] + self.field_papers[fn]['Abstract'] for fn in fnames]
+        to_encode = [self.field_papers[fn]['Title'] + ' '+ self.field_papers[fn]['Abstract'] for fn in fnames]
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
         self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
