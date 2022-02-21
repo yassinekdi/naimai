@@ -1,66 +1,84 @@
-import os
 from tqdm.notebook import tqdm
+import dask.bag as db
+import json
+
 from naimai.utils import year_from_arxiv_fname
-from naimai.papers.raw import papers, paper
-from naimai.utils import replace_abbreviations
-from naimai.decorators import paper_reading_error_log_decorator
+from naimai.papers.raw import papers, paper_base
+from naimai.constants.fields import arxiv_fields_abbrevs, arxiv_fields_categories
+from naimai.decorators import update_naimai_dois
+
+
+class paper_arxiv(paper_base):
+    def __init__(self,arxiv_id,metadata_df,idx_in_metadata_df,category):
+        super().__init__()
+        self.database = 'arxiv'
+        self.file_name = arxiv_id
+        self.metadata_df = metadata_df
+        self.category = category
+        self.idx = idx_in_metadata_df
+        self.paper_infos = self.metadata_df[idx_in_metadata_df,:]
+
+    def get_doi(self):
+        self.doi = self.paper_infos['doi']
+
+    def get_fields(self):
+        field = self.category.split('.')[0]
+        fields  = arxiv_fields_abbrevs[field] + ', ' + arxiv_fields_categories[field][self.category]
+        self.fields = fields.replace('-', ',').split(',')
+
+    def get_Abstract(self):
+        self.Abstract = self.paper_infos['abstract'].replace('-\n', '').replace('\n', ' ')
+
+    def get_Title(self):
+        self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
+
+    def get_Authors(self):
+        self.Authors = ', '.join([' '.join(at[::-1]) for at in self.paper_infos['authors_parsed']])
+
+    def get_year(self):
+        self.year = year_from_arxiv_fname(self.file_name)
 
 
 
 class papers_arxiv(papers):
-    def __init__(self, pdfs_dir, metadata_df, obj_classifier_model=None, author_classifier_model=None,
-                 load_obj_classifier_model=True, load_author_classifier_model=False, load_nlp=True):
-        super().__init__(pdfs_dir=pdfs_dir,obj_classifier_model=obj_classifier_model, author_classifier_model=author_classifier_model,
-                         load_obj_classifier_model=load_obj_classifier_model,
-                         load_author_classifier_model=load_author_classifier_model,
-                         load_nlp=load_nlp)
-        cols = list(metadata_df.columns[:4])
-        df = metadata_df[cols].compute()
-        self.titles= list(df['title'])
-        self.authors= list(df['authors_parsed'])
-        self.abstracts= list(df['abstract'])
-        self.files_ids = list(df['id'])
+    def __init__(self, arxiv_metadata_dir,category):
+        super().__init__() # loading self.naimai_dois & other attributes
+        self.arxiv_metadata_dir = arxiv_metadata_dir
+        self.category = category
+        self.metadata_df = None
+        self.abstracts = []
+        self.titles = []
+        self.authors = []
+        self.files_ids = []
+
+    def get_infos(self):
+        all_docs = db.read_text(self.arxiv_metadata_dir).map(json.loads)
+        docs = all_docs.filter(lambda x: x['categories'] == self.category)
+        filtered_docs = docs.filter(lambda x: x['comments'] != 'This paper has been withdrawn')
+        print('>> Getting metadata_df..')
+        self.metadata_df = filtered_docs.to_dataframe()[['id', 'authors_parsed', 'title', 'abstract', 'doi','journal-ref']].compute()
 
     # @paper_reading_error_log_decorator
-    def add_paper(self,pdf_filename,idx,use_ocr=False,save_dict=True,report=True):
-            pdf_path = self.pdfs_dir + '/' + pdf_filename
-            new_paper = paper(path=pdf_path,
-                              obj_classifier_model=self.obj_classifier_model)
-            new_paper.database='arxiv'
-            # new_paper.read_pdf(use_ocr)
-            new_paper.Abstract = self.abstracts[idx].replace('-\n', '').replace('\n', ' ')
-            new_paper.Title = self.titles[idx].replace('-\n', '').replace('\n', ' ')
-            new_paper.Authors = ', '.join([' '.join(at[::-1]) for at in self.authors[idx]])
-            new_paper.Publication_year = year_from_arxiv_fname(pdf_filename)
-            # if new_paper.converted_text:
-                # new_paper.get_Introduction(portion=portion)
-                # new_paper.get_Conclusion()
-                # new_paper.get_kwords()
-            new_paper = replace_abbreviations(new_paper)
-            new_paper.get_objective_paper()
-            if report:
-                new_paper.report_objectives()
-            if save_dict:
-                self.elements[new_paper.file_name] = new_paper.save_paper_for_training()
-                self.naimai_elements[new_paper.file_name] = new_paper.save_paper_for_naimai()
-            else:
-                self.elements[new_paper.file_name] = new_paper
+    def add_paper(self,arxiv_id,idx_in_metadata_df):
+            new_paper = paper_arxiv(arxiv_id=arxiv_id,
+                                    metadata_df=self.metadata_df,
+                                    idx_in_metadata_df=idx_in_metadata_df,
+                                    category=self.category)
+            new_paper.get_doi()
+            if not new_paper.is_in_database(self.naimai_dois):
+                new_paper.get_Abstract()
+                new_paper.get_fields()
+                new_paper.get_Title()
+                new_paper.Authors()
+                new_paper.get_year()
+                new_paper.replace_abbreviations()
+                self.elements[arxiv_id] = new_paper.save_dict()
 
-    def get_papers(self,portion=1/6,list_files=[],path_chunks='',use_ocr=False,save_dict=True, report=True):
-        if list_files:
-            all_files = list_files
-        else:
-            all_files = self.files_ids
-            # all_files = sorted(os.listdir(self.pdfs_dir))
-        idx=0
-        for pdf_filename in tqdm(all_files):
-            # if 'pdf' in pdf_filename:
-            try:
-                self.add_paper(pdf_filename,idx,use_ocr=use_ocr,save_dict=save_dict,report=report)
-            except:
-                pass
-            if idx % 500 == 0 and path_chunks:
-                print('  Saving idx {} for filename {}'.format(idx, pdf_filename))
-                self.save(path_chunks)
-            idx += 1
+
+    @update_naimai_dois
+    def get_papers(self,update_dois=False):
+        self.get_infos()
+        for idx_in_metadata_df,arxiv_id in tqdm(enumerate(self.files_ids), total=len(self.files_ids)):
+            self.add_paper(arxiv_id=arxiv_id,idx_in_metadata_df=idx_in_metadata_df)
+
         print('Objs problem exported in objectives_pbs.txt')

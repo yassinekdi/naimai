@@ -440,12 +440,12 @@ class paper(paper_base):
 class papers:
     def __init__(self):
         self.elements = {}
-        self.naimai_elements = {}
         self.path_errors_log = 'drive/MyDrive/MyProject/errors_log/'
         self.database='mine'
         if os.path.exists(naimai_dois_path):
             self.naimai_dois = load_gzip(naimai_dois_path)
         else:
+            print('No naimai dois..')
             self.naimai_dois=[]
 
 

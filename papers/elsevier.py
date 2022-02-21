@@ -110,6 +110,7 @@ class paper_elsevier(paper_base):
         super().__init__()
         self.file_name=file_nb
         self.json_data = json_data
+        self.database = 'elsevier_kaggle'
         self.highlights_in = None
         self.doi = ''
         self.authors_highlights = []
@@ -217,7 +218,7 @@ class paper_elsevier(paper_base):
 
 class papers_elsevier(papers):
     def __init__(self,elsevier_data_obj=None):
-      super().__init__()
+      super().__init__() # loading self.naimai_dois & other attributes
       self.fields_dict = fields_codes_elsevier
       self.elsevier_data_obj = elsevier_data_obj
       self.files = []
@@ -236,7 +237,6 @@ class papers_elsevier(papers):
     def add_papers(self,paper_nb,field):
         json_data=self.elsevier_data_obj.file_nb2data(paper_nb)
         new_paper = paper_elsevier(file_nb=paper_nb,json_data=json_data)
-        new_paper.database= 'elsevier_kaggle'
         new_paper.get_doi()
         if not new_paper.is_in_database(self.naimai_dois):
              self.naimai_dois.append(new_paper.doi)
