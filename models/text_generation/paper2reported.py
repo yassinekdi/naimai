@@ -1,7 +1,7 @@
 from .direct2reported import Direct2Reported
 from .clauses_processing import objective_sentence_processor
 from naimai.constants.nlp import nlp_vocab
-from naimai.utils import authors_with_commas, authors_with_period, authors_with_full_name
+from naimai.utils.regex import authors_with_commas, authors_with_full_name
 import spacy
 import numpy as np
 

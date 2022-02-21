@@ -6,7 +6,7 @@ from .constants.regex import regex_email, regex_url, regex_words, regex_words_co
 from .constants.nlp import nlp_disabled_processing
 from .constants.replacements import replacement_words
 from .constants.paths import path_nlp
-from .utils import multiple_replace, verify_citation, capitalize
+from .utils_old import multiple_replace, verify_citation, capitalize
 
 class SentenceToProcess:
     def __init__(self,sentence,nlp=None):

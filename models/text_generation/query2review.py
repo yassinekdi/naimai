@@ -1,5 +1,5 @@
 from naimai.models.papers_classification.semantic_search import Search_Model
-from naimai.utils import transform_field_name
+from naimai.utils.regex import transform_field_name
 from naimai.constants.paths import aws_root_pdfs, arxiv_pdfs_url, doi_url
 import os
 import re

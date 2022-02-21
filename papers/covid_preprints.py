@@ -2,7 +2,7 @@ import ast
 from tqdm.notebook import tqdm
 from naimai.papers.raw import papers, paper_base
 import pandas as pd
-from naimai.utils import replace_abbreviations
+from naimai.utils.regex import replace_abbreviations
 
 class paper_covid_preprint(paper_base):
     def __init__(self, data,obj_classifier_model=None):

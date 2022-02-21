@@ -2,7 +2,7 @@ from tqdm.notebook import tqdm
 import dask.bag as db
 import json
 
-from naimai.utils import year_from_arxiv_fname
+from naimai.utils.regex import year_from_arxiv_fname
 from naimai.papers.raw import papers, paper_base
 from naimai.constants.fields import arxiv_fields_abbrevs, arxiv_fields_categories
 from naimai.decorators import update_naimai_dois

@@ -2,7 +2,8 @@ from naimai.classifiers import Objective_classifier
 from naimai.constants.nlp import max_len_objective_sentence, nlp_vocab
 from naimai.constants.paths import path_objective_classifier, path_similarity_model, path_produced, path_dispatched
 from naimai.constants.regex import regex_objectives, regex_filtered_words_obj
-from naimai.utils import clean_objectives, save_gzip, load_gzip
+from naimai.utils.regex import clean_objectives
+from naimai.utils.general import save_gzip, load_gzip
 from naimai.models.text_generation.paper2reported import Paper2Reported
 
 import os

@@ -6,7 +6,7 @@ from naimai.constants.nlp import past_tense, nlp_vocab,root_dep,conj_dep, nlp_di
 from naimai.constants.regex import study_terms, regex_arxiv_filename
 #from naimai.constants.paths import aws_root_pdfs
 from naimai.constants.replacements import reported_corrections
-from naimai.utils import multiple_replace, reinsert_commas
+from naimai.utils.regex import multiple_replace, reinsert_commas
 
 
 class Direct2Reported:

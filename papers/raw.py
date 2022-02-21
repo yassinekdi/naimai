@@ -1,22 +1,19 @@
 import re
 import random
-import pickle
 import os
 from tqdm.notebook import tqdm
-import spacy
 from naimai.processing import SentenceToProcess
-from naimai.utils import convert_pdf_to_txt, get_pattern, \
-    str1_str2_from_txt, filter_min_length, starts_with_capital, doi_in_text, get_duplicates, multiple_replace, \
-    clean_objectives, clean_authors, year_from_arxiv_fname, replace_abbreviations, load_gzip, save_gzip
+from naimai.utils.general import load_gzip, save_gzip
+from naimai.utils.regex import str1_str2_from_txt, get_pattern, filter_min_length, starts_with_capital, \
+    doi_in_text,get_duplicates, multiple_replace
+from naimai.utils.pdf2text import convert_pdf_to_txt
 from naimai.constants.regex import regex_email, regex_not_converted,regex_references, regex_abstract1, \
-    regex_abstract2, regex_words_numbers_some, regex_cid, regex_objectives,regex_paper_year,regex_filtered_words_obj
+    regex_abstract2, regex_words_numbers_some, regex_cid, regex_paper_year
 from naimai.constants.replacements import parsing_corrections
-from naimai.constants.paths import path_objective_classifier, path_errors_log, path_author_classifier, path_encoder, naimai_dois_path
-from naimai.constants.nlp import this_year, nlp_vocab, max_len_objective_sentence
+from naimai.constants.paths import path_errors_log, naimai_dois_path
+from naimai.constants.nlp import this_year
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
-# from naimai.classifiers import Objective_classifiers
-# from naimai.models.text_generation.paper2reported import Paper2Reported
-#from naimai.decorators import paper_reading_error_log_decorator
+
 
 class paper_base:
     def __init__(self):

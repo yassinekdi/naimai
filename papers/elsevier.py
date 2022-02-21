@@ -8,7 +8,7 @@ import pandas as pd
 from naimai.constants.fields import fields_codes_elsevier
 from naimai.constants.paths import codes_fields_path
 from naimai.papers.raw import paper_base,papers
-from naimai.utils import multiple_replace
+from naimai.utils.regex import multiple_replace
 
 class elsevier_data:
   def __init__(self,myfield_dict):

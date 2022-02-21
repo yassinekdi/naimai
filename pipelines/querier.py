@@ -1,5 +1,5 @@
 from naimai.constants.paths import path_produced, path_similarity_model
-from naimai.utils import load_gzip
+from naimai.utils.general import load_gzip
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import faiss

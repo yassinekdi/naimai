@@ -2,7 +2,7 @@ import os
 import numpy as np
 import faiss
 from tqdm.notebook import tqdm
-from naimai.utils import load_gzip, save_gzip
+from naimai.utils.general import load_gzip, save_gzip
 from naimai.constants.fields import all_fields
 from naimai.constants.paths import path_dispatched, path_similarity_model
 from sentence_transformers import SentenceTransformer
