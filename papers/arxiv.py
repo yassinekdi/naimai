@@ -2,7 +2,7 @@ from tqdm.notebook import tqdm
 import dask.bag as db
 import json
 
-from naimai.utils.regex import year_from_arxiv_fname
+from naimai.utils.regex import year_from_arxiv_fname, multiple_replace
 from naimai.papers.raw import papers, paper_base
 from naimai.constants.fields import arxiv_fields_abbrevs, arxiv_fields_categories
 from naimai.decorators import update_naimai_dois
@@ -16,7 +16,7 @@ class paper_arxiv(paper_base):
         self.metadata_df = metadata_df
         self.category = category
         self.idx = idx_in_metadata_df
-        self.paper_infos = self.metadata_df[idx_in_metadata_df,:]
+        self.paper_infos = self.metadata_df.iloc[idx_in_metadata_df,:]
 
     def get_doi(self):
         self.doi = self.paper_infos['doi']
@@ -38,6 +38,12 @@ class paper_arxiv(paper_base):
     def get_year(self):
         self.year = year_from_arxiv_fname(self.file_name)
 
+    def replace_abbreviations(self):
+        abbreviations_dict = self.get_abbreviations_dict()
+        if abbreviations_dict:
+            self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
+            self.Title = multiple_replace(abbreviations_dict, self.Title)
+
 
 
 class papers_arxiv(papers):
@@ -57,6 +63,7 @@ class papers_arxiv(papers):
         filtered_docs = docs.filter(lambda x: x['comments'] != 'This paper has been withdrawn')
         print('>> Getting metadata_df..')
         self.metadata_df = filtered_docs.to_dataframe()[['id', 'authors_parsed', 'title', 'abstract', 'doi','journal-ref']].compute()
+        self.files_ids = self.metadata_df['id']
 
     # @paper_reading_error_log_decorator
     def add_paper(self,arxiv_id,idx_in_metadata_df):
@@ -69,7 +76,7 @@ class papers_arxiv(papers):
                 new_paper.get_Abstract()
                 new_paper.get_fields()
                 new_paper.get_Title()
-                new_paper.Authors()
+                new_paper.get_Authors()
                 new_paper.get_year()
                 new_paper.replace_abbreviations()
                 self.elements[arxiv_id] = new_paper.save_dict()

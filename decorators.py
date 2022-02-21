@@ -23,10 +23,9 @@ def paper_reading_error_log_decorator(func):
 def update_naimai_dois(func):
   def wrapper(*args,**kwargs):
     func(*args,**kwargs)
-    if args[1]:
+    if kwargs['update_dois']:
       print('>> Updating naimai dois.. TO RECTIFY ..')
-      print('LEN : ', len(args[0].titles))
-      # args[0].update_naimai_dois()
-      # print('Done !')
+      args[0].update_naimai_dois()
+      print('Done !')
 
   return wrapper

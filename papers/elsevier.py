@@ -9,6 +9,7 @@ from naimai.constants.fields import fields_codes_elsevier
 from naimai.constants.paths import codes_fields_path
 from naimai.papers.raw import paper_base,papers
 from naimai.utils.regex import multiple_replace
+from naimai.decorators import update_naimai_dois
 
 class elsevier_data:
   def __init__(self,myfield_dict):
@@ -268,7 +269,7 @@ class papers_elsevier(papers):
      # else:
      #     self.elements[paper_nb] = new_paper
 
-
+    @update_naimai_dois
     def get_papers(self,field, reset=True,update_dois=False):
         if reset:
             self.elements={}
@@ -281,8 +282,3 @@ class papers_elsevier(papers):
                 self.add_papers(paper_nb=f, field=field)
             except:
                 print('problem in paper ', f)
-        if update_dois:
-            print('>> Updating naimai dois..')
-            self.update_naimai_dois()
-            print('Done !')
-        # print('Objs problem exported in objectives_pbs.txt')
