@@ -1,10 +1,12 @@
 from tqdm.notebook import tqdm
 import dask.bag as db
 import json
+import re
 
 from naimai.utils.regex import year_from_arxiv_fname, multiple_replace
 from naimai.papers.raw import papers, paper_base
 from naimai.constants.fields import arxiv_fields_abbrevs, arxiv_fields_categories
+from naimai.constants.regex import regex_year
 from naimai.decorators import update_naimai_dois
 
 
@@ -36,7 +38,8 @@ class paper_arxiv(paper_base):
         self.Authors = ', '.join([' '.join(at[::-1]) for at in self.paper_infos['authors_parsed']])
 
     def get_year(self):
-        self.year = year_from_arxiv_fname(self.file_name)
+        #self.year = year_from_arxiv_fname(self.file_name)
+        self.year = self.paper_infos['year']
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -62,7 +65,8 @@ class papers_arxiv(papers):
         docs = all_docs.filter(lambda x: x['categories'] == self.category)
         filtered_docs = docs.filter(lambda x: x['comments'] != 'This paper has been withdrawn')
         print('>> Getting metadata_df..')
-        self.metadata_df = filtered_docs.to_dataframe()[['id', 'authors_parsed', 'title', 'abstract', 'doi','journal-ref']].compute()
+        self.metadata_df = filtered_docs.to_dataframe()[['id', 'authors_parsed', 'title', 'abstract', 'doi','journal-ref','versions']].compute()
+        self.metadata_df['year'] = self.metadata_df['versions'].apply(lambda x: re.findall(regex_year, x[0]['created'])[0])
         self.files_ids = self.metadata_df['id']
 
     # @paper_reading_error_log_decorator
