@@ -56,7 +56,8 @@ class paper_arxiv(paper_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
     def get_numCitedBy(self):
-        rdm = random.choice([1,2])
+        # rdm = random.choice([1,2])
+        rdm=1
         time.sleep(rdm)
 
         if self.doi:
