@@ -5,8 +5,6 @@ from collections import Counter
 import re
 import pandas as pd
 import ast
-import time
-import random
 
 from naimai.utils.general import get_soup
 from naimai.constants.fields import fields_codes_elsevier
@@ -134,9 +132,6 @@ class paper_elsevier(paper_base):
             self.Abstract = self.json_data['abstract']
 
     def get_numCitedBy(self):
-        rdm = random.choice([1,2])
-        time.sleep(rdm)
-
         if self.doi:
             path = path_open_citations + self.doi
             soup = get_soup(path)
@@ -275,14 +270,15 @@ class papers_elsevier(papers):
 
 
     @update_naimai_dois
-    def get_papers(self,field, reset=True,update_dois=False):
+    def get_papers(self,field, reset=True,update_dois=False,idx_start=0,idx_finish=-1):
         if reset:
             self.elements={}
         if not self.elsevier_data_obj:
             print('>> Getting all papers')
             self.get_all_files()
         self.get_fields_files(field)
-        for f in tqdm(self.files):
+        fles = self.files[idx_start:idx_finish]
+        for f in tqdm(fles):
             try:
                 self.add_papers(paper_nb=f, field=field)
             except:

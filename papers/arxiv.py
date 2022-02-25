@@ -3,8 +3,6 @@ import dask.bag as db
 import json
 import re
 import ast
-import time
-import random
 
 from naimai.utils.regex import multiple_replace
 from naimai.utils.general import get_soup
@@ -56,10 +54,6 @@ class paper_arxiv(paper_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
     def get_numCitedBy(self):
-        # rdm = random.choice([1,2])
-        rdm=1
-        time.sleep(rdm)
-
         if self.doi:
             path = path_open_citations + self.doi
             soup = get_soup(path)
@@ -109,9 +103,10 @@ class papers_arxiv(papers):
 
 
     @update_naimai_dois
-    def get_papers(self,update_dois=False):
+    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1):
         self.get_infos()
-        for idx_in_metadata_df,arxiv_id in tqdm(enumerate(self.files_ids), total=len(self.files_ids)):
+        files_ids=self.files_ids[idx_start,idx_finish]
+        for idx_in_metadata_df,arxiv_id in tqdm(enumerate(files_ids), total=len(files_ids)):
             self.add_paper(arxiv_id=arxiv_id,idx_in_metadata_df=idx_in_metadata_df)
 
         print('Objs problem exported in objectives_pbs.txt')
