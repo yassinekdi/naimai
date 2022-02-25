@@ -2,11 +2,16 @@ from tqdm.notebook import tqdm
 import dask.bag as db
 import json
 import re
+import ast
+import time
+import random
 
-from naimai.utils.regex import year_from_arxiv_fname, multiple_replace
+from naimai.utils.regex import multiple_replace
+from naimai.utils.general import get_soup
 from naimai.papers.raw import papers, paper_base
 from naimai.constants.fields import arxiv_fields_abbrevs, arxiv_fields_categories
 from naimai.constants.regex import regex_year
+from naimai.constants.paths import path_open_citations
 from naimai.decorators import update_naimai_dois
 
 
@@ -41,12 +46,25 @@ class paper_arxiv(paper_base):
         #self.year = year_from_arxiv_fname(self.file_name)
         self.year = self.paper_infos['year']
 
+    def get_journal(self):
+        self.journal =  self.paper_infos['journal-ref']
+
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
         if abbreviations_dict:
             self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
+    def get_numCitedBy(self):
+        rdm = random.choice([1,2])
+        time.sleep(rdm)
+
+        if self.doi:
+            path = path_open_citations + self.doi
+            soup = get_soup(path)
+            soup_list = ast.literal_eval(soup.text)
+            if isinstance(soup_list,list):
+                self.numCitedBy = len(soup_list)
 
 
 class papers_arxiv(papers):
@@ -59,6 +77,7 @@ class papers_arxiv(papers):
         self.titles = []
         self.authors = []
         self.files_ids = []
+        # self.semantic_scholar = SemanticScholar(timeout=20)
 
     def get_infos(self):
         all_docs = db.read_text(self.arxiv_metadata_dir).map(json.loads)
@@ -77,12 +96,14 @@ class papers_arxiv(papers):
                                     category=self.category)
             new_paper.get_doi()
             if not new_paper.is_in_database(self.naimai_dois):
+                self.naimai_dois.append(new_paper.doi)
                 new_paper.get_Abstract()
                 new_paper.get_fields()
                 new_paper.get_Title()
                 new_paper.get_Authors()
                 new_paper.get_year()
                 new_paper.replace_abbreviations()
+                new_paper.get_numCitedBy()
                 self.elements[arxiv_id] = new_paper.save_dict()
 
 

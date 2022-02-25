@@ -4,9 +4,13 @@ from tqdm.notebook import tqdm
 from collections import Counter
 import re
 import pandas as pd
+import ast
+import time
+import random
 
+from naimai.utils.general import get_soup
 from naimai.constants.fields import fields_codes_elsevier
-from naimai.constants.paths import codes_fields_path
+from naimai.constants.paths import codes_fields_path, path_open_citations
 from naimai.papers.raw import paper_base,papers
 from naimai.utils.regex import multiple_replace
 from naimai.decorators import update_naimai_dois
@@ -114,7 +118,7 @@ class paper_elsevier(paper_base):
         self.database = 'elsevier_kaggle'
         self.highlights_in = None
         self.doi = ''
-        self.authors_highlights = []
+        self.highlights = []
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -123,16 +127,27 @@ class paper_elsevier(paper_base):
             self.Introduction = multiple_replace(abbreviations_dict, self.Introduction)
             self.Title = multiple_replace(abbreviations_dict, self.Title)
             self.Keywords = multiple_replace(abbreviations_dict, self.Keywords)
-            self.authors_highlights = [multiple_replace(abbreviations_dict, elt) for elt in self.authors_highlights]
+            self.highlights = [multiple_replace(abbreviations_dict, elt) for elt in self.highlights]
 
     def get_Abstract(self):
         if 'abstract' in self.json_data.keys():
             self.Abstract = self.json_data['abstract']
 
+    def get_numCitedBy(self):
+        rdm = random.choice([1,2])
+        time.sleep(rdm)
+
+        if self.doi:
+            path = path_open_citations + self.doi
+            soup = get_soup(path)
+            soup_list = ast.literal_eval(soup.text)
+            if isinstance(soup_list,list):
+                self.numCitedBy = len(soup_list)
+
     def get_highlights(self):
         if 'author_highlights' in self.json_data.keys():
             self.highlights_in = True
-            self.authors_highlights += [elt['sentence'] for elt in self.json_data['author_highlights']]
+            self.highlights += [elt['sentence'] for elt in self.json_data['author_highlights']]
         else:
             self.highlights_in = False
 
@@ -219,10 +234,11 @@ class paper_elsevier(paper_base):
 
 class papers_elsevier(papers):
     def __init__(self,elsevier_data_obj=None):
-      super().__init__() # loading self.naimai_dois & other attributes
-      self.fields_dict = fields_codes_elsevier
-      self.elsevier_data_obj = elsevier_data_obj
-      self.files = []
+        super().__init__() # loading self.naimai_dois & other attributes
+        self.fields_dict = fields_codes_elsevier
+        self.elsevier_data_obj = elsevier_data_obj
+        self.files = []
+
 
     def get_all_files(self):
       self.elsevier_data_obj = elsevier_data(myfield_dict=fields_codes_elsevier)
@@ -241,16 +257,15 @@ class papers_elsevier(papers):
         new_paper.get_doi()
         if not new_paper.is_in_database(self.naimai_dois):
              self.naimai_dois.append(new_paper.doi)
-             # new_paper.field = field
              new_paper.get_fields(field)
              new_paper.get_Abstract()
-             # new_paper.get_Conslusion()
              new_paper.get_Title()
              new_paper.get_Authors()
              new_paper.get_kwords()
              new_paper.get_year()
              new_paper.get_highlights()
              new_paper.replace_abbreviations()
+             new_paper.get_numCitedBy()
              self.elements[paper_nb] = new_paper.save_dict()
 
         else:
@@ -258,16 +273,6 @@ class papers_elsevier(papers):
             # print('DOI {} already exists..'.format(new_paper.doi))
 
 
-
-
-     # if report:
-     #     new_paper.get_objective_paper(add_sentences=new_paper.authors_highlights)
-     #     new_paper.report_objectives()
-     # if save_dict:
-     #     self.elements[paper_nb] = new_paper.save_dict()
-     #     # self.naimai_elements[paper_nb] = new_paper.save_paper_for_naimai()
-     # else:
-     #     self.elements[paper_nb] = new_paper
 
     @update_naimai_dois
     def get_papers(self,field, reset=True,update_dois=False):

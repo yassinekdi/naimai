@@ -26,6 +26,7 @@ path_similarity_model = os.path.join('drive/MyDrive/MyProject/data_pipeline','se
 path_google_search='https://google.com/search?q='
 path_errors_log = 'drive/MyDrive/MyProject/errors_log/'
 path_model_saving= 'drive/MyDrive/MyProject/models/PDF classif/'
+path_open_citations = 'https://opencitations.net/index/coci/api/v1/citations/'
 
 aws_root_pdfs = 'https://naimabucket.s3.amazonaws.com/PDFs/'
 Mybucket = "naimabucket"

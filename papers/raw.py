@@ -17,6 +17,8 @@ class paper_base:
         self.numCitedBy = .5
         self.numCiting = .5
         self.Introduction = ''
+        self.Journal = ''
+        self.highlights = []
         self.Abstract = ''
         self.Conclusion = ''
         self.Keywords = ''
@@ -46,7 +48,7 @@ class paper_base:
         return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting']
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting', 'highlights']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
