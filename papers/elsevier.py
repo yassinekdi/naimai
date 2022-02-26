@@ -260,6 +260,7 @@ class papers_elsevier(papers):
              new_paper.get_Abstract()
              new_paper.get_Title()
              new_paper.get_Authors()
+             new_paper.get_journal()
              new_paper.get_kwords()
              new_paper.get_year()
              new_paper.get_highlights()

@@ -95,6 +95,7 @@ class papers_arxiv(papers):
                 new_paper.get_Abstract()
                 new_paper.get_fields()
                 new_paper.get_Title()
+                new_paper.get_journal()
                 new_paper.get_Authors()
                 new_paper.get_year()
                 new_paper.replace_abbreviations()
