@@ -218,6 +218,10 @@ class paper_elsevier(paper_base):
         if 'keywords' in self.json_data['metadata'].keys():
             self.Keywords = ', '.join(self.json_data['metadata']['keywords'])
 
+    def get_journal(self):
+        if 'doi' in self.json_data['metadata'].keys():
+            self.Journal = self.json_data['metadata']['issn']
+
     def get_doi(self):
         if 'doi' in self.json_data['metadata'].keys():
             self.doi = self.json_data['metadata']['doi']
