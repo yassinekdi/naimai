@@ -38,7 +38,7 @@ class paper_arxiv(paper_base):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
 
     def get_Authors(self):
-        self.Authors = ', '.join([' '.join(at[::-1]) for at in self.paper_infos['authors_parsed']])
+        self.Authors = ', '.join([' '.join(at[::-1]) for at in self.paper_infos['authors_parsed']]).strip()
 
     def get_year(self):
         #self.year = year_from_arxiv_fname(self.file_name)
@@ -105,7 +105,7 @@ class papers_arxiv(papers):
     @update_naimai_dois
     def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1):
         self.get_infos()
-        files_ids=self.files_ids[idx_start,idx_finish]
+        files_ids=self.files_ids[idx_start:idx_finish]
         for idx_in_metadata_df,arxiv_id in tqdm(enumerate(files_ids), total=len(files_ids)):
             self.add_paper(arxiv_id=arxiv_id,idx_in_metadata_df=idx_in_metadata_df)
 
