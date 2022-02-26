@@ -25,7 +25,7 @@ def update_naimai_dois(func):
     func(*args,**kwargs)
     if kwargs['update_dois']:
       print('>> Updating naimai dois.. TO RECTIFY ..')
-      # args[0].update_naimai_dois()
+      args[0].update_naimai_dois()
       print('Done !')
 
   return wrapper
