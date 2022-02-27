@@ -266,7 +266,7 @@ class papers_elsevier(papers):
              new_paper.get_highlights()
              new_paper.replace_abbreviations()
              new_paper.get_numCitedBy()
-             self.elements[paper_nb] = new_paper.save_dict()
+             self.elements[str(paper_nb)] = new_paper.save_dict()
 
         else:
             pass

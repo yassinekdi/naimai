@@ -34,7 +34,7 @@ class Querier:
     self.load_field_index()
 
     encoded_query = self.encoder.encode([query])
-    top_n = self.field_index.search(encoded_query,top_n)[1].tolist()
+    top_n = self.field_index.search(encoded_query,top_n)
     ids = top_n[1].tolist()[0]
     distances = top_n[0].tolist()[0]
     fnames = list(self.papers.keys())
