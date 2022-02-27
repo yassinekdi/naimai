@@ -3,7 +3,7 @@ from keybert import KeyBERT
 
 
 class QueryGeneration:
-    def __init__(self, training_paper_dict, nlp, nb_queries=6):
+    def __init__(self, training_paper_dict, nlp, nb_queries=5):
         self.nb_queries = nb_queries
         self.paper = training_paper_dict
         self.queries = []
@@ -35,7 +35,7 @@ class QueryGeneration:
 
     def from_paragraphs(self, nb_queries_to_add):
 
-        paragraph = self.paper['Abstract'].strip() + ' ' + self.paper['Conclusion'].strip()
+        paragraph = self.paper['Abstract'].strip()+ ' ' + self.paper['Title'].strip()
         if paragraph:
             keywords = self.keybert.extract_keywords(paragraph, keyphrase_ngram_range=(1, 3),top_n=nb_queries_to_add)
             queries = [elt[0] for elt in keywords]
@@ -43,7 +43,8 @@ class QueryGeneration:
                 three_random = random.sample(queries, k=nb_queries_to_add)
                 self.queries += three_random
             except:
-                print('problem in paper {}, data base {}'.format(self.paper['file_name'],self.paper['database']))
+                pass
+                # print('problem in paper {}, data base {}'.format(self.paper['file_name'],self.paper['database']))
 
 
     def generate(self):
