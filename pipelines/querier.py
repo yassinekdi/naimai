@@ -1,4 +1,4 @@
-from naimai.constants.paths import path_produced, path_similarity_model
+from naimai.constants.paths import path_produced
 from naimai.utils.general import load_gzip
 from sentence_transformers import SentenceTransformer
 import numpy as np
@@ -22,19 +22,26 @@ class Querier:
       path = os.path.join(path_produced,self.field,'all_papers')
       self.papers = load_gzip(path)
 
-  def load_encoder(self,path=path_similarity_model):
+  def load_encoder(self):
     if not self.encoder:
+      path = os.path.join(path_produced, self.field, 'search_model')
       self.encoder = SentenceTransformer(path)
 
-  def review(self,query, top_n=4):
+  def review(self,query, top_n=4,text=True):
 
     self.load_encoder()
     self.load_papers()
     self.load_field_index()
 
     encoded_query = self.encoder.encode([query])
-    ids = self.field_index.search(encoded_query,top_n)[1].tolist()[0]
+    top_n = self.field_index.search(encoded_query,top_n)[1].tolist()
+    ids = top_n[1].tolist()[0]
+    distances = top_n[0].tolist()[0]
     fnames = list(self.papers.keys())
-    similar_papers_fnames= list(np.array(fnames)[ids])
-    results = [self.papers[fn]['reported'] for fn in similar_papers_fnames]
-    return ' '.join(results)
+    similar_papers_fnames= list(np.unique(fnames)[ids])
+    reported_texts = [self.papers[fn]['reported'] for fn in similar_papers_fnames]
+    if text:
+      return ' '.join(reported_texts)
+    else:
+      results = [(dist, report) for dist, report in zip(distances, reported_texts)]
+      return results

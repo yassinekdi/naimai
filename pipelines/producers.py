@@ -109,7 +109,7 @@ class Field_Producer:
             print(' - nlp..')
             self.nlp = spacy.load(nlp_vocab)
 
-    def load_encoder(self, path):
+    def load_encoder(self):
         print(' - encoder..')
         path = os.path.join(path_produced, self.field, 'search_model')
         if os.path.isdir(path):
@@ -144,7 +144,7 @@ class Field_Producer:
         self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
 
-    def fine_tune_model(self, size_data,batch_size,n_epochs=10):
+    def fine_tune_model(self, size_data,batch_size=16,n_epochs=10):
         smodel = Search_Model(field=self.field,batch_size=batch_size,n_epochs=n_epochs)
         smodel.fine_tune(size_data=size_data)
         self.encoder = smodel.model
@@ -152,7 +152,6 @@ class Field_Producer:
     def save_model(self):
         path = os.path.join(path_produced, self.field, 'search_model')
         self.encoder.save(path)
-
 
     def produce(self,save_papers=False,save_field_index=False):
         print('>> Loading..')
