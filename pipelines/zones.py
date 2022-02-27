@@ -1,5 +1,6 @@
 import os
 from naimai.constants.paths import path_dispatched, path_formatted, path_produced
+import shutil
 
 class Zone:
     def __init__(self, zone_path, zone_name):
@@ -54,8 +55,11 @@ class Zone:
             if os.path.isdir(path_element):
                 files = os.listdir(path_element)
                 for f in files:
-                    path_f = os.path.join(path_element, f)
-                    os.remove(path_f)
+                    path = os.path.join(path_element, f)
+                    if os.path.isfile(path):
+                        os.remove(path)
+                    elif os.path.isdir(path):
+                        shutil.rmtree(path)
             else:
                 print('{} is not a directory'.format(element))
         else:
