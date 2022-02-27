@@ -1,10 +1,11 @@
 from naimai.classifiers import Objective_classifier
 from naimai.constants.nlp import max_len_objective_sentence, nlp_vocab
-from naimai.constants.paths import path_objective_classifier, path_similarity_model, path_produced, path_dispatched
+from naimai.constants.paths import path_objective_classifier, path_produced, path_dispatched
 from naimai.constants.regex import regex_objectives, regex_filtered_words_obj
 from naimai.utils.regex import clean_objectives
 from naimai.utils.general import save_gzip, load_gzip
 from naimai.models.text_generation.paper2reported import Paper2Reported
+from naimai.models.papers_classification.semantic_search import Search_Model
 
 import os
 import re
@@ -108,10 +109,14 @@ class Field_Producer:
             print(' - nlp..')
             self.nlp = spacy.load(nlp_vocab)
 
-    def load_encoder(self, path=path_similarity_model):
+    def load_encoder(self, path):
         print(' - encoder..')
-        if not self.encoder:
+        path = os.path.join(path_produced, self.field, 'search_model')
+        if os.path.isdir(path):
+            print('   - encoder exists, loading encoder..')
             self.encoder = SentenceTransformer(path)
+        else:
+            print('   - no encoder.. you need to fine tune..')
 
     def load_field_papers(self):
         print(' - field paper..')
@@ -139,33 +144,44 @@ class Field_Producer:
         self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
 
+    def fine_tune_model(self, size_data,batch_size,n_epochs=10):
+        smodel = Search_Model(field=self.field,batch_size=batch_size,n_epochs=n_epochs)
+        smodel.fine_tune(size_data=size_data)
+        self.encoder = smodel.model
+
+    def save_model(self):
+        path = os.path.join(path_produced, self.field, 'search_model')
+        self.encoder.save(path)
+
+
     def produce(self,save_papers=False,save_field_index=False):
         print('>> Loading..')
         self.load_objective_model()
         self.load_nlp()
         self.load_encoder()
-        self.load_field_papers()
-        print(' ')
-        print('>> Producing (objective+format)..')
-        for fname in tqdm(self.field_papers):
-            pap = self.field_papers[fname]
-            production_paper = self.produce_paper(paper=pap, paper_name=fname)
-            if production_paper:
-                self.production_field[fname] = production_paper
-        print(' ')
-        print('>> Computing Faiss Index..')
-        self.get_field_index()
-        print(' ')
-        if save_papers:
-            print('>> Saving papers..')
-            self.save_papers()
+        if self.encoder:
+            self.load_field_papers()
+            print(' ')
+            print('>> Producing (objective+format)..')
+            for fname in tqdm(self.field_papers):
+                pap = self.field_papers[fname]
+                production_paper = self.produce_paper(paper=pap, paper_name=fname)
+                if production_paper:
+                    self.production_field[fname] = production_paper
+            print(' ')
+            print('>> Computing Faiss Index..')
+            self.get_field_index()
+            print(' ')
+            if save_papers:
+                print('>> Saving papers..')
+                self.save_papers()
 
-        if save_field_index:
-            print('>> Saving field index..')
-            self.save_field_index()
-        print(' ')
-        print('>> Done!')
-        print('>> Papers with reported obj problems are stored in reported_pbs.txt')
+            if save_field_index:
+                print('>> Saving field index..')
+                self.save_field_index()
+            print(' ')
+            print('>> Done!')
+            print('>> Papers with reported obj problems are stored in reported_pbs.txt')
 
     def save_field_index(self):
         path = os.path.join(path_produced, self.field, 'encodings.index')
