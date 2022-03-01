@@ -99,7 +99,10 @@ class papers_arxiv(papers):
                 new_paper.get_Authors()
                 new_paper.get_year()
                 new_paper.replace_abbreviations()
-                new_paper.get_numCitedBy()
+                try:
+                    new_paper.get_numCitedBy()
+                except:
+                    print('problem of citing in paper ', new_paper.doi)
                 self.elements[arxiv_id] = new_paper.save_dict()
 
 
