@@ -63,11 +63,11 @@ class paper_arxiv(paper_base):
 
 
 class papers_arxiv(papers):
-    def __init__(self, arxiv_metadata_dir,category):
+    def __init__(self, arxiv_metadata_dir,category, metadata_df=None):
         super().__init__() # loading self.naimai_dois & other attributes
         self.arxiv_metadata_dir = arxiv_metadata_dir
         self.category = category
-        self.metadata_df = None
+        self.metadata_df = metadata_df
         self.abstracts = []
         self.titles = []
         self.authors = []
@@ -75,12 +75,13 @@ class papers_arxiv(papers):
         # self.semantic_scholar = SemanticScholar(timeout=20)
 
     def get_infos(self):
-        all_docs = db.read_text(self.arxiv_metadata_dir).map(json.loads)
-        docs = all_docs.filter(lambda x: x['categories'] == self.category)
-        filtered_docs = docs.filter(lambda x: x['comments'] != 'This paper has been withdrawn')
-        print('>> Getting metadata_df..')
-        self.metadata_df = filtered_docs.to_dataframe()[['id', 'authors_parsed', 'title', 'abstract', 'doi','journal-ref','versions']].compute()
-        self.metadata_df['year'] = self.metadata_df['versions'].apply(lambda x: re.findall(regex_year, x[0]['created'])[0])
+        if not self.metadata_df:
+            all_docs = db.read_text(self.arxiv_metadata_dir).map(json.loads)
+            docs = all_docs.filter(lambda x: x['categories'] == self.category)
+            filtered_docs = docs.filter(lambda x: x['comments'] != 'This paper has been withdrawn')
+            print('>> Getting metadata_df..')
+            self.metadata_df = filtered_docs.to_dataframe()[['id', 'authors_parsed', 'title', 'abstract', 'doi','journal-ref','versions']].compute()
+            self.metadata_df['year'] = self.metadata_df['versions'].apply(lambda x: re.findall(regex_year, x[0]['created'])[0])
         self.files_ids = self.metadata_df['id']
 
     # @paper_reading_error_log_decorator

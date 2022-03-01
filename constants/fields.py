@@ -21,8 +21,7 @@ all_fields=['Economics and Finance',
  'Social Sciences',
  'Computer Science',
  'Engineering',
- 'Environmental Science and Renewable Energy',
- 'Linguistics']
+ 'Environmental Science and Renewable Energy',]
 
 
 arxiv_fields_abbrevs = {'cs': 'Computer Science',
