@@ -74,7 +74,7 @@ class papers_arxiv(papers):
         self.files_ids = []
 
     def get_infos(self):
-        if not self.metadata_df:
+        if self.metadata_df is not None:
             all_docs = db.read_text(self.arxiv_metadata_dir).map(json.loads)
             docs = all_docs.filter(lambda x: x['categories'] == self.category)
             filtered_docs = docs.filter(lambda x: x['comments'] != 'This paper has been withdrawn')
