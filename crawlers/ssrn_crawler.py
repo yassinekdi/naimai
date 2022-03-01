@@ -40,9 +40,9 @@ class SSRN_Crawler:
         abstract_soup = self.get_soup(abstract_path)
         abstract_box = abstract_soup.find_all(name="div", attrs={"class": "box-container box-abstract-main"})
         if not abstract_box:
-          print('soup :  ',abstract_soup)
-          print('problem with abstract id : ', id)
-          print('abst box : ', abstract_box)
+          #print('soup :  ',abstract_soup)
+          print('pproblem with abstract id : ', id)
+          #print('abst box : ', abstract_box)
         return abstract_box[0]
 
     def get_abstract_text(self,abstract_box):
