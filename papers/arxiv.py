@@ -72,7 +72,6 @@ class papers_arxiv(papers):
         self.titles = []
         self.authors = []
         self.files_ids = []
-        # self.semantic_scholar = SemanticScholar(timeout=20)
 
     def get_infos(self):
         if not self.metadata_df:
