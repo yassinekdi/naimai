@@ -55,12 +55,17 @@ class SSRN_Crawler:
 
     def get_all_soups(self,first_page=2,last_page=0):
         self.soup[1] = self.get_soup(self.path)
-        self.total_pages = int(self.soup[1].find_all(name="a", attrs={"class": "jeljour_pagination_number"})[-1].string)
-        if (last_page>0) and (last_page<self.total_pages):
-            self.total_pages = last_page
-        for npage in tqdm(range(first_page, self.total_pages + 1)):
-            path = self.get_page_path(npage)
-            self.soup[npage] = self.get_soup(path)
+        try:
+            self.total_pages = int(self.soup[1].find_all(name="a", attrs={"class": "jeljour_pagination_number"})[-1].string)
+            if (last_page>0) and (last_page<self.total_pages):
+                self.total_pages = last_page
+            for npage in tqdm(range(first_page, self.total_pages + 1)):
+                path = self.get_page_path(npage)
+                self.soup[npage] = self.get_soup(path)
+        except:
+
+            self.total_pages=1
+            self.soup[1] = self.get_soup(self.path)
 
     def get_description_data_npage(self, npage):
         soup = self.soup[npage]
@@ -134,6 +139,8 @@ class SSRN_Crawler:
             print('Getting soups..')
             self.get_all_soups(first_page=first_page,last_page=last_page)
         print('Getting description..')
+        if self.total_pages==1:
+            self.get_description_data_npage(self.total_pages)
         for page in tqdm(range(first_page-1, self.total_pages + 1)):
             self.get_description_data_npage(page)
 
