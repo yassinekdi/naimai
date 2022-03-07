@@ -3,10 +3,12 @@ import re
 from tqdm.notebook import tqdm
 
 def extract_author_name(contrib):
-  lname = contrib.find('surname').text
-  fname = contrib.find('given-names').text
-  return fname + ' '+ lname
-
+    try:
+        lname = contrib.find('surname').text
+        fname = contrib.find('given-names').text
+        return fname + ' ' + lname
+    except:
+        return ''
 
 class Pubmed_Crawler:
     def __init__(self, xml_filename, database):
@@ -50,13 +52,17 @@ class Pubmed_Crawler:
         if journal:
             return journal.text
         return
-
+    
     def get_abstract(self, article):
         abstract_soup = article.find('abstract')
         if abstract_soup:
             abstract_elements = abstract_soup.find_all('sec')
-            return {elt.find('title').text: [elt.text.strip() for elt in elt.find_all('p')] for elt in abstract_elements}
+            if abstract_elements :
+              return {elt.find('title').text: [elt.text.strip() for elt in elt.find_all('p')] for elt in abstract_elements}
+            else:
+              return {'text': abstract_soup.text}
         return
+
 
     def get_body(self, article):
         body_elements = article.find_all(name='sec', id=re.compile('sec\d'))
