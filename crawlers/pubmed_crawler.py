@@ -14,11 +14,12 @@ class Pubmed_Crawler:
     def __init__(self, handle, database):
         self.xml_soup = BeautifulSoup(handle,'lxml')
         self.database = database
+        self.articles = []
         self.docs = {'title': [], 'authors': [], 'year': [], "abstract": [], "doi": [],
                      "database": [], 'journal': [], 'body': []}
 
     def get_articles(self):
-        return self.xml_soup.find_all('article')
+        self.articles= self.xml_soup.find_all('article')
 
     def get_doi(self, article):
         doi = article.find(name='article-id', attrs={'pub-id-type': 'doi'})
@@ -73,8 +74,8 @@ class Pubmed_Crawler:
         return res
 
     def get_docs(self):
-        articles = self.get_articles()
-        for article in tqdm(articles):
+        self.get_articles()
+        for article in tqdm(self.articles):
             abstract = self.get_abstract(article)
             if abstract:
                 self.docs['abstract'].append(abstract)
