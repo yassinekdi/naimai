@@ -54,7 +54,10 @@ class Pubmed_Crawler:
         if abstract_soup:
             abstract_elements = abstract_soup.find_all('sec')
             if abstract_elements :
-              return {elt.find('title').text: [elt.text.strip() for elt in elt.find_all('p')] for elt in abstract_elements}
+              try:
+                  return {elt.find('title').text: [elt.text.strip() for elt in elt.find_all('p')] for elt in abstract_elements}
+              except:
+                  return {'text': abstract_soup.text}
             else:
               return {'text': abstract_soup.text}
         return
