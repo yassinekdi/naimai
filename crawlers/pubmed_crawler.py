@@ -11,16 +11,15 @@ def extract_author_name(contrib):
         return ''
 
 class Pubmed_Crawler:
-    def __init__(self, xml_filename, database):
-        self.xml_filename = xml_filename
-        self.xml_soup = None
+    def __init__(self, handle, database):
+        self.xml_soup = BeautifulSoup(handle,'lxml')
         self.database = database
         self.docs = {'title': [], 'authors': [], 'year': [], "abstract": [], "doi": [],
                      "database": [], 'journal': [], 'body': []}
 
-    def read_file(self):
-        xml_file = open(self.xml_filename, 'r')
-        self.xml_soup = BeautifulSoup(xml_file, "lxml")
+    # def read_file(self):
+    #     xml_file = open(self.xml_filename, 'r')
+    #     self.xml_soup = BeautifulSoup(xml_file, "lxml")
 
     def get_articles(self):
         return self.xml_soup.find_all('article')
@@ -52,7 +51,7 @@ class Pubmed_Crawler:
         if journal:
             return journal.text
         return
-    
+
     def get_abstract(self, article):
         abstract_soup = article.find('abstract')
         if abstract_soup:
@@ -69,9 +68,6 @@ class Pubmed_Crawler:
         return {elt.find('title').text: [elt.text.strip() for elt in elt.find_all('p')] for elt in body_elements}
 
     def get_docs(self):
-        print('>> Reading file...')
-        self.read_file()
-        print('>> Processing...')
         articles = self.get_articles()
         for article in tqdm(articles):
             abstract = self.get_abstract(article)
