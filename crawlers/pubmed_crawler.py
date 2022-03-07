@@ -17,10 +17,6 @@ class Pubmed_Crawler:
         self.docs = {'title': [], 'authors': [], 'year': [], "abstract": [], "doi": [],
                      "database": [], 'journal': [], 'body': []}
 
-    # def read_file(self):
-    #     xml_file = open(self.xml_filename, 'r')
-    #     self.xml_soup = BeautifulSoup(xml_file, "lxml")
-
     def get_articles(self):
         return self.xml_soup.find_all('article')
 
@@ -63,16 +59,17 @@ class Pubmed_Crawler:
         return
 
 
-    def get_body(self, article):
-        body_elements = article.find_all(name='sec', id=re.compile('sec\d'))
+    def get_body(self, article,abstract):
+        body_elements = article.find_all(name='sec', id=re.compile('\w+'))
         res = {}
         for elt in body_elements:
-            try:
-                title = elt.find('title').text
-                text=[elt.text.strip() for elt in elt.find_all('p')]
-                res[title] = text
-            except:
-                pass
+          try:
+            title = elt.find('title').text
+            text=[elt.text.strip() for elt in elt.find_all('p')]
+            if title not in abstract.keys():
+              res[title] = text
+          except:
+            pass
         return res
 
     def get_docs(self):
@@ -87,5 +84,4 @@ class Pubmed_Crawler:
                 self.docs['doi'].append(self.get_doi(article))
                 self.docs['database'].append(self.database)
                 self.docs['journal'].append(self.get_journal(article))
-                self.docs['body'].append(self.get_body(article))
-        print('>> Done!')
+                self.docs['body'].append(self.get_body(article,abstract))
