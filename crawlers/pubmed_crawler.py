@@ -60,7 +60,7 @@ class Pubmed_Crawler:
         return
 
 
-    def get_body(self, article,abstract):
+    def get_body_clean(self, article,abstract):
         body_elements = article.find_all(name='sec', id=re.compile('\w+'))
         res = {}
         for elt in body_elements:
@@ -72,6 +72,22 @@ class Pubmed_Crawler:
           except:
             pass
         return res
+
+    def get_body_greedy(self,article,abstract):
+        abstract_phrases = []
+        for stc in abstract.values():
+            abstract_phrases+=stc
+
+        all_phrases = [elt.text.strip() for elt in article.find_all('p')]
+        body_phrases = [elt for elt in all_phrases if elt not in abstract_phrases][:-5]
+        return body_phrases
+
+    def get_body(self,article,abstract):
+        result = self.get_body_clean(article,abstract)
+        if result:
+            return result
+        result = self.get_body_greedy(article,abstract)
+        return {'text': result}
 
     def get_docs(self):
         self.get_articles()
