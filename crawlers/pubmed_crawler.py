@@ -65,7 +65,15 @@ class Pubmed_Crawler:
 
     def get_body(self, article):
         body_elements = article.find_all(name='sec', id=re.compile('sec\d'))
-        return {elt.find('title').text: [elt.text.strip() for elt in elt.find_all('p')] for elt in body_elements}
+        res = {}
+        for elt in body_elements:
+            try:
+                title = elt.find('title').text
+                text=[elt.text.strip() for elt in elt.find_all('p')]
+                res[title] = text
+            except:
+                pass
+        return res
 
     def get_docs(self):
         articles = self.get_articles()
