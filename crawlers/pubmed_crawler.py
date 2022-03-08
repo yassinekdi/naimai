@@ -1,6 +1,34 @@
 from bs4 import BeautifulSoup
 import re
 from tqdm.notebook import tqdm
+from Bio import Entrez
+import pandas as pd
+
+def download_papers(start,n_iter,delta,search_results):
+    for iter in range(1, n_iter + 1):
+        print('iter : ', iter)
+        handle = Entrez.efetch(db="pmc", rettype="full", retmode="xml", retstart=start, retmax=delta,
+                               webenv=search_results["WebEnv"], query_key=search_results["QueryKey"])
+        res = handle.read()
+
+        fname = 'file.xml'
+        with open(fname, 'wb') as f:
+            f.write(res)
+
+        dbase = 'pmc'
+        crawler = Pubmed_Crawler(xml_filename=fname, database=dbase)
+        crawler.get_docs()
+
+        df = pd.DataFrame(crawler.docs)
+        print('df shape : ', df.shape)
+        fname = str(start) + '_' + str(start + delta) + '.csv'
+        print('fname : ', fname)
+        path_csv = "drive/MyDrive/MyProject/data_pipeline2/landing_zone/Pubmed/" + fname
+        df.to_csv(path_csv)
+
+        start = start + delta
+        print(' ')
+
 
 def extract_author_name(contrib):
     try:
