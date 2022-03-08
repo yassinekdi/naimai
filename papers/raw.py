@@ -53,8 +53,6 @@ class paper_base:
         return paper_to_save
 
 
-
-
 class papers:
     def __init__(self):
         self.elements = {}

@@ -2,6 +2,8 @@ import pickle, gzip, pickletools
 import requests
 from bs4 import BeautifulSoup
 import os
+from naimai.utils.general import save_gzip
+from naimai.constants.paths import naimai_dois_path
 
 def load_gzip(path):
     with gzip.open(path, 'rb') as f:
@@ -27,3 +29,14 @@ def listdir_time(path):
   paths_files.sort(key=lambda x: os.path.getmtime(x))
   files_sorted = [elt.split('/')[-1] for elt in paths_files]
   return files_sorted
+
+def remove_from_naimai_dois(dois_to_remove):
+    dois = load_gzip(naimai_dois_path)
+    for doi in dois_to_remove:
+        try:
+            dois.remove(doi)
+        except:
+            pass
+    print('new len: ', len(dois))
+    save_gzip(naimai_dois_path,dois)
+
