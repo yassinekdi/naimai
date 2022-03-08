@@ -18,10 +18,10 @@ class paper_arxiv(paper_base):
         super().__init__()
         self.database = 'arxiv'
         self.file_name = arxiv_id
-        self.metadata_df = metadata_df
+        # self.metadata_df = metadata_df
         self.category = category
         self.idx = idx_in_metadata_df
-        self.paper_infos = self.metadata_df.iloc[idx_in_metadata_df,:]
+        self.paper_infos = metadata_df.iloc[idx_in_metadata_df,:]
 
     def get_doi(self):
         self.doi = self.paper_infos['doi']
