@@ -2,7 +2,6 @@ import pickle, gzip, pickletools
 import requests
 from bs4 import BeautifulSoup
 import os
-from naimai.utils.general import save_gzip
 from naimai.constants.paths import naimai_dois_path
 
 def load_gzip(path):
