@@ -45,7 +45,7 @@ class paper_arxiv(paper_base):
         self.year = self.paper_infos['year']
 
     def get_journal(self):
-        self.journal =  self.paper_infos['journal-ref']
+        self.Journal =  self.paper_infos['journal-ref']
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()

@@ -1,5 +1,6 @@
 from tqdm.notebook import tqdm
 import pandas as pd
+import numpy as np
 
 from naimai.utils.regex import multiple_replace
 from naimai.papers.raw import papers, paper_base
@@ -31,7 +32,7 @@ class paper_issn(paper_base):
         self.year = self.paper_infos['date']
 
     def get_journal(self):
-        self.journal =  self.paper_infos['field_issn']
+        self.Journal =  self.paper_infos['field_issn']
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -40,7 +41,9 @@ class paper_issn(paper_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
     def get_numCitedBy(self):
-      self.numCitedBy = self.paper_infos['numCitedBy']
+        self.numCitedBy = self.paper_infos['numCitedBy']
+        if np.isnan(self.numCitedBy):
+            self.numCitedBy = 0.5
 
 
 class papers_issn(papers):
