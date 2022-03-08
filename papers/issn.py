@@ -71,6 +71,6 @@ class papers_issn(papers):
 
     @update_naimai_dois
     def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1):
-        for idx,_ in tqdm(self.data.iterrows(),total=len(self.data)):
+        for idx,_ in self.data.iterrows():
             self.add_paper(idx_in_data=idx)
         print('Objs problem exported in objectives_pbs.txt')

@@ -1,7 +1,7 @@
 import pickle, gzip, pickletools
 import requests
 from bs4 import BeautifulSoup
-import os 
+import os
 
 def load_gzip(path):
     with gzip.open(path, 'rb') as f:
