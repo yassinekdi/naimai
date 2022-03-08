@@ -50,6 +50,7 @@ class papers_issn(papers):
     def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
+        print('Len data : ', len(self.data))
 
     def add_paper(self,idx_in_data):
             new_paper = paper_issn(df=self.data,
