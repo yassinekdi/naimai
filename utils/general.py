@@ -32,11 +32,12 @@ def listdir_time(path):
 
 def remove_from_naimai_dois(dois_to_remove):
     dois = load_gzip(naimai_dois_path)
+    print('len before : ', len(dois))
     for doi in dois_to_remove:
         try:
             dois.remove(doi)
         except:
             pass
-    print('new len: ', len(dois))
+    print('len after : ', len(dois))
     save_gzip(naimai_dois_path,dois)
 

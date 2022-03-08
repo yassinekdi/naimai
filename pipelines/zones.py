@@ -60,8 +60,8 @@ class Zone:
                         os.remove(path)
                     elif os.path.isdir(path):
                         shutil.rmtree(path)
-            else:
-                print('{} is not a directory'.format(element))
+            elif os.path.isfile(path_element):
+                os.remove(path_element)
         else:
             print('{} is not an element in {} zone'.format(element, self.zone_name))
 

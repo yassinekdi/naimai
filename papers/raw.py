@@ -64,7 +64,6 @@ class papers:
             print('No naimai dois..')
             self.naimai_dois=[]
 
-
     def __len__(self):
         return len(self.elements.keys())
 
