@@ -66,7 +66,7 @@ class papers_issn(papers):
                 new_paper.get_year()
                 new_paper.replace_abbreviations()
                 new_paper.get_numCitedBy()
-                self.elements[str(idx_in_data)] = new_paper.save_dict()
+                self.elements[new_paper.doi] = new_paper.save_dict()
 
 
     @update_naimai_dois
