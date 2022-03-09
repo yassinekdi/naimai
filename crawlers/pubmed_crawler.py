@@ -20,6 +20,8 @@ def download_papers(start,n_iter,delta,search_results):
         crawler.get_docs()
 
         df = pd.DataFrame(crawler.docs)
+        if df.shape[0]<5:
+            print('>>>>>> WARNING !!!!!!!')
         print('df shape : ', df.shape)
         fname = str(start) + '_' + str(start + delta) + '.csv'
         print('fname : ', fname)
