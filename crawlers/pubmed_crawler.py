@@ -5,8 +5,7 @@ from Bio import Entrez
 import pandas as pd
 
 def download_papers(start,n_iter,delta,search_results):
-    for iter in range(1, n_iter + 1):
-        print('iter : {}/{}'.format(iter,n_iter+1))
+    for iter in tqdm(range(1, n_iter + 1)):
         handle = Entrez.efetch(db="pmc", rettype="full", retmode="xml", retstart=start, retmax=delta,
                                webenv=search_results["WebEnv"], query_key=search_results["QueryKey"])
         res = handle.read()
@@ -22,14 +21,12 @@ def download_papers(start,n_iter,delta,search_results):
         df = pd.DataFrame(crawler.docs)
         if df.shape[0]<5:
             print('>>>>>> WARNING !!!!!!!')
-        print('df shape : ', df.shape)
         fname = str(start) + '_' + str(start + delta) + '.csv'
         print('fname : ', fname)
         path_csv = "drive/MyDrive/MyProject/data_pipeline2/landing_zone/Pubmed/" + fname
         df.to_csv(path_csv)
 
         start = start + delta
-        print(' ')
 
 
 def extract_author_name(contrib):
@@ -128,11 +125,9 @@ class Pubmed_Crawler:
         return {'text': result}
 
     def get_docs(self):
-        print('>> Reading file...')
         self.read_file()
-        print('>> Processing...')
         self.get_articles()
-        for article in tqdm(self.articles):
+        for article in self.articles:
             abstract = self.get_abstract(article)
             if abstract:
                 self.docs['abstract'].append(abstract)
@@ -143,4 +138,3 @@ class Pubmed_Crawler:
                 self.docs['database'].append(self.database)
                 self.docs['journal'].append(self.get_journal(article))
                 self.docs['body'].append(self.get_body(article,abstract))
-        print('>> Done!')
