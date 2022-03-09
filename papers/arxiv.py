@@ -58,7 +58,7 @@ class paper_arxiv(paper_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
     def get_numCitedBy(self):
-        if self.doi:
+        if self.doi!=self.file_name:
             path = path_open_citations + self.doi
             soup = get_soup(path)
             soup_list = ast.literal_eval(soup.text)
