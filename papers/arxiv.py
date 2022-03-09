@@ -1,4 +1,5 @@
 from tqdm.notebook import tqdm
+import numpy as np
 import dask.bag as db
 import json
 import re
@@ -24,7 +25,11 @@ class paper_arxiv(paper_base):
         self.paper_infos = metadata_df.iloc[idx_in_metadata_df,:]
 
     def get_doi(self):
-        self.doi = self.paper_infos['doi']
+        doi = self.paper_infos['doi']
+        if np.isnan(doi):
+            doi = self.file_name
+        self.doi = doi
+
 
     def get_fields(self):
         field = self.category.split('.')[0]
