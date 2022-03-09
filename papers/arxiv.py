@@ -1,5 +1,4 @@
 from tqdm.notebook import tqdm
-import numpy as np
 import dask.bag as db
 import json
 import re
@@ -26,7 +25,7 @@ class paper_arxiv(paper_base):
 
     def get_doi(self):
         doi = self.paper_infos['doi']
-        if np.isnan(doi):
+        if not isinstance(doi,str):
             doi = self.file_name
         self.doi = doi
 
