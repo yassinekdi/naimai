@@ -6,7 +6,7 @@ import pandas as pd
 
 def download_papers(start,n_iter,delta,search_results):
     for iter in range(1, n_iter + 1):
-        print('iter : ', iter)
+        print('iter : {}/{}'.format(iter,n_iter+1))
         handle = Entrez.efetch(db="pmc", rettype="full", retmode="xml", retstart=start, retmax=delta,
                                webenv=search_results["WebEnv"], query_key=search_results["QueryKey"])
         res = handle.read()
