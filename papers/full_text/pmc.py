@@ -1,6 +1,7 @@
 import ast
 import re
 import pandas as pd
+from tqdm.notebook import tqdm
 
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
@@ -51,7 +52,7 @@ class paper_pmc(paper_full_base):
         :param headers:
         :return: {'abstract': [..], 'introduction': [..], 'method': [..], 'results':[..], 'rest': [..]}
         '''
-        imr_sections_dict = {'abstract':[], 'introduction':[],'methods':[],'results':[],'rest':[]}
+        imr_sections_dict = {'abstract':[], 'introduction':[],'methods':[],'results':[],'references':[]}
         imr_sections_list = list(imr_sections_dict)
         imr_rgx = ['abstract', 'introduction', 'methods?', 'results?|discussion',
                        'references|funding|disclosures|acknowledgment']
@@ -79,9 +80,9 @@ class paper_pmc(paper_full_base):
                 imr_sections_dict[pointer] += [elt]
         return imr_sections_dict
 
-    def get_Abstract_extra(self,body,imr_sections):
+    def get_abstract_extra(self, body, imr_sections):
         '''
-        Add text before introduction to abstract section
+        Add text before introduction to unclassified section
         :param body:
         :param imr_sections:
         :return:
@@ -89,8 +90,7 @@ class paper_pmc(paper_full_base):
         headers = imr_sections['abstract']
         if headers:
             for head in headers:
-                self.Abstract += ' ' + ' '.join(body[head])
-        self.Abstract = self.Abstract.strip()
+                self.unclassified_section[head]= ' '.join(body[head])
 
     def get_Introduction(self,body,imr_sections):
         '''
@@ -128,6 +128,16 @@ class paper_pmc(paper_full_base):
             for head in headers:
                 self.Results[head]= ' '.join(body[head])
 
+    def get_non_imrad_content(self,body):
+        '''
+        when the format is not imrad, we gather everything in unclassified section
+        :param body:
+        :return:
+        '''
+        headers = list(body)
+        for head in headers:
+            self.unclassified_section[head]= ' '.join(body[head])
+
     def get_content(self):
         '''
         get body infos and decompose it to abstract and IMR sections
@@ -135,12 +145,17 @@ class paper_pmc(paper_full_base):
         '''
         body = self.get_body()
         headers = list(body.keys())
-        imr_sections = self.headers2imr(headers)
         self.get_Abstract()
-        self.get_Abstract_extra(body=body,imr_sections=imr_sections)
-        self.get_Introduction(body=body,imr_sections=imr_sections)
-        self.get_Methods(body=body,imr_sections=imr_sections)
-        self.get_Results(body=body,imr_sections=imr_sections)
+        try:
+            imr_sections = self.headers2imr(headers)
+            self.get_abstract_extra(body=body, imr_sections=imr_sections)
+            self.get_Introduction(body=body,imr_sections=imr_sections)
+            self.get_Methods(body=body,imr_sections=imr_sections)
+            self.get_Results(body=body,imr_sections=imr_sections)
+        except: #not IMRAD format
+            self.get_non_imrad_content(body)
+
+
 
     def get_numCitedBy(self):
         if self.doi!=self.file_name:
@@ -187,6 +202,6 @@ class papers_pmc(papers):
 
 
     # @update_naimai_dois
-    def get_papers(self,idx_start=0,idx_finish=-1):
-        for idx,_ in self.data.iterrows():
+    def get_papers(self):
+        for idx,_ in tqdm(self.data.iterrows(),total=len(self.data)):
             self.add_paper(idx_in_data=idx)

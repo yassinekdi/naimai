@@ -61,6 +61,7 @@ class paper_full_base(paper_base):
         self.Introduction = {}
         self.Methods = {}
         self.Results = {}
+        self.unclassified_section = {}
 
     def get_abbreviations_dict(self):
         abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
@@ -78,7 +79,7 @@ class paper_full_base(paper_base):
         return corrected_abbrevs
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords', 'Title','numCitedBy','numCiting', 'Journal']
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords','unclassified_section', 'Title','numCitedBy','numCiting', 'Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
