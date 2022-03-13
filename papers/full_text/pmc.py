@@ -1,7 +1,7 @@
 import ast
 import re
 
-from papers.raw import papers, paper_base
+from naimai.papers.raw import papers, paper_base
 from naimai.constants.paths import path_open_citations
 from naimai.utils.regex import multiple_replace
 from naimai.utils.general import get_soup
@@ -89,7 +89,7 @@ class paper_pmc(paper_base):
         headers = imr_sections['abstract']
         if headers:
             for head in headers:
-                self.Abstract += ' ' + body[head]
+                self.Abstract += ' ' + ' '.join(body[head])
         self.Abstract = self.Abstract.strip()
 
     def get_Introduction(self,body,imr_sections):
@@ -102,9 +102,7 @@ class paper_pmc(paper_base):
         headers = imr_sections['introduction']
         if headers:
             for head in headers:
-                self.Introduction += ' ' + body[head]
-
-        self.Introduction = self.Introduction.strip()
+                self.Introduction[head]= ' '.join(body[head])
 
     def get_Methods(self,body,imr_sections):
         '''
@@ -116,9 +114,7 @@ class paper_pmc(paper_base):
         headers = imr_sections['methods']
         if headers:
             for head in headers:
-                self.Methods += ' ' + body[head]
-
-        self.Methods = self.Methods.strip()
+                self.Methods[head]= ' '.join(body[head])
 
     def get_Results(self, body, imr_sections):
         '''
@@ -130,9 +126,7 @@ class paper_pmc(paper_base):
         headers = imr_sections['results']
         if headers:
             for head in headers:
-                self.Results += ' ' + body[head]
-
-        self.Results = self.Results.strip()
+                self.Results[head]= ' '.join(body[head])
 
     def get_content(self):
         '''
@@ -160,7 +154,10 @@ class paper_pmc(paper_base):
         abbreviations_dict = self.get_abbreviations_dict()
         if abbreviations_dict:
             self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
-            self.Introduction = multiple_replace(abbreviations_dict, self.Introduction)
-            self.Methods = multiple_replace(abbreviations_dict, self.Methods)
-            self.Results = multiple_replace(abbreviations_dict, self.Results)
+            for elt in self.Introduction:
+                self.Introduction[elt] = multiple_replace(abbreviations_dict, self.Introduction[elt])
+            for elt in self.Methods:
+                self.Methods[elt] = multiple_replace(abbreviations_dict, self.Methods[elt])
+            for elt in self.Results:
+                self.Results[elt] = multiple_replace(abbreviations_dict, self.Results[elt])
             self.Title = multiple_replace(abbreviations_dict, self.Title)

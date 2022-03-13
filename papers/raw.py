@@ -16,14 +16,14 @@ class paper_base:
         self.fields = []
         self.numCitedBy = .5
         self.numCiting = .5
-        self.Introduction = ''
+        self.Introduction = {}
         self.Journal = ''
         self.highlights = []
         self.Abstract = ''
         # self.is_Abstract_structured=False
         self.Conclusion = ''
-        self.Results = ''
-        self.Methods = ''
+        self.Results = {}
+        self.Methods = {}
         self.Keywords = ''
         self.Authors = ''
         self.Title = ''
