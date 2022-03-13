@@ -6,7 +6,6 @@ from naimai.utils.general import load_gzip, save_gzip
 from naimai.constants.paths import naimai_dois_path
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
 
-
 class paper_base:
     def __init__(self):
         self.pdf_path=''
@@ -16,14 +15,12 @@ class paper_base:
         self.fields = []
         self.numCitedBy = .5
         self.numCiting = .5
-        self.Introduction = {}
+        self.Introduction = ''
         self.Journal = ''
         self.highlights = []
         self.Abstract = ''
         # self.is_Abstract_structured=False
         self.Conclusion = ''
-        self.Results = {}
-        self.Methods = {}
         self.Keywords = ''
         self.Authors = ''
         self.Title = ''
@@ -55,11 +52,35 @@ class paper_base:
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
-    def save_full_dict(self):
+
+
+
+class paper_full_base(paper_base):
+    def __init__(self):
+        super().__init__()
+        self.Introduction = {}
+        self.Methods = {}
+        self.Results = {}
+
+    def get_abbreviations_dict(self):
+        abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
+
+        for elt in self.Introduction:
+            intro_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Introduction[elt])
+            abstract_abbrevs.update(intro_abbrevs)
+        for elt in self.Methods:
+            methods_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Methods[elt])
+            abstract_abbrevs.update(methods_abbrevs)
+
+        corrected_abbrevs = {}
+        for k in abstract_abbrevs:
+            corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
+        return corrected_abbrevs
+
+    def save_dict(self):
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords', 'Title','numCitedBy','numCiting', 'Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
-
 
 
 class papers:

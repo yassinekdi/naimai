@@ -1,12 +1,12 @@
 import ast
 import re
 
-from naimai.papers.raw import papers, paper_base
+from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
 from naimai.utils.regex import multiple_replace
 from naimai.utils.general import get_soup
 
-class paper_pmc(paper_base):
+class paper_pmc(paper_full_base):
     def __init__(self ,df ,idx_in_df):
         super().__init__()
         self.database ="pmc"
@@ -136,7 +136,7 @@ class paper_pmc(paper_base):
         body = self.get_body()
         headers = list(body.keys())
         imr_sections = self.headers2imr(headers)
-
+        self.get_Abstract()
         self.get_Abstract_extra(body=body,imr_sections=imr_sections)
         self.get_Introduction(body=body,imr_sections=imr_sections)
         self.get_Methods(body=body,imr_sections=imr_sections)
@@ -149,6 +149,7 @@ class paper_pmc(paper_base):
             soup_list = ast.literal_eval(soup.text)
             if isinstance(soup_list,list):
                 self.numCitedBy = len(soup_list)
+
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
