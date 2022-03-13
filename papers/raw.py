@@ -154,3 +154,8 @@ class papers:
     def update_naimai_dois(self):
         if self.naimai_dois:
             save_gzip(naimai_dois_path,self.naimai_dois)
+#
+# class papers_full(papers):
+#     def __init__(self):
+#         super().__init__()
+#         self.naimai_dois=[]

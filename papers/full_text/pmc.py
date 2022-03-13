@@ -1,5 +1,6 @@
 import ast
 import re
+import pandas as pd
 
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
@@ -11,7 +12,6 @@ class paper_pmc(paper_full_base):
         super().__init__()
         self.database ="pmc"
         self.paper_infos = df.iloc[idx_in_df,:]
-
 
     def get_doi(self):
         self.doi = self.paper_infos['doi']
@@ -162,3 +162,31 @@ class paper_pmc(paper_full_base):
             for elt in self.Results:
                 self.Results[elt] = multiple_replace(abbreviations_dict, self.Results[elt])
             self.Title = multiple_replace(abbreviations_dict, self.Title)
+
+class papers_pmc(papers):
+    def __init__(self, papers_path):
+        super().__init__() # loading self.naimai_dois & other attributes
+        self.naimai_dois = []
+        self.data = pd.read_csv(papers_path)
+        print('Len data : ', len(self.data))
+
+    def add_paper(self,idx_in_data):
+            new_paper = paper_pmc(df=self.data,
+                                    idx_in_df=idx_in_data)
+            new_paper.get_doi()
+            # if not new_paper.is_in_database(self.naimai_dois):
+            # self.naimai_dois.append(new_paper.doi)
+            new_paper.get_Title()
+            new_paper.get_Authors()
+            new_paper.get_journal()
+            new_paper.get_year()
+            new_paper.get_content()
+            new_paper.replace_abbreviations()
+            new_paper.get_numCitedBy()
+            self.elements[new_paper.doi] = new_paper.save_dict()
+
+
+    # @update_naimai_dois
+    def get_papers(self,idx_start=0,idx_finish=-1):
+        for idx,_ in self.data.iterrows():
+            self.add_paper(idx_in_data=idx)
