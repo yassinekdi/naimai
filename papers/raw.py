@@ -20,6 +20,7 @@ class paper_base:
         self.Journal = ''
         self.highlights = []
         self.Abstract = ''
+        # self.is_Abstract_structured=False
         self.Conclusion = ''
         self.Results = ''
         self.Methods = ''
