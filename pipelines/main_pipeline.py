@@ -1,6 +1,6 @@
 import os
 from naimai.crawlers.arxiv_crawler import ArXiv_Crawler
-from naimai.papers.arxiv import papers_arxiv
+from papers.only_abstracts.arxiv import papers_arxiv
 from naimai.papers.raw import papers
 from naimai.constants import arxiv_database
 from naimai.models.papers_classification.tfidf import tfIdf_model

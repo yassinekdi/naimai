@@ -8,7 +8,7 @@ from naimai.constants.regex import regex_email, regex_not_converted,regex_refere
 from naimai.constants.replacements import parsing_corrections
 from naimai.constants.nlp import this_year
 from naimai.constants.paths import path_errors_log
-from .raw import paper_base
+from papers.raw import paper_base
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
 
 class paper(paper_base):

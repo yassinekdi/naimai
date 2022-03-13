@@ -21,6 +21,8 @@ class paper_base:
         self.highlights = []
         self.Abstract = ''
         self.Conclusion = ''
+        self.Results = ''
+        self.Methods = ''
         self.Keywords = ''
         self.Authors = ''
         self.Title = ''
@@ -51,6 +53,12 @@ class paper_base:
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting', 'highlights','Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
+
+    def save_full_dict(self):
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords', 'Title','numCitedBy','numCiting', 'Journal']
+        paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
+        return paper_to_save
+
 
 
 class papers:
