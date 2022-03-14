@@ -20,7 +20,7 @@ class paper_pmc(paper_full_base):
 
     def get_Abstract(self):
         '''
-        stack abstract elements into one text.
+        clean & stack abstract elements into one text.
         The spaced abstract case (a b s t r a c t..) is considered.
         :return:
         '''
@@ -29,11 +29,15 @@ class paper_pmc(paper_full_base):
         abstract = ' '.join([elt for elt2 in list(abstract_dict.values()) for elt in elt2])
         no_space = re.findall('\w\w',abstract)
         if no_space: # normal case
-            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ').strip()
+            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ')
         else: #spaced abstract, we "despace" 2 times
             despacing1 = re.sub(regex_spaced_chars, r'\1\2', abstract)
-            self.Abstract = re.sub(regex_spaced_chars, r'\1\2', despacing1).replace('\n',' ').strip()
+            self.Abstract = re.sub(regex_spaced_chars, r'\1\2', despacing1).replace('\n',' ')
 
+        # clean abstract
+        text = re.sub('abstract', '',self.Abstract).strip()
+        cleaned_text = self.clean_text(text)
+        self.Abstract = cleaned_text
 
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
