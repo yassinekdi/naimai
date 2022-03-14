@@ -26,6 +26,7 @@ class paper_pmc(paper_full_base):
         '''
         abstract_dict_str = self.paper_infos['abstract']
         abstract_dict = ast.literal_eval(abstract_dict_str)
+        abstract_dict = {elt: abstract_dict[elt] for elt in abstract_dict if not re.findall('electronic', elt, re.I)}
         abstract = ' '.join([elt for elt2 in list(abstract_dict.values()) for elt in elt2])
         no_space = re.findall('\w\w',abstract)
         if no_space: # normal case

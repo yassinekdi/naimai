@@ -19,7 +19,7 @@ arxiv_pdfs_url = 'https://arxiv.org/pdf/'
 regex_words_in_brackets = '\((\w.+?)\)'
 
 study_terms = 'paper|study|investigation|work|research'
-verbs_terms =  'proposed?|remedy|discuss(?:ed)?|evaluated?|used?|explored?|describe|developed?|introduced?|present(?:ed)?|investigated?|examined?|show(?:ed)?'
+verbs_terms =  'aim(?:ed)?|proposed?|remedy|discuss(?:ed)?|evaluated?|used?|explored?|describe|developed?|introduced?|present(?:ed)?|investigated?|examined?|show(?:ed)?'
 objective_terms = ' objectives? | purposes? | goals? | propose | aims | examines? | investigate '
 rgx1 = '[^.]*(?:this|our|present) (?:'+study_terms+')[^.]*\.'
 rgx2 = '[^.]*(?:we|authors|is|were|are|have|has|was) (?:' +verbs_terms +')[^.]*\.'
@@ -36,7 +36,10 @@ regex_abbrvs = 'i\.e\.?,?|e\.g\.?,?'
 regex_some_brackets = r'\((figure|table|meaning).*?\)'
 regex_numbers_in_brackets = r'(\(|\[)\d\d?(\)|\])\s?'
 regex_eft = r'(\(|\[)?(figure|fig\.|table|equation|eq\.)(\)|\])?'
-
+regex_background = 'introduction|background'
+regex_objective = 'purpose|aim|objective'
+regex_methods = 'method|materials|approach'
+regex_results = 'result|finding|conclusion'
 regex_doi = r"""
     ((\(?doi(\s)*\)?:?(\s)*)       # 'doi:' or 'doi' or '(doi)' (upper or lower case)
     |(https?://(dx\.)?doi\.org\/))?         # or 'http://(dx.)doi.org/'  (neither has to be present)
