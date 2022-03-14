@@ -29,10 +29,10 @@ class paper_pmc(paper_full_base):
         abstract = ' '.join([elt for elt2 in list(abstract_dict.values()) for elt in elt2])
         no_space = re.findall('\w\w',abstract)
         if no_space: # normal case
-            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ')
+            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ').strip()
         else: #spaced abstract, we "despace" 2 times
             despacing1 = re.sub(regex_spaced_chars, r'\1\2', abstract)
-            self.Abstract = re.sub(regex_spaced_chars, r'\1\2', despacing1)
+            self.Abstract = re.sub(regex_spaced_chars, r'\1\2', despacing1).replace('\n',' ').strip()
 
 
     def get_Title(self):
@@ -90,7 +90,7 @@ class paper_pmc(paper_full_base):
 
     def get_abstract_extra(self, body, imr_sections):
         '''
-        Add text before introduction to unclassified section
+        Clean & Add text before introduction to unclassified section
         :param body:
         :param imr_sections:
         :return:
@@ -98,11 +98,13 @@ class paper_pmc(paper_full_base):
         headers = imr_sections['abstract']
         if headers:
             for head in headers:
-                self.unclassified_section[head]= ' '.join(body[head])
+                text = ' '.join(body[head])
+                cleaned_text = self.clean_text(text)
+                self.unclassified_section[head] =cleaned_text
 
     def get_Introduction(self,body,imr_sections):
         '''
-        get introductions elements & stack them in introduction section
+        get introductions elements & clean & stack them in introduction section
         :param body:
         :param imr_sections:
         :return:
@@ -110,11 +112,13 @@ class paper_pmc(paper_full_base):
         headers = imr_sections['introduction']
         if headers:
             for head in headers:
-                self.Introduction[head]= ' '.join(body[head])
+                text= ' '.join(body[head])
+                cleaned_text = self.clean_text(text)
+                self.Introduction[head] =cleaned_text
 
     def get_Methods(self,body,imr_sections):
         '''
-        get methods elements & stack them in method section
+        get methods elements & clean & stack them in method section
         :param body:
         :param imr_sections:
         :return:
@@ -122,11 +126,13 @@ class paper_pmc(paper_full_base):
         headers = imr_sections['methods']
         if headers:
             for head in headers:
-                self.Methods[head]= ' '.join(body[head])
+                text = ' '.join(body[head])
+                cleaned_text = self.clean_text(text)
+                self.Methods[head]= cleaned_text
 
     def get_Results(self, body, imr_sections):
         '''
-        get methods elements & stack them in method section
+        get methods elements & clean & stack them in method section
         :param body:
         :param imr_sections:
         :return:
@@ -134,7 +140,9 @@ class paper_pmc(paper_full_base):
         headers = imr_sections['results']
         if headers:
             for head in headers:
-                self.Results[head]= ' '.join(body[head])
+                text = ' '.join(body[head])
+                cleaned_text = self.clean_text(text)
+                self.Results[head] = cleaned_text
 
     def get_non_imrad_content(self,body):
         '''
@@ -144,7 +152,9 @@ class paper_pmc(paper_full_base):
         '''
         headers = list(body)
         for head in headers:
-            self.unclassified_section[head]= ' '.join(body[head])
+            text = ' '.join(body[head])
+            cleaned_text = self.clean_text(text)
+            self.unclassified_section[head] = cleaned_text
 
     def get_content(self):
         '''

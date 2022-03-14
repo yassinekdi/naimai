@@ -32,7 +32,11 @@ rgx_or = '|'
 regex_objectives = rgx1 + rgx_or + rgx2 + rgx_or + rgx3 + rgx_or + rgx4 + rgx_or + rgx5 + rgx_or + rgx6 + rgx_or + rgx7
 
 regex_spaced_chars = '(.) (.)'
-# regex_doi = r'\b.*?doi.*'
+regex_abbrvs = 'i\.e\.?,?|e\.g\.?,?'
+regex_some_brackets = r'\((figure|table|meaning).*?\)'
+regex_numbers_in_brackets = r'(\(|\[)\d\d?(\)|\])\s?'
+regex_eft = r'(\(|\[)?(figure|fig\.|table|equation|eq\.)(\)|\])?'
+
 regex_doi = r"""
     ((\(?doi(\s)*\)?:?(\s)*)       # 'doi:' or 'doi' or '(doi)' (upper or lower case)
     |(https?://(dx\.)?doi\.org\/))?         # or 'http://(dx.)doi.org/'  (neither has to be present)

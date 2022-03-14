@@ -5,6 +5,7 @@ from tqdm.notebook import tqdm
 from naimai.utils.general import load_gzip, save_gzip
 from naimai.constants.paths import naimai_dois_path
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
+from naimai.processing import TextCleaner
 
 class paper_base:
     def __init__(self):
@@ -64,6 +65,10 @@ class paper_full_base(paper_base):
         self.unclassified_section = {}
 
     def get_abbreviations_dict(self):
+        '''
+        get all abbreviations of the papers in Introduction & Methods sections.
+        :return:
+        '''
         abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
 
         for elt in self.Introduction:
@@ -77,6 +82,16 @@ class paper_full_base(paper_base):
         for k in abstract_abbrevs:
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
+
+    def clean_text(self,text):
+        '''
+        clean the text based on TextCleaner object
+        :param text:
+        :return:
+        '''
+        cleaner = TextCleaner(text)
+        cleaner.clean()
+        return cleaner.cleaned_text
 
     def save_dict(self):
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords','unclassified_section', 'Title','numCitedBy','numCiting', 'Journal']
