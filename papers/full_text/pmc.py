@@ -5,6 +5,7 @@ from tqdm.notebook import tqdm
 
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
+from naimai.constants.regex import regex_spaced_chars
 from naimai.utils.regex import multiple_replace
 from naimai.utils.general import get_soup
 
@@ -19,13 +20,20 @@ class paper_pmc(paper_full_base):
 
     def get_Abstract(self):
         '''
-        stack abstract elements into one text
+        stack abstract elements into one text.
+        The spaced abstract case (a b s t r a c t..) is considered.
         :return:
         '''
         abstract_dict_str = self.paper_infos['abstract']
         abstract_dict = ast.literal_eval(abstract_dict_str)
         abstract = ' '.join([elt for elt2 in list(abstract_dict.values()) for elt in elt2])
-        self.Abstract = abstract.replace('-\n', '').replace('\n', ' ')
+        no_space = re.findall('\w\w',abstract)
+        if no_space: # normal case
+            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ')
+        else: #spaced abstract, we "despace" 2 times
+            despacing1 = re.sub(regex_spaced_chars, r'\1\2', abstract)
+            self.Abstract = re.sub(regex_spaced_chars, r'\1\2', despacing1)
+
 
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')

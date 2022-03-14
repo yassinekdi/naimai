@@ -31,7 +31,7 @@ rgx7 = '(?:to \w+ this, )(?:.*?)\.'
 rgx_or = '|'
 regex_objectives = rgx1 + rgx_or + rgx2 + rgx_or + rgx3 + rgx_or + rgx4 + rgx_or + rgx5 + rgx_or + rgx6 + rgx_or + rgx7
 
-
+regex_spaced_chars = '(.) (.)'
 # regex_doi = r'\b.*?doi.*'
 regex_doi = r"""
     ((\(?doi(\s)*\)?:?(\s)*)       # 'doi:' or 'doi' or '(doi)' (upper or lower case)
