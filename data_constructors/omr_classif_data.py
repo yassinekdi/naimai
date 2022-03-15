@@ -168,7 +168,7 @@ class OMRData:
             dict_data = self.BOMR2dict_data(bomr,doi)
             df = pd.DataFrame(dict_data)
             list_bomr_dfs.append(df)
-        dfs_concatenated = pd.concat(list_bomr_dfs)
+        dfs_concatenated = pd.concat(list_bomr_dfs, ignore_index=True)
         dfs_concatenated['start']= dfs_concatenated['start'].astype(int)
         dfs_concatenated['end']= dfs_concatenated['end'].astype(int)
         dfs_concatenated['class_num']= dfs_concatenated['class_num'].astype(int)
