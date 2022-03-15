@@ -19,7 +19,7 @@ arxiv_pdfs_url = 'https://arxiv.org/pdf/'
 regex_words_in_brackets = '\((\w.+?)\)'
 
 study_terms = 'paper|study|investigation|work|research'
-verbs_terms =  'aim(?:ed)?|proposed?|remedy|discuss(?:ed)?|evaluated?|used?|explored?|describe|developed?|introduced?|present(?:ed)?|investigated?|examined?|show(?:ed)?'
+verbs_terms =  'hypothesize|aim(?:ed)?|proposed?|remedy|discuss(?:ed)?|evaluated?|used?|explored?|describe|developed?|introduced?|present(?:ed)?|investigated?|examined?|show(?:ed)?'
 objective_terms = ' objectives? | purposes? | goals? | propose | aims | examines? | investigate '
 rgx1 = '[^.]*(?:this|our|present) (?:'+study_terms+')[^.]*\.'
 rgx2 = '[^.]*(?:we|authors|is|were|are|have|has|was) (?:' +verbs_terms +')[^.]*\.'

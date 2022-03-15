@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import ast
 import re
@@ -8,9 +9,9 @@ class OMRData:
     '''
       Construct data for OMR classification, based on pmc dataframes :
           1. transform structured abstracts to the BOMR structure {Background:.., Objective:.., Methods:.., Results:..}
-          2. Try to check & reorganize some sentences wrongly classified in the original abstract
-          3. Stack the sections with different orders
-          4. Format the data in the input format for the classifiers
+          2. move objective phrases in background (if exist) to objective section in BOMR
+          3. convert BOMR dict to df
+          4. Stack & Format the data in the input format for the classifiers
       '''
     def __init__(self, data_df=None,path_data=''):
         if path_data:
@@ -19,7 +20,7 @@ class OMRData:
             data = data_df
         data['is_structured'] = data['abstract'].apply(self.is_structured)
         self.data = data[['doi', 'abstract']][data['is_structured'] == True] # only structured abstracts & dois are selected
-        self.BOMR_class_num = {'B':0,'O':1,'M':2,'R':3}
+        self.BOMR_class_num = {'b':0,'o':1,'m':2,'r':3}
 
     def is_structured(self,text):
         '''
@@ -91,6 +92,8 @@ class OMRData:
         :return:
         '''
         BOMR = {'background': '', 'objectives': '', 'methods': '', 'results': ''}
+        if not isinstance(abstract_dict,dict):
+            abstract_dict = ast.literal_eval(abstract_dict)
         abstract_keys = list(abstract_dict.keys())
         BOMR_format = self.abstractKeys2BOMR_format(abstract_keys)
         for head in BOMR_format:
@@ -119,15 +122,52 @@ class OMRData:
             print('not well written.., returned the default BOMR')
             return ['background', 'objectives', 'methods', 'results']
 
-    def BOMR2df_data(self,BOMR,order='BOMR'):
+    def BOMR2dict_data(self,BOMR,id_BOMR,order='BOMR'):
         '''
-        stack BOMR dictionary following the given order. Default order : BOMR
+        transforms BOMR dictionary into data disctionary following the given order. Default order : BOMR
         :param BOMR: BOMR dictionary
+        :param id_BOMR: id of the BOMR
         :param order: string : BOMR, OBMR or MOBR
         :return:
         '''
         headers= self.get_headers_order(order=order)
-        stacked = ''
+        dict_data = {'id': [], 'text': [], 'start': [], 'end': [], 'predict_string': [], 'class': [], 'class_num': []}
+
+        id_str_start = 0
+        last_word_id = 0
+        # id_str_finish = 0
         for head in headers:
-            stacked += BOMR[head]
-        return stacked
+            text = BOMR[head]
+            if text:
+                dict_data['text'].append(text)
+                dict_data['start'].append(id_str_start)
+                dict_data['end'].append(id_str_start+len(text)-1)
+                words_ids = list(np.arange(len(text.split()))+last_word_id+1)
+                dict_data['predict_string'].append(words_ids)
+                dict_data['class'].append(head)
+                first_class_letter = head[0]
+                dict_data['class_num'].append(self.BOMR_class_num[first_class_letter])
+
+                id_str_start+=len(BOMR[head])
+                last_word_id=words_ids[-1]
+
+        dict_data['id'] = [id_BOMR]*len(dict_data['text'])
+        return dict_data
+
+    def data2BOMR_df(self):
+        '''
+        convert the data df to BOMR dataframe, which is the input to models..
+        :return:
+        '''
+        list_BOMR_dicts = list(self.data['abstract'].apply(self.abstract2BOMR))
+        list_dois = list(self.data['doi'])
+        list_bomr_dfs = []
+        for bomr,doi in zip(list_BOMR_dicts,list_dois):
+            dict_data = self.BOMR2dict_data(bomr,doi)
+            df = pd.DataFrame(dict_data)
+            list_bomr_dfs.append(df)
+        dfs_concatenated = pd.concat(list_bomr_dfs)
+        dfs_concatenated['start']= dfs_concatenated['start'].astype(int)
+        dfs_concatenated['end']= dfs_concatenated['end'].astype(int)
+        dfs_concatenated['class_num']= dfs_concatenated['class_num'].astype(int)
+        return dfs_concatenated
