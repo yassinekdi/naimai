@@ -20,6 +20,7 @@ class OMRData:
             data = data_df
         data['is_structured'] = data['abstract'].apply(self.is_structured)
         self.data = data[['doi', 'abstract']][data['is_structured'] == True] # only structured abstracts & dois are selected
+        self.transformed_data = None
         self.BOMR_class_num = {'b':0,'o':1,'m':2,'r':3}
 
     def is_structured(self,text):
@@ -170,4 +171,4 @@ class OMRData:
         dfs_concatenated['start']= dfs_concatenated['start'].astype(int)
         dfs_concatenated['end']= dfs_concatenated['end'].astype(int)
         dfs_concatenated['class_num']= dfs_concatenated['class_num'].astype(int)
-        return dfs_concatenated
+        self.transformed_data= dfs_concatenated
