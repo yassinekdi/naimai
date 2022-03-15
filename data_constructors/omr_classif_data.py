@@ -30,7 +30,8 @@ class OMRData:
         :return:
         '''
         txt2dic = ast.literal_eval(text)
-        if 'text' in txt2dic:
+        keys_str = ' '.join(list(txt2dic.keys()))
+        if re.findall('text|review|question|meaning|finding',keys_str, flags=re.I):
             return False
         return True
 
