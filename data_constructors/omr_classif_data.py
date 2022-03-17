@@ -156,6 +156,21 @@ class OMRData:
         dict_data['id'] = [id_BOMR]*len(dict_data['text'])
         return dict_data
 
+    def BOMR2text(self,BOMR,order='BOMR'):
+        '''
+        transforms BOMR dictionary into plain text following the given order. Default order : BOMR
+        :param BOMR:
+        :param order:
+        :return:
+        '''
+        headers = self.get_headers_order(order=order)
+        text=''
+        for head in headers:
+            text +=' ' + BOMR[head]
+
+        return text.strip()
+
+
     def data2BOMR_df(self):
         '''
         convert the data df to BOMR dataframe, which is the input to models..

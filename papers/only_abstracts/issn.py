@@ -57,7 +57,6 @@ class papers_issn(papers):
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
             if not new_paper.is_in_database(self.naimai_dois):
-                self.naimai_dois.append(new_paper.doi)
                 new_paper.get_Abstract()
                 new_paper.get_fields()
                 new_paper.get_Title()
@@ -67,6 +66,7 @@ class papers_issn(papers):
                 new_paper.replace_abbreviations()
                 new_paper.get_numCitedBy()
                 self.elements[new_paper.doi] = new_paper.save_dict()
+                self.naimai_dois.append(new_paper.doi)
 
 
     @update_naimai_dois

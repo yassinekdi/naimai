@@ -255,7 +255,6 @@ class papers_elsevier(papers):
         new_paper = paper_elsevier(file_nb=paper_nb,json_data=json_data)
         new_paper.get_doi()
         if not new_paper.is_in_database(self.naimai_dois):
-             self.naimai_dois.append(new_paper.doi)
              new_paper.get_fields(field)
              new_paper.get_Abstract()
              new_paper.get_Title()
@@ -267,6 +266,7 @@ class papers_elsevier(papers):
              new_paper.replace_abbreviations()
              new_paper.get_numCitedBy()
              self.elements[new_paper.doi] = new_paper.save_dict()
+             self.naimai_dois.append(new_paper.doi)
 
         else:
             pass

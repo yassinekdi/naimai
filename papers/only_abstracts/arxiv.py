@@ -87,14 +87,17 @@ class papers_arxiv(papers):
         self.files_ids = self.metadata_df['id']
 
     # @paper_reading_error_log_decorator
-    def add_paper(self,arxiv_id,idx_in_metadata_df):
+    def add_paper(self,arxiv_id,idx_in_metadata_df,force_naimai_dois=False):
             new_paper = paper_arxiv(arxiv_id=arxiv_id,
                                     metadata_df=self.metadata_df,
                                     idx_in_metadata_df=idx_in_metadata_df,
                                     category=self.category)
             new_paper.get_doi()
-            if not new_paper.is_in_database(self.naimai_dois):
-                self.naimai_dois.append(new_paper.doi)
+            if force_naimai_dois:
+                condition=1
+            else:
+                condition = not new_paper.is_in_database(self.naimai_dois) #the doi doesn't exist in the database
+            if condition:
                 new_paper.get_Abstract()
                 new_paper.get_fields()
                 new_paper.get_Title()
@@ -107,13 +110,14 @@ class papers_arxiv(papers):
                 except:
                     print('problem of citing in paper ', new_paper.doi)
                 self.elements[arxiv_id] = new_paper.save_dict()
+                self.naimai_dois.append(new_paper.doi)
 
 
     @update_naimai_dois
-    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1):
+    def get_papers(self,update_dois=False,force_naimai_dois=False,idx_start=0,idx_finish=-1):
         self.get_infos()
         files_ids=self.files_ids[idx_start:idx_finish]
         for idx_in_metadata_df,arxiv_id in tqdm(enumerate(files_ids), total=len(files_ids)):
-            self.add_paper(arxiv_id=arxiv_id,idx_in_metadata_df=idx_in_metadata_df)
+            self.add_paper(arxiv_id=arxiv_id,idx_in_metadata_df=idx_in_metadata_df,force_naimai_dois=force_naimai_dois)
 
         print('Objs problem exported in objectives_pbs.txt')
