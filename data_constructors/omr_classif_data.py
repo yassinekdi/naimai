@@ -107,8 +107,10 @@ class OMRData:
                 for obj in obj_phrases:
                     BOMR['objectives']+= obj
                     BOMR['background']=BOMR['background'].replace(obj,'')
-        BOMR['objectives'] = BOMR['objectives'].strip()
-        BOMR['background'] = BOMR['background'].strip()
+        BOMR['objectives'] = BOMR['objectives'].replace('\xa0','').strip()
+        BOMR['background'] = BOMR['background'].replace('\xa0','').strip()
+        BOMR['methods'] = BOMR['methods'].replace('\xa0','').strip()
+        BOMR['results'] = BOMR['results'].replace('\xa0','').strip()
         return BOMR
 
     def abstract2BOMRO(self, abstract_dict):
@@ -126,7 +128,10 @@ class OMRData:
             abstract_headers = BOMR_format[head]
             for header in abstract_headers:
                 BOMR[head] +=' '.join(abstract_dict[header])
-            BOMR[head]=BOMR[head].strip()
+            if self.is_long_sentence(BOMR[head]):
+                BOMR[head]=BOMR[head].strip()
+            else:
+                BOMR[head]=''
         BOMR_corrected = self.correct_BOMR(BOMR) #move obj phrases from background to objective
 
         idx_df = self.data.index[self.data['abstract']==str(abstract_dict)].to_list()[0]
@@ -270,6 +275,11 @@ class OMRData:
                            'text': abstract_list,
                            'entities': entities_list,
                            'order_list': order_list})
+    def is_long_sentence(self,sentence,threshold=8):
+        split = sentence.split()
+        if len(split)>threshold:
+            return True
+        return False
 
 
     def get_O_entity_from_text(self,text):
@@ -282,9 +292,11 @@ class OMRData:
         text_filtered = re.sub(regex_words_numbers_some,'',text)
         text_filtered = re.sub('\s+',' ',text_filtered).strip()
         split = text_filtered.split('.')
-        split_filtered = [elt for elt in split if len(elt.split())>5]
+        split_filtered = [elt for elt in split if self.is_long_sentence(elt)]
         split_no_obj = [elt for elt in split_filtered if not re.findall(regex_objectives,elt,flags=re.I)]
-        return random.choice(split_no_obj)
+        if split_no_obj:
+            return random.choice(split_no_obj)
+        return
 
     def get_O_entity_label(self,doi=None,idx=None):
         '''
@@ -303,7 +315,9 @@ class OMRData:
         if paper.unclassified_section:
             for head in paper.unclassified_section:
                 text=paper.unclassified_section[head]
-                O_labelled_list.append(self.get_O_entity_from_text(text))
+                extracted_other_text= self.get_O_entity_from_text(text)
+                if extracted_other_text:
+                    O_labelled_list.append(extracted_other_text)
             return list(set(O_labelled_list))
         else:
             return []
