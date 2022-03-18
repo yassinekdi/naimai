@@ -272,17 +272,18 @@ class OMRData:
                            'order_list': order_list})
 
 
-
-
-
     def get_O_entity_from_text(self,text):
         '''
         get labeled O entities from text
         :param text:
         :return:
         '''
-        split = text.split('.')
-        split_no_obj = [elt for elt in split if not re.findall(regex_objectives,elt,flags=re.I)]
+        regex_words_numbers_some = r'[^A-Za-z\s\.,]'
+        text_filtered = re.sub(regex_words_numbers_some,'',text)
+        text_filtered = re.sub('\s+',' ',text_filtered).strip()
+        split = text_filtered.split('.')
+        split_filtered = [elt for elt in split if len(elt.split())>5]
+        split_no_obj = [elt for elt in split_filtered if not re.findall(regex_objectives,elt,flags=re.I)]
         return random.choice(split_no_obj)
 
     def get_O_entity_label(self,doi=None,idx=None):
