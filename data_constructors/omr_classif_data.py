@@ -20,6 +20,10 @@ def entity_annotate(text, label):
             entities_labels.append('I-{}'.format(label))
     return entities_labels
 
+def tostr(lst):
+  lst2=[str(elt) for elt in lst]
+  return ' '.join(lst2)
+
 class OMRData:
     '''
       Construct data for OMR classification, based on pmc dataframes :
@@ -239,6 +243,7 @@ class OMRData:
         dfs_concatenated['start']= dfs_concatenated['start'].astype(int)
         dfs_concatenated['end']= dfs_concatenated['end'].astype(int)
         dfs_concatenated['class_num']= dfs_concatenated['class_num'].astype(int)
+        dfs_concatenated['predict_string'] = dfs_concatenated['predict_string'].apply(tostr)
         self.transformed_data= dfs_concatenated
 
     def data2BOMR_NER_df(self):
