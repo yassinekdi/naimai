@@ -182,7 +182,7 @@ class OMRData:
         :return:
         '''
         headers= self.get_headers_order(order=order)
-        dict_data = {'id': [], 'text': [], 'start': [], 'end': [], 'predict_string': [], 'class': [], 'class_num': []}
+        dict_data = {'doi': [], 'text': [], 'start': [], 'end': [], 'predictionstring': [], 'class': [], 'class_num': []}
 
         id_str_start = 0
         last_word_id = 0
@@ -194,7 +194,7 @@ class OMRData:
                 dict_data['start'].append(id_str_start)
                 dict_data['end'].append(id_str_start+len(text)-1)
                 words_ids = list(np.arange(len(text.split()))+last_word_id+1)
-                dict_data['predict_string'].append(words_ids)
+                dict_data['predictionstring'].append(words_ids)
                 dict_data['class'].append(head)
                 first_class_letter = head[:2]
                 dict_data['class_num'].append(self.BOMRO_class_num[first_class_letter])
@@ -202,7 +202,7 @@ class OMRData:
                 id_str_start+=len(BOMR[head])
                 last_word_id=words_ids[-1]
 
-        dict_data['id'] = [id_BOMR]*len(dict_data['text'])
+        dict_data['doi'] = [id_BOMR]*len(dict_data['text'])
 
         return dict_data
 
@@ -248,7 +248,7 @@ class OMRData:
         dfs_concatenated['start']= dfs_concatenated['start'].astype(int)
         dfs_concatenated['end']= dfs_concatenated['end'].astype(int)
         dfs_concatenated['class_num']= dfs_concatenated['class_num'].astype(int)
-        dfs_concatenated['predict_string'] = dfs_concatenated['predict_string'].apply(tostr)
+        dfs_concatenated['predictionstring'] = dfs_concatenated['predictionstring'].apply(tostr)
         self.transformed_data= dfs_concatenated
 
     def data2BOMR_NER_df(self):
