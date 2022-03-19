@@ -6,7 +6,6 @@ from .dataset_object import dataset
 from tqdm.notebook import tqdm
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from torch.utils.data import DataLoader
-from torch import cuda
 import torch
 from sklearn.metrics import accuracy_score
 
@@ -103,7 +102,7 @@ class NER_BOMR_classifier:
             if idx % show_every == 0:
                 loss_step = tr_loss / nb_tr_steps
                 tr_accuracy = tr_accuracy / nb_tr_steps
-                print("Step : {} -- Loss : {} -- Accuracy : {}".format(idx,loss_step,tr_accuracy))
+                print("Step : {} -- Loss : {} -- Accuracy : {}".format(idx,np.round(loss_step,2),np.round(tr_accuracy,2)))
 
             flattened_labels, flattened_predictions = flatten_labels_and_predictions(self.model, labels, tr_logits)
 

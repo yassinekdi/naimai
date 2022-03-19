@@ -41,10 +41,8 @@ def score_feedback_comp(pred_df, gt_df):
     Uses the steps in the evaluation page here:
         https://www.kaggle.com/c/feedback-prize-2021/overview/evaluation
     """
-    gt_df = gt_df[['doi', 'class', 'predictionstring']] \
-        .reset_index(drop=True).copy()
-    pred_df = pred_df[['doi', 'class', 'predictionstring']] \
-        .reset_index(drop=True).copy()
+    gt_df = gt_df[['doi', 'class', 'predictionstring']].reset_index(drop=True).copy()
+    pred_df = pred_df[['doi', 'class', 'predictionstring']].reset_index(drop=True).copy()
     pred_df['pred_id'] = pred_df.index
     gt_df['gt_id'] = gt_df.index
     # Step 1. all ground truths and predictions for a given class are compared.
