@@ -92,7 +92,7 @@ class NER_BOMR_classifier:
         loss_metric = []
         accuracy_metric = []
         step_metrics = []
-        for idx, batch in enumerate(self.training_loader):
+        for idx, batch in tqdm(enumerate(self.training_loader), total=len(self.training_loader)):
             ids, mask, labels = get_ids_mask_labels(batch=batch, device=self.config['device'])
 
             loss, tr_logits = self.model(input_ids=ids, attention_mask=mask, labels=labels,
@@ -128,7 +128,7 @@ class NER_BOMR_classifier:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            return {'loss': loss_metric,'accuracy': accuracy_metric, 'step':step_metrics}
+        return {'loss': loss_metric,'accuracy': accuracy_metric, 'step':step_metrics}
 
     def train(self, epochs=0, show_every=200):
         if epochs == 0:
