@@ -85,14 +85,14 @@ class NER_BOMR_classifier:
         self.training_loader = DataLoader(training_set, **self.train_params)
         self.validating_loader = DataLoader(validating_set, **self.valid_params)
 
-    def train_epoch(self, show_every=1000):
+    def train_epoch(self, show_every=2000):
         tr_loss, tr_accuracy = 0, 0
         nb_tr_examples, nb_tr_steps = 0, 0
         self.model.train()
         loss_metric = []
         accuracy_metric = []
         step_metrics = []
-        for idx, batch in tqdm(enumerate(self.training_loader), total=len(self.training_loader)):
+        for idx, batch in enumerate(self.training_loader):
             ids, mask, labels = get_ids_mask_labels(batch=batch, device=self.config['device'])
 
             loss, tr_logits = self.model(input_ids=ids, attention_mask=mask, labels=labels,
@@ -128,20 +128,25 @@ class NER_BOMR_classifier:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-        return {'loss': loss_metric,'accuracy': accuracy_metric, 'step':step_metrics}
+        return [np.mean(loss_metric),np.mean(accuracy_metric)]
 
-    def train(self, epochs=0, show_every=1000):
+    def train(self, epochs=0, show_every=2000):
         if epochs == 0:
             epochs = self.config['epochs']
-        metrics = []
+        loss_list,accuracy_list,epoch_list = [],[],[]
         for epoch in tqdm(range(epochs)):
             for decay in self.optimizer.param_groups:
                 decay['lr'] = self.config['learning_rates'][epoch]
             lr = self.optimizer.param_groups[0]['lr']
-            metrics.append(self.train_epoch(show_every=show_every))
+            result= self.train_epoch(show_every=show_every)
+            loss_list.append(result[0])
+            accuracy_list.append(result[1])
+            epoch_list.append(epoch)
             torch.cuda.empty_cache()
             gc.collect()
-        return metrics
+        return {'loss': loss_list,
+                'accuracy': accuracy_list,
+                'epoch': epoch_list}
 
     def predict_batch(self, batch):
 
