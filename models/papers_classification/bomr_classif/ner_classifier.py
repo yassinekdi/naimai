@@ -133,14 +133,15 @@ class NER_BOMR_classifier:
     def train(self, epochs=0, show_every=200):
         if epochs == 0:
             epochs = self.config['epochs']
-
+        metrics = []
         for epoch in tqdm(range(epochs)):
             for decay in self.optimizer.param_groups:
                 decay['lr'] = self.config['learning_rates'][epoch]
             lr = self.optimizer.param_groups[0]['lr']
-            self.train_epoch(show_every=show_every)
+            metrics.append(self.train_epoch(show_every=show_every))
             torch.cuda.empty_cache()
             gc.collect()
+        return metrics
 
     def predict_batch(self, batch):
 
