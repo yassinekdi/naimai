@@ -32,12 +32,12 @@ class NER_BOMR_classifier:
 
         self.train_params = {'batch_size': config['train_batch_size'],
                              'shuffle': True,
-                             'num_workers': 2,
+                             'num_workers': 1,
                              'pin_memory': True
                              }
         self.valid_params = {'batch_size': config['valid_batch_size'],
                              'shuffle': False,
-                             'num_workers': 2,
+                             'num_workers': 1,
                              'pin_memory': True
                              }
 
