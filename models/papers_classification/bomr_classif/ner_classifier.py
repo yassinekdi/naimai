@@ -85,7 +85,7 @@ class NER_BOMR_classifier:
         self.training_loader = DataLoader(training_set, **self.train_params)
         self.validating_loader = DataLoader(validating_set, **self.valid_params)
 
-    def train_epoch(self, show_every=200):
+    def train_epoch(self, show_every=1000):
         tr_loss, tr_accuracy = 0, 0
         nb_tr_examples, nb_tr_steps = 0, 0
         self.model.train()
@@ -130,7 +130,7 @@ class NER_BOMR_classifier:
             self.optimizer.step()
         return {'loss': loss_metric,'accuracy': accuracy_metric, 'step':step_metrics}
 
-    def train(self, epochs=0, show_every=200):
+    def train(self, epochs=0, show_every=1000):
         if epochs == 0:
             epochs = self.config['epochs']
         metrics = []
