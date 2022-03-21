@@ -232,12 +232,15 @@ class OMRData:
             entities[head] = entity_annotate(text=BOMR[head],label=head)
         return entities
 
-    def data2BOMR_df(self):
+    def data2BOMR_df(self,tqdm=True):
         '''
         convert the data df to BOMR dataframe, with starts, end, etc for each sentence
         :return:
         '''
-        list_BOMR_dicts = list(self.data['abstract'].progress_apply(self.abstract2BOMRO))
+        if tqdm:
+            list_BOMR_dicts = list(self.data['abstract'].progress_apply(self.abstract2BOMRO))
+        else:
+            list_BOMR_dicts = list(self.data['abstract'].apply(self.abstract2BOMRO))
         list_dois = list(self.data['doi'])
         list_bomr_dfs = []
         for bomr,doi in zip(list_BOMR_dicts,list_dois):
@@ -251,12 +254,15 @@ class OMRData:
         dfs_concatenated['predictionstring'] = dfs_concatenated['predictionstring'].apply(tostr)
         self.transformed_data= dfs_concatenated
 
-    def data2BOMR_NER_df(self):
+    def data2BOMR_NER_df(self,tqdm=True):
         '''
         convert the data df to BOMR dataframe only with doi, text and entities. This could be the input to NER model
         :return:
         '''
-        list_BOMR_dicts = list(self.data['abstract'].progress_apply(self.abstract2BOMRO))
+        if tqdm:
+            list_BOMR_dicts = list(self.data['abstract'].progress_apply(self.abstract2BOMRO))
+        else:
+            list_BOMR_dicts = list(self.data['abstract'].apply(self.abstract2BOMRO))
         list_dois = list(self.data['doi'])
         abstract_list = []
         entities_list = []
