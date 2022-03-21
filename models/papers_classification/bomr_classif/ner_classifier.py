@@ -32,12 +32,12 @@ class NER_BOMR_classifier:
 
         self.train_params = {'batch_size': config['train_batch_size'],
                              'shuffle': True,
-                             'num_workers': 1,
+                             'num_workers': 2,
                              'pin_memory': True
                              }
         self.valid_params = {'batch_size': config['valid_batch_size'],
                              'shuffle': False,
-                             'num_workers': 1,
+                             'num_workers': 2,
                              'pin_memory': True
                              }
 
@@ -92,7 +92,7 @@ class NER_BOMR_classifier:
         loss_metric = []
         accuracy_metric = []
         step_metrics = []
-        for idx, batch in tqdm(enumerate(self.training_loader), total=len(self.training_loader)):
+        for idx, batch in enumerate(self.training_loader):
             ids, mask, labels = get_ids_mask_labels(batch=batch, device=self.config['device'])
 
             loss, tr_logits = self.model(input_ids=ids, attention_mask=mask, labels=labels,
