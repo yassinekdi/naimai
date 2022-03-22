@@ -2,7 +2,7 @@ import torch
 from sklearn.metrics import classification_report
 
 def sklearn_scores(labels,predictions):
-  scores=classification_report(labels,predictions, output_dict=True)
+  scores=classification_report(labels,predictions, output_dict=True, zero_division=0)
   result = {'f1 macro avg': scores['macro avg']['f1-score'],
             'accuracy': scores['accuracy']}
   return result
