@@ -107,6 +107,8 @@ class NER_BOMR_classifier:
                 print("Step : {} -- Loss : {} -- Accuracy : {}".format(idx,np.round(loss_step,2),np.round(tr_accuracy,2)))
 
             if idx%50==0:
+                loss_step = tr_loss / nb_tr_steps
+                tr_accuracy = tr_accuracy / nb_tr_steps
                 loss_metric.append(np.round(loss_step,2))
                 accuracy_metric.append(np.round(tr_accuracy,2))
                 step_metrics.append(idx)
