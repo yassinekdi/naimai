@@ -1,4 +1,11 @@
 import torch
+from sklearn.metrics import classification_report
+
+def sklearn_scores(labels,predictions):
+  scores=classification_report(labels,predictions, output_dict=True)
+  result = {'f1 macro avg': scores['macro avg']['f1-score'],
+            'accuracy': scores['accuracy']}
+  return result
 
 def get_ids_mask_labels(batch,device,labels_from_data=True, model=None):
   ids = batch['input_ids'].to(device, dtype = torch.long)
