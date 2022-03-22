@@ -7,7 +7,6 @@ from tqdm.notebook import tqdm
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from torch.utils.data import DataLoader
 import torch
-from sklearn.metrics import accuracy_score
 
 
 class NER_BOMR_classifier:
@@ -94,7 +93,7 @@ class NER_BOMR_classifier:
         accuracy_metric = []
         step_metrics = []
         f1_metric = []
-        accuracy_sklearn_metric = []
+        #accuracy_sklearn_metric = []
         for idx, batch in enumerate(self.training_loader):
             ids, mask, labels = get_ids_mask_labels(batch=batch, device=self.config['device'])
 
@@ -106,22 +105,19 @@ class NER_BOMR_classifier:
 
             if idx % show_every == 0:
                 loss_step = tr_loss / nb_tr_steps
-                accuracy_step = tr_accuracy / nb_tr_steps
                 f1_step = f1_avg/nb_tr_steps
-                accuracy_sklearn_step = accuracy_sklearn/nb_tr_steps
-                print("Step : {} -- Loss : {} -- Kaggle Accuracy : {} -- SKlearn Accuracy : {} -- F1 Macro avg : {}".format(idx,
-                                                                                                                            np.round(loss_step,2),np.round(accuracy_step,2),np.round(accuracy_sklearn_step,2),np.round(f1_step,2)))
+                accuracy_step = accuracy_sklearn/nb_tr_steps
+                print("Step : {} -- Loss : {} -- Accuracy : {} -- F1 Macro avg : {}".format(idx,
+                                                                                            np.round(loss_step,2),np.round(accuracy_step,2),np.round(f1_step,2)))
 
             if idx%50==0:
                 loss_step = tr_loss / nb_tr_steps
-                accuracy_step = tr_accuracy / nb_tr_steps
                 f1_step = f1_avg / nb_tr_steps
-                accuracy_sklearn_step = accuracy_sklearn / nb_tr_steps
+                accuracy_step = accuracy_sklearn / nb_tr_steps
                 loss_metric.append(np.round(loss_step,2))
                 accuracy_metric.append(np.round(accuracy_step,2))
                 step_metrics.append(idx)
                 f1_metric.append(f1_step)
-                accuracy_sklearn_metric.append(accuracy_sklearn_step)
             flattened_labels, flattened_predictions = flatten_labels_and_predictions(self.model, labels, tr_logits)
 
             # accuracy computation
@@ -136,8 +132,6 @@ class NER_BOMR_classifier:
             f1_avg += f1_accuracy['f1 macro avg']
             accuracy_sklearn += f1_accuracy['accuracy']
 
-            tmp_tr_accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
-            tr_accuracy += tmp_tr_accuracy
             # gradient clipping
             torch.nn.utils.clip_grad_norm_(
                 parameters=self.model.parameters(), max_norm=self.config['max_grad_norm'])
@@ -146,13 +140,13 @@ class NER_BOMR_classifier:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-        return [np.mean(loss_metric),np.mean(accuracy_metric), np.mean(accuracy_sklearn_metric), np.mean(f1_metric)]
+        return [np.mean(loss_metric),np.mean(accuracy_metric), np.mean(f1_metric)]
 
     def train(self, epochs=0, show_every=2000):
         if epochs == 0:
             epochs = self.config['epochs']
         loss_list,accuracy_list,epoch_list = [],[],[]
-        accuracy_sk_list,f1_list = [],[]
+        f1_list = []
         for epoch in tqdm(range(epochs)):
             print('- Epoch : ', epoch)
             for decay in self.optimizer.param_groups:
@@ -161,15 +155,13 @@ class NER_BOMR_classifier:
             result= self.train_epoch(show_every=show_every)
             loss_list.append(result[0])
             accuracy_list.append(result[1])
-            accuracy_sk_list.append(result[2])
-            f1_list.append(result[3])
+            f1_list.append(result[2])
             epoch_list.append(epoch)
             torch.cuda.empty_cache()
             gc.collect()
         return {'loss': loss_list,
                 'accuracy': accuracy_list,
                 'epoch': epoch_list,
-                'sk accuracy': accuracy_sk_list,
                 'f1 avg': f1_list}
 
     def predict_batch(self, batch):
