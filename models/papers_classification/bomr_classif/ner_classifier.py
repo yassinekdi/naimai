@@ -135,6 +135,7 @@ class NER_BOMR_classifier:
             epochs = self.config['epochs']
         loss_list,accuracy_list,epoch_list = [],[],[]
         for epoch in tqdm(range(epochs)):
+            print('- Epoch : ', epoch)
             for decay in self.optimizer.param_groups:
                 decay['lr'] = self.config['learning_rates'][epoch]
             lr = self.optimizer.param_groups[0]['lr']
