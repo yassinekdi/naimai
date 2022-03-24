@@ -3,7 +3,13 @@ from transformers import AutoModelForTokenClassification, AutoTokenizer, Trainin
 from datasets import Dataset
 from naimai.utils.general import correct_ner_data
 import pandas as pd
+from naimai.utils.transformers import sklearn_scores
 
+def compute_metrics(pred):
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    result = sklearn_scores(labels,preds)
+    return result
 
 class NER_BOMR_classifier:
     def __init__(self, config, path_ner_data=None, ner_data_df=None, model=None, tokenizer=None):
@@ -50,7 +56,7 @@ class NER_BOMR_classifier:
         # Training ARGS ----------
         self.training_args = TrainingArguments(
             output_dir=f"{config['model_name'][:10]}",
-            #  output_dir=f"{config['model_name'][:10]}_batch_{config['batch_size']}_epochs_{config['epochs']}_lr_{config['learning_rates']}",
+            save_total_limit = 1,
             evaluation_strategy="epoch",
             learning_rate=config['learning_rates'],
             per_device_train_batch_size=config['batch_size'],
@@ -95,6 +101,7 @@ class NER_BOMR_classifier:
             eval_dataset=self.tokenized_data["test"],
             data_collator=self.data_collator,
             tokenizer=self.tokenizer,
+            compute_metrics=compute_metrics
         )
 
     def train(self):
