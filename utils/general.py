@@ -5,6 +5,7 @@ import os
 from naimai.constants.paths import naimai_dois_path
 import ast
 from collections import Counter
+import re
 
 def load_gzip(path):
     with gzip.open(path, 'rb') as f:
