@@ -56,7 +56,7 @@ class NER_BOMR_classifier:
             self.tokenizer = tokenizer
         else:
             print('Getting Tokenizer..')
-            self.tokenizer = AutoTokenizer.from_pretrained(config['model_name'])
+            self.tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'])
 
         # MODEL  ----------------
         if model:
