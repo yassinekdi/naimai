@@ -1,15 +1,32 @@
 from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, Trainer, \
     DataCollatorForTokenClassification
-from datasets import Dataset
+from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
 import pandas as pd
-from naimai.utils.transformers import sklearn_scores
+import numpy as np
 
-def compute_metrics(pred):
-    labels = pred.label_ids
-    preds = pred.predictions.argmax(-1)
-    result = sklearn_scores(labels,preds)
-    return result
+metric = load_metric("seqeval")
+output_labels = ['O', 'B-background', 'I-background', 'B-objectives', 'I-objectives',
+                         'B-methods', 'I-methods', 'B-results', 'I-results']
+def compute_metrics(p):
+    predictions, labels = p
+    predictions = np.argmax(predictions, axis=2)
+
+    # Remove ignored index (special tokens)
+    true_predictions = [
+        [output_labels[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    true_labels = [
+        [output_labels[l] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+
+    results = metric.compute(predictions=true_predictions, references=true_labels)
+    return {
+        "f1": results["overall_f1"],
+        "accuracy": results["overall_accuracy"],
+    }
 
 class NER_BOMR_classifier:
     def __init__(self, config, path_ner_data=None, ner_data_df=None, model=None, tokenizer=None):
@@ -19,8 +36,7 @@ class NER_BOMR_classifier:
         self.datasets = None
 
         # LABELS ----------------
-        output_labels = ['O', 'B-background', 'I-background', 'B-objectives', 'I-objectives',
-                         'B-methods', 'I-methods', 'B-results', 'I-results']
+
         self.ids2labels = {k: v for k, v in enumerate(output_labels)}
         self.labels2ids = {v: k for k, v in enumerate(output_labels)}
 
