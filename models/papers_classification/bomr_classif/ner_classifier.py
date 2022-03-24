@@ -74,6 +74,7 @@ class NER_BOMR_classifier:
             output_dir=f"{config['model_name'][:10]}",
             save_total_limit = 1,
             evaluation_strategy="epoch",
+            logging_strategy="epoch",
             learning_rate=config['learning_rates'],
             per_device_train_batch_size=config['batch_size'],
             per_device_eval_batch_size=config['batch_size'],
