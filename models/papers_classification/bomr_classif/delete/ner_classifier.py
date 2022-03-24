@@ -9,6 +9,37 @@ from torch.utils.data import DataLoader
 import torch
 
 
+# config = {'model_name': MODEL_NAME,
+#          'max_length': 256,
+#          'train_batch_size':batch_size,
+#          'valid_batch_size':batch_size,
+#          'epochs':n_epochs,
+#           'label_all_tokens': True,
+#          'learning_rates': [learning_rate]*n_epochs,
+#         #  'learning_rates': [2.5e-5, 2.5e-5, 2.5e-6, 2.5e-6, 2.5e-7],
+#          'max_grad_norm':10,
+#          'device': 'cuda' if cuda.is_available() else 'cpu'}
+#
+# MODEL_NAME = 'dslim/bert-base-NER'
+# # MODEL_NAME = 'google/bigbird-pegasus-large-pubmed'
+# n_epochs=10
+# learning_rate=2.5e-6
+# batch_size=8
+#
+# path_detailed_data = "drive/MyDrive/MyProject/data/Intent_classif_data/detailed_data.csv"
+# path_ner_data = "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df.csv"
+#
+#
+# clf = NER_BOMR_classifier(path_detailed_data,path_ner_data,config)
+# # clf = NER_BOMR_classifier(path_detailed_data,path_ner_data,config, model=clf.model,tokenizer=clf.tokenizer)
+#
+# clf.get_train_validation_data()
+# clf.data_df2dataloader()
+#
+# lr_6=clf.train()
+#
+# clf.compute_validation_F1_score()
+
 class NER_BOMR_classifier:
     def __init__(self, path_detailed_data, path_ner_data, config, model=None, tokenizer=None):
         self.detailed_data_df = pd.read_csv(path_detailed_data).dropna()  # Df with ['doi', 'text', 'start', 'end', 'predictionstring', 'class', 'class_num', 'len']
