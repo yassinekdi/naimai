@@ -4,6 +4,7 @@ from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
 import pandas as pd
 import numpy as np
+import torch
 
 metric = load_metric("seqeval")
 output_labels = ['O', 'B-background', 'I-background', 'B-objectives', 'I-objectives',
@@ -29,11 +30,12 @@ def compute_metrics(p):
     }
 
 class NER_BOMR_classifier:
-    def __init__(self, config, path_ner_data=None, ner_data_df=None, model=None, tokenizer=None):
+    def __init__(self, config, path_ner_data=None, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None):
         self.config = config
         self.tokenized_data = None
         self.trainer = None
         self.datasets = None
+        self.label_all_subtokens = label_all_subtokens
 
         # LABELS ----------------
 
@@ -54,6 +56,8 @@ class NER_BOMR_classifier:
         # TOKENIZER ------------------
         if tokenizer:
             self.tokenizer = tokenizer
+        elif load_model:
+            self.load_model(path_model)
         else:
             print('Getting Tokenizer..')
             self.tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'])
@@ -61,6 +65,8 @@ class NER_BOMR_classifier:
         # MODEL  ----------------
         if model:
             self.model = model
+        elif load_model:
+            pass
         else:
             print('Model creation..')
             self.model = AutoModelForTokenClassification.from_pretrained(config['model_name'],
@@ -97,7 +103,10 @@ class NER_BOMR_classifier:
                 elif word_idx != previous_word_idx:  # Only label the first token of a given word.
                     label_ids.append(label[word_idx])
                 else:
-                    label_ids.append(-100)
+                    if self.label_all_subtokens:
+                        label_ids.append(label[word_idx])
+                    else:
+                        label_ids.append(-100)
                 previous_word_idx = word_idx
             labels.append(label_ids)
 
@@ -124,3 +133,11 @@ class NER_BOMR_classifier:
 
     def train(self):
         self.trainer.train()
+
+    def load_model(self,path_model):
+        print('Loading model & tokenizer...')
+        self.model = AutoModelForTokenClassification.from_pretrained(path_model, num_labels=len(output_labels))
+        self.tokenizer = AutoTokenizer.from_pretrained(path_model)
+        if torch.cuda.is_available():
+            print('  >> GPU Used in objective classification !')
+            self.model = self.model.to('cuda')
