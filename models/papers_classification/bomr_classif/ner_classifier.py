@@ -1,36 +1,37 @@
-from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, Trainer, \
+from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
     DataCollatorForTokenClassification
 from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
+from naimai.constants.models import output_labels
+from naimai.constants.paths import path_ner_data
+from .trainer import BOMR_Trainer
 import pandas as pd
 import numpy as np
 import torch
 
 metric = load_metric("seqeval")
-output_labels = ['O', 'B-background', 'I-background', 'B-objectives', 'I-objectives',
-                         'B-methods', 'I-methods', 'B-results', 'I-results']
-def compute_metrics(p):
-    predictions, labels = p
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=2)
 
     # Remove ignored index (special tokens)
     true_predictions = [
-        [output_labels[p] for (p, l) in zip(prediction, label) if l != -100]
+        [output_labels[eval_pred] for (eval_pred, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
     ]
     true_labels = [
-        [output_labels[l] for (p, l) in zip(prediction, label) if l != -100]
+        [output_labels[l] for (eval_pred, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
     ]
 
     results = metric.compute(predictions=true_predictions, references=true_labels)
     return {
-        "f1": results["overall_f1"],
         "accuracy": results["overall_accuracy"],
     }
 
 class NER_BOMR_classifier:
-    def __init__(self, config, path_ner_data=None, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None):
+    def __init__(self, config, path_ner_data=path_ner_data, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None):
         self.config = config
         self.tokenized_data = None
         self.trainer = None
@@ -121,7 +122,7 @@ class NER_BOMR_classifier:
         self.tokenized_data = self.datasets.map(self.tokenize_and_align_labels, batched=True)
 
     def get_trainer(self):
-        self.trainer = Trainer(
+        self.trainer = BOMR_Trainer(
             model=self.model,
             args=self.training_args,
             train_dataset=self.tokenized_data["train"],

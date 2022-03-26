@@ -42,7 +42,7 @@ def calc_overlap(row):
 
 def score_feedback_comp(pred_df, gt_df):
     """
-    A function that scores for the kaggle
+    Modified function that scores for the kaggle
         Student Writing Competition
 
     Uses the steps in the evaluation page here:
@@ -90,4 +90,5 @@ def score_feedback_comp(pred_df, gt_df):
     FN = len(unmatched_gt_ids)
     # calc microf1
     my_f1_score = TP / (TP + 0.5 * (FP + FN))
+
     return my_f1_score

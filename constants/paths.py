@@ -35,3 +35,6 @@ arxiv_pdfs_url = 'https://arxiv.org/pdf/'
 training_data_path = 'drive/MyDrive/MyProject/main_pipelines/all/total_training_papers'
 naimai_data_path = 'drive/MyDrive/MyProject/main_pipelines/all/total_naimai_papers'
 doi_url = 'https://www.doi.org/'
+
+path_detailed_data = "drive/MyDrive/MyProject/data/Intent_classif_data/detailed_data.csv"
+path_ner_data = "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df.csv"
