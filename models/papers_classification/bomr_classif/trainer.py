@@ -8,7 +8,9 @@ from naimai.constants.models import ner_labels, output_labels
 from naimai.constants.paths import path_detailed_data
 
 class Predictions_preparer:
-    "transform prediction to pandas to use new metric for scoring"
+    '''
+    transform prediction to pandas to use new metric for scoring
+    '''
 
     def __init__(self, predictions, tokenizer, datasets):
         ''' predictions = tensor([[1,2,3], [6,5,1]]) & classifier'''
@@ -19,7 +21,12 @@ class Predictions_preparer:
         self.ids2labels = {k: v for k, v in enumerate(output_labels)}
 
     def remove_tokenization_effect(self, prediction, tokens):
-        # "when tokenized, sub words are labelled too and we end up with more word ids than the input. We remove this tokenization effect here and return the prediction filtered"
+        '''
+        when tokenized, sub words are labelled too and we end up with more word ids than the input. We remove this tokenization effect here and return the prediction filtered
+        :param prediction:
+        :param tokens:
+        :return:
+        '''
         encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt').to('cuda')
         predictions_list = prediction.tolist()
         predictions_filtered = []
@@ -34,17 +41,29 @@ class Predictions_preparer:
         return predictions_filtered
 
     def prediction_filtered2named_labels(self, prediction_filtered):
-        # "convert prediction ids to named labels"
+        '''
+        convert prediction ids to named labels
+        :param prediction_filtered:
+        :return:
+        '''
         return [self.ids2labels[elt] for elt in prediction_filtered]
 
     def clean_named_labels(self, named_labels):
-        # "remove the initial B- & I- from labels"
+        '''
+        remove the initial B- & I- from labels
+        :param named_labels: list named labels
+        :return:
+        '''
         result = [re.sub('[BI]\-', '', elt) for elt in named_labels]
         result = [elt.replace('O', 'other') for elt in result]
         return result
 
     def get_wids_classes(self, clean_labels):
-        # "get word ids (or predictionstring) and classes from clean labels"
+        '''
+        get word ids (or predictionstring) and classes from clean labels
+        :param clean_labels:
+        :return:
+        '''
         cnt = Counter(clean_labels)
         list_prediction_string = []
         classes = []
@@ -55,7 +74,12 @@ class Predictions_preparer:
         return {'class': classes, 'predictionstring': list_prediction_string}
 
     def to_df(self, doi, wids_classes):
-        # clf.trainer.eval_dataset['doi']
+        '''
+         clf.trainer.eval_dataset['doi']
+        :param doi:
+        :param wids_classes:
+        :return:
+        '''
         wids_classes['doi'] = [doi] * len(wids_classes['class'])
         return pd.DataFrame(wids_classes)
 
