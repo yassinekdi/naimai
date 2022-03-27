@@ -1,4 +1,6 @@
-from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
+# from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
+#     DataCollatorForTokenClassification
+from transformers import TrainingArguments, \
     DataCollatorForTokenClassification
 from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
@@ -61,7 +63,7 @@ class NER_BOMR_classifier:
             self.load_model(path_model)
         else:
             print('Getting Tokenizer..')
-            self.tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'])
+            # self.tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'])
 
         # MODEL  ----------------
         if model:
@@ -70,8 +72,8 @@ class NER_BOMR_classifier:
             pass
         else:
             print('Model creation..')
-            self.model = AutoModelForTokenClassification.from_pretrained(config['model_name'],
-                                                                         num_labels=len(output_labels))
+            # self.model = AutoModelForTokenClassification.from_pretrained(config['model_name'],
+            #                                                              num_labels=len(output_labels))
 
         # Data Collator ------------
         self.data_collator = DataCollatorForTokenClassification(self.tokenizer)
