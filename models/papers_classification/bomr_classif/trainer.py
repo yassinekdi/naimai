@@ -28,7 +28,8 @@ class Predictions_preparer:
         :return:
         '''
         encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt').to('cuda')
-        predictions_list = prediction.tolist()
+
+        predictions_list = prediction.tolist()[0]
         predictions_filtered = []
         words_ids = encoding.word_ids()
         previous_word_id = None
