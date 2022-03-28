@@ -1,11 +1,13 @@
 from collections import Counter
 from transformers import Trainer
+from tqdm.notebook import tqdm
 import re
 import numpy as np
 import pandas as pd
 from naimai.utils.transformers import score_feedback_comp
 from naimai.constants.models import ner_labels, output_labels
 from naimai.constants.paths import path_detailed_data
+from torch import cuda
 
 class Predictions_preparer:
     '''
@@ -13,7 +15,12 @@ class Predictions_preparer:
     '''
 
     def __init__(self, predictions, tokenizer, datasets):
-        ''' predictions = tensor([[1,2,3], [6,5,1]]) & classifier'''
+        '''
+        predictions = tensor([[1,2,3], [6,5,1]]) & classifier
+        :param predictions: output of model (logits.argmax(-1))
+        :param tokenizer: tokenizer of model
+        :param datasets: Dataset objects (datasets['test'])
+        '''
         self.predictions = predictions
         self.predictions_df = None
         self.tokenizer = tokenizer
@@ -27,7 +34,10 @@ class Predictions_preparer:
         :param tokens:
         :return:
         '''
-        encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt').to('cuda')
+        if cuda.is_available():
+            encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt').to('cuda')
+        else:
+            encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt')
 
         predictions_list = prediction.tolist()
         predictions_filtered = []
@@ -84,18 +94,32 @@ class Predictions_preparer:
         wids_classes['doi'] = [doi] * len(wids_classes['class'])
         return pd.DataFrame(wids_classes)
 
-    def prepare(self):
+    def prepare_one_prediction(self,doi,prediction,tokens):
+        '''
+        transform one prediction into dataframe with columns : class, predictionstring & doi
+        :param doi: doi in str
+        :param prediction: prediction output
+        :param tokens: tokens of predicted text
+        :return:
+        '''
+        prediction_filtered = self.remove_tokenization_effect(prediction, tokens)
+        prediction_named = self.prediction_filtered2named_labels(prediction_filtered)
+        clean_prediciton_named = self.clean_named_labels(prediction_named)
+        wids_classes = self.get_wids_classes(clean_prediciton_named)
+        df = self.to_df(doi, wids_classes)
+        return df
+
+    def prepare(self, show_progress=False):
         list_df = []
-        for prediction, dataset in zip(self.predictions, self.datasets):
+        if show_progress:
+            range_ = tqdm(zip(self.predictions, self.datasets), total=len(self.predictions))
+        else:
+            range_ = zip(self.predictions, self.datasets)
+        for prediction, dataset in range_:
             doi, tokens = dataset['doi'], dataset['tokens']
-            prediction_filtered = self.remove_tokenization_effect(prediction, tokens)
-            prediction_named = self.prediction_filtered2named_labels(prediction_filtered)
-            clean_prediciton_named = self.clean_named_labels(prediction_named)
-            wids_classes = self.get_wids_classes(clean_prediciton_named)
-            df = self.to_df(doi, wids_classes)
+            df = self.prepare_one_prediction(doi=doi,prediction=prediction,tokens=tokens)
             list_df.append(df)
         self.predictions_df = pd.concat(list_df)
-
 
 class BOMR_Trainer(Trainer):
 

@@ -79,8 +79,12 @@ class NER_BOMR_classifier:
         self.data_collator = DataCollatorForTokenClassification(self.tokenizer)
 
         # Training ARGS ----------
+        if load_model:
+            output_dir = config['model_name']
+        else:
+            output_dir = config['model_name'][:10]
         self.training_args = TrainingArguments(
-            output_dir=f"{config['model_name'][:10]}",
+            output_dir=f"{output_dir}",
             save_total_limit = 1,
             evaluation_strategy="epoch",
             logging_strategy="epoch",

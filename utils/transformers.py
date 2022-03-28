@@ -1,6 +1,7 @@
 import torch
 from sklearn.metrics import classification_report
-
+from spacy import displacy
+from naimai.constants.models import colors_labels
 def sklearn_scores(labels,predictions):
   scores=classification_report(labels,predictions, output_dict=True, zero_division=0)
   result = {'f1 macro avg': scores['macro avg']['f1-score'],
@@ -92,3 +93,30 @@ def score_feedback_comp(pred_df, gt_df):
     my_f1_score = TP / (TP + 0.5 * (FP + FN))
 
     return my_f1_score
+
+
+def get_doc_options(txt, df):
+    df['start'] = df['predictionstring'].apply(lambda x: int(x.split()[0]) - 1)
+    df['end'] = df['predictionstring'].apply(lambda x: int(x.split()[-1]) + 1)
+
+    labels_list = df['class'].tolist()
+    labels_list = [elt[:3].upper() for elt in labels_list]
+    start_list = df['start'].tolist()
+    end_list = df['end'].tolist()
+
+    ents = []
+    colors = {label: colors_labels[label] for label in labels_list}
+    for start, end, label in zip(start_list, end_list, labels_list):
+        dic = {'start': start, 'end': end, 'label': label}
+        ents.append(dic)
+
+    doc = {'text': txt, "ents": ents}
+    options = {'ents': labels_list, "colors": colors}
+    return {'doc': doc, "options": options}
+
+
+def visualize(txt, df):
+    results = get_doc_options(txt, df)
+    doc = results['doc']
+    options = results['options']
+    displacy.render(doc, style="ent", options=options, manual=True, jupyter=True)
