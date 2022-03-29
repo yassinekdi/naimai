@@ -1,12 +1,12 @@
-# from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
-#     DataCollatorForTokenClassification
-from transformers import TrainingArguments, \
-    DataCollatorForTokenClassification
+from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
+     DataCollatorForTokenClassification
+# from transformers import TrainingArguments, DataCollatorForTokenClassification
 from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
+from naimai.utils.transformers import visualize
 from naimai.constants.models import output_labels
 from naimai.constants.paths import path_ner_data
-from .trainer import BOMR_Trainer
+from .trainer import BOMR_Trainer, Predictions_preparer
 import pandas as pd
 import numpy as np
 import torch
@@ -145,3 +145,20 @@ class NER_BOMR_classifier:
         if torch.cuda.is_available():
             print('  >> GPU Used in objective classification !')
             self.model = self.model.to('cuda')
+
+    def predict(self,text,visualize_=True):
+        tokens = text.split()
+        if torch.cuda.is_available():
+            encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True,return_tensors='pt',padding='max_length',max_length=self.config['max_length']).to('cuda')
+        else:
+            encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt')
+        outputs = self.model(**encoding)
+        prediction = outputs.logits.argmax(-1)[0]
+
+        prp = Predictions_preparer(predictions=prediction,
+                                   tokenizer=self.tokenizer,
+                                   datasets=None)
+        df = prp.prepare_one_prediction("doi", prediction, tokens)
+        if visualize_:
+            visualize(text,df)
+        return df

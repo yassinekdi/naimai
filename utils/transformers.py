@@ -94,15 +94,30 @@ def score_feedback_comp(pred_df, gt_df):
 
     return my_f1_score
 
+def get_first_char_id(elt,text):
+  start_wd = elt['start']
+  split=text.split()
+  first_wds = ' '.join(split[start_wd:start_wd+5])
+  first_char = text.index(first_wds)
+  return first_char
+
+def get_last_char_id(elt,text):
+  end_wid = elt['end']
+  split=text.split()
+  last_wds = ' '.join(split[end_wid-5:end_wid])
+  end_char = text.index(last_wds)+len(last_wds)
+  return end_char
 
 def get_doc_options(txt, df):
     df['start'] = df['predictionstring'].apply(lambda x: int(x.split()[0]) - 1)
-    df['end'] = df['predictionstring'].apply(lambda x: int(x.split()[-1]) + 1)
+    df['end'] = df['predictionstring'].apply(lambda x: int(x.split()[-1]))
+    df['start_char'] = df.apply(get_first_char_id, args=(txt,), axis=1)
+    df['last_char'] = df.apply(get_last_char_id, args=(txt,), axis=1)
 
     labels_list = df['class'].tolist()
     labels_list = [elt[:3].upper() for elt in labels_list]
-    start_list = df['start'].tolist()
-    end_list = df['end'].tolist()
+    start_list = df['start_char'].tolist()
+    end_list = df['last_char'].tolist()
 
     ents = []
     colors = {label: colors_labels[label] for label in labels_list}
