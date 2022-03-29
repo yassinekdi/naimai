@@ -1,5 +1,5 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from .constants.paths import path_encoder
+from constants.paths import path_encoder
 import torch
 
 class Objective_classifier:

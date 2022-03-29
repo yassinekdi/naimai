@@ -39,6 +39,7 @@ doi_url = 'https://www.doi.org/'
 path_detailed_data = "drive/MyDrive/MyProject/data/Intent_classif_data/detailed_data.csv"
 path_detailed_data_0_500= "drive/MyDrive/MyProject/data/Intent_classif_data/detailed_data_0-500.csv"
 path_detailed_data_500_1000= "drive/MyDrive/MyProject/data/Intent_classif_data/detailed_data_500-1000.csv"
+path_detailed_data_total = "drive/MyDrive/MyProject/data/Intent_classif_data/detailed_data_total.csv"
 
 path_ner_data = "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df.csv"
 path_ner_data_500_1000= "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df_500-1000.csv"
