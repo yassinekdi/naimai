@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from naimai.utils.transformers import score_feedback_comp
 from naimai.constants.models import ner_labels, output_labels
-from naimai.constants.paths import path_detailed_data
+from naimai.constants.paths import path_detailed_data_total
 from torch import cuda
 
 class Predictions_preparer:
@@ -153,7 +153,7 @@ class BOMR_Trainer(Trainer):
 
             preparer.prepare()
             eval_pred_df = preparer.predictions_df
-            ground_truth_df = pd.read_csv(path_detailed_data).dropna()
+            ground_truth_df = pd.read_csv(path_detailed_data_total).dropna()
             eval_gt_df = ground_truth_df[ground_truth_df["doi"].isin(eval_dataset["doi"])].reset_index(drop=True).copy()
 
             list_class_f1scores = []

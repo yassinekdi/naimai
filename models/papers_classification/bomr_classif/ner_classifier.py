@@ -5,7 +5,7 @@ from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
 from naimai.utils.transformers import visualize
 from naimai.constants.models import output_labels
-from naimai.constants.paths import path_ner_data
+from naimai.constants.paths import path_ner_data_total
 from .trainer import BOMR_Trainer, Predictions_preparer
 import pandas as pd
 import numpy as np
@@ -33,7 +33,7 @@ def compute_metrics(eval_pred):
     }
 
 class NER_BOMR_classifier:
-    def __init__(self, config, path_ner_data=path_ner_data, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None):
+    def __init__(self, config, path_ner_data=path_ner_data_total, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None):
         self.config = config
         self.tokenized_data = None
         self.trainer = None
