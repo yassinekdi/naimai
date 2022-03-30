@@ -259,9 +259,11 @@ class OMRData:
         except:
             pass
 
-    def data2BOMR_NER_df(self,tqdm=True):
+    def data2BOMR_NER_df(self,tqdm=True, weights=(60, 20, 20)):
         '''
         convert the data df to BOMR dataframe only with doi, text and entities. This could be the input to NER model
+        :param tqdm: show tqdm
+        :param weights: weights of BOMR, OBMR & MOBR
         :return:
         '''
         if tqdm:
@@ -274,7 +276,7 @@ class OMRData:
         order_list=[]
         orders = ['BOMR', 'OBMR', 'MOBR']
         for bomr,doi in zip(list_BOMR_dicts,list_dois):
-            order=random.choices(orders, weights=(60, 20, 20), k=1)[0]
+            order=random.choices(orders, weights=weights, k=1)[0]
             abstract_list.append(self.BOMR2text(bomr,order=order))
             entities=self.BOMR2entities(bomr,order=order)
             entities_vals = []
