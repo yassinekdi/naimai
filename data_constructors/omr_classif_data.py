@@ -288,7 +288,7 @@ class OMRData:
                            'text': abstract_list,
                            'entities': entities_list,
                            'order_list': order_list})
-    def is_long_sentence(self,sentence,threshold=8):
+    def is_long_sentence(self,sentence: str,threshold=8):
         split = sentence.split()
         if len(split)>threshold:
             return True

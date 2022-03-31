@@ -1,6 +1,6 @@
-from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
-     DataCollatorForTokenClassification
-# from transformers import TrainingArguments, DataCollatorForTokenClassification
+# from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
+#      DataCollatorForTokenClassification
+from transformers import TrainingArguments, DataCollatorForTokenClassification
 from datasets import Dataset, load_metric
 from naimai.utils.general import correct_ner_data
 from naimai.utils.transformers import visualize
@@ -105,7 +105,11 @@ class NER_BOMR_classifier:
                 if word_idx is None:
                     label_ids.append(-100)
                 elif word_idx != previous_word_idx:  # Only label the first token of a given word.
-                    label_ids.append(label[word_idx])
+                    try:
+                        label_ids.append(label[word_idx])
+                    except:
+                        print(f'idx {i}, widx = {word_idx}, label {label}, len word ids= {len(word_ids)}')
+                        label_ids.append(-100)
                 else:
                     if self.label_all_subtokens:
                         label_ids.append(label[word_idx])
@@ -113,6 +117,7 @@ class NER_BOMR_classifier:
                         label_ids.append(-100)
                 previous_word_idx = word_idx
             labels.append(label_ids)
+
 
         tokenized_inputs["labels"] = labels
         return tokenized_inputs
