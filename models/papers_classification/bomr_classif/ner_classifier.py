@@ -108,7 +108,7 @@ class NER_BOMR_classifier:
                     try:
                         label_ids.append(label[word_idx])
                     except:
-                        print(f'idx {i}, widx = {word_idx}, label {label}, len word ids= {len(word_ids)}')
+                        # print(f'idx {i}, widx = {word_idx}, label {label}, len word ids= {len(word_ids)}')
                         label_ids.append(-100)
                 else:
                     if self.label_all_subtokens:
