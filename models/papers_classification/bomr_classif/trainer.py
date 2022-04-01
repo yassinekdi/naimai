@@ -47,8 +47,14 @@ class Predictions_preparer:
             if word_id is None:
                 pass
             elif word_id != previous_word_id:
-                predictions_filtered.append(predictions_list[idx])
-                previous_word_id = word_id
+                try:
+                    predictions_filtered.append(predictions_list[idx])
+                    previous_word_id = word_id
+                except:
+                    # print(f'idx {i}, widx = {word_idx}, label {label}, len word ids= {len(word_ids)}')
+                    predictions_filtered.append(0)
+                    previous_word_id = word_id
+
         return predictions_filtered
 
     def prediction_filtered2named_labels(self, prediction_filtered):
