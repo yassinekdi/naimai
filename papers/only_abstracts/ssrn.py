@@ -82,7 +82,7 @@ class papers_ssrn(papers):
     def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
-        self.data['papers_field'] = papers_path.split('/')[-2]
+        self.data['papers_field'] = papers_path.split('/')[-2].replace('_',' ')
         print('Len data : ', len(self.data))
         print('')
         print('Getting dois..')
