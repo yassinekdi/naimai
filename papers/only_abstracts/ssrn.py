@@ -52,7 +52,7 @@ class paper_ssrn(paper_base):
         bs = BeautifulSoup(abstract_box, 'html.parser')
         journal = bs.find(name='div',attrs={'class': 'reference-info'})
         if journal:
-            clean1 = re.sub(regex_journal_names,'',journal)
+            clean1 = re.sub(regex_journal_names,'',journal.text)
             self.Journal = re.sub(regex_journal_names2,'',clean1, flags=re.I).strip()
         else:
             self.Journal =  self.paper_infos['field']
@@ -74,11 +74,11 @@ class paper_ssrn(paper_base):
 
     def get_Keywords(self) -> str:
         keywords = self.paper_infos['keywords']
-        if not np.isnan(keywords):
+        if isinstance(keywords,str):
             self.Keywords = keywords.replace('Keywords: ', '')
 
 
-class papers_issn(papers):
+class papers_ssrn(papers):
     def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
