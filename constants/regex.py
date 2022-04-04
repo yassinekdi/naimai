@@ -55,3 +55,6 @@ regex_urlsoup=r'q=(.*)&sa=U&ved'
 regex_paper_year = ' 19[0-9]{2}|20[01][0-9]|202[01] '
 
 regex_filtered_words_obj = 'this section|Corresponding| PhD '
+regex_remove_from_ssrn_fields = '&\s?|eJournal|Educator:?|Courses, Cases & Teaching|Teaching'
+regex_journal_names = '[^A-Za-z\s]'
+regex_journal_names2 = 'volume|issue|\n|doi'
