@@ -6,8 +6,11 @@ from naimai.constants.paths import path_objective_classifier
 from naimai.constants.regex import regex_filtered_words_obj, regex_objectives, regex_review
 
 class Omr_Review_Paper_Classifier:
-    def __init__(self,paper: paper_pmc):
-        self.objective_classifier = Objective_classifier(dir=path_objective_classifier)
+    def __init__(self,paper: paper_pmc,objective_classifier=None):
+        if objective_classifier:
+            self.objective_classifier = objective_classifier
+        else:
+            self.objective_classifier = Objective_classifier(dir=path_objective_classifier)
         self.paper = paper
 
     def get_paper_abstract(self ) -> str:
