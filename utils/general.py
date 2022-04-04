@@ -5,6 +5,7 @@ import os
 from naimai.constants.paths import naimai_dois_path
 import ast
 from collections import Counter
+import pandas as pd
 import re
 import time
 
@@ -82,3 +83,10 @@ def get_doi_by_title(title,crossref,sleep=3):
     doi=''
   time.sleep(sleep)
   return doi
+
+def ssrn_len_docs(path_csvs):
+  csvs = os.listdir(path_csvs)
+  paths = [os.path.join(path_csvs,elt) for elt in csvs]
+  dfs = [pd.read_csv(elt) for elt in paths]
+  csvs_dict = {field: len(df) for field, df in zip(csvs,dfs)}
+  return csvs_dict
