@@ -58,3 +58,6 @@ regex_filtered_words_obj = 'this section|Corresponding| PhD '
 regex_remove_from_ssrn_fields = '&\s?|eJournal|Educator:?|Courses, Cases & Teaching|Teaching'
 regex_journal_names = '[^A-Za-z\s]'
 regex_journal_names2 = 'volume|issue|\n|doi'
+
+regex_abstract_omr = 'objectives?:|results?:|questions?:|purposes?:|findings:|methods:|conclusion:'
+regex_review = 'review|summarize'
