@@ -59,7 +59,7 @@ class paper_pmc(paper_full_base):
         body_dict = ast.literal_eval(body_dict_str)
         return body_dict
 
-    def headers2imr(self,headers):
+    def headers2imr(self,headers: list) -> dict:
         '''
         get list of headers of the paper and convert it to imr sections
         :param headers:

@@ -76,8 +76,8 @@ def correct_saved_ner_data(ner_df):
     return ner_df
 
 def get_doi_by_title(title,crossref,sleep=3):
-  x = crossref.works(query = title, limit = 1)
   try:
+    x = crossref.works(query = title, limit = 1)
     doi = x['message']['items'][0]['DOI']
   except:
     doi=''
