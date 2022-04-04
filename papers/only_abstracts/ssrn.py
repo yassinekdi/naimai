@@ -108,7 +108,7 @@ class papers_ssrn(papers):
                 self.naimai_dois.append(new_paper.doi)
 
 
-    # @update_naimai_dois
+    @update_naimai_dois
     def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1):
         for idx,_ in self.data.iterrows():
             self.add_paper(idx_in_data=idx)
