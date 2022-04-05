@@ -79,15 +79,21 @@ class paper_ssrn(paper_base):
 
 
 class papers_ssrn(papers):
-    def __init__(self, papers_path):
+    def __init__(self, papers_path,data):
         super().__init__() # loading self.naimai_dois & other attributes
-        self.data = pd.read_csv(papers_path)
-        self.data['papers_field'] = papers_path.split('/')[-2].replace('_',' ')
-        print('Len data : ', len(self.data))
-        print('')
-        print('Getting dois..')
-        cr = Crossref()
-        self.data['doi'] = self.data['title'].progress_apply(get_doi_by_title, args=(cr,))
+        if isinstance(data,pd.DataFrame):
+            self.data = data[data['abstract_text'].notna()]
+            self.data = self.data.fillna('')
+            print('Len data : ', len(self.data))
+        else:
+            data2 = pd.read_csv(papers_path)
+            self.data = data2[data2['abstract_text'].notna()]
+            self.data['papers_field'] = papers_path.split('/')[-2].replace('_',' ')
+            print('Len data : ', len(self.data))
+            print('')
+            print('Getting dois..')
+            cr = Crossref()
+            self.data['doi'] = self.data['title'].progress_apply(get_doi_by_title, args=(cr,))
 
 
     def add_paper(self,idx_in_data):
@@ -109,6 +115,11 @@ class papers_ssrn(papers):
 
 
     @update_naimai_dois
-    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1):
-        for idx,_ in self.data.iterrows():
+    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False):
+
+        if show_tqdm:
+            range_ = tqdm(self.data.iterrows(),total=len(self.data))
+        else:
+            range_= self.data.iterrows()
+        for idx,_ in range_:
             self.add_paper(idx_in_data=idx)

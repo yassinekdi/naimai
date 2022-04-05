@@ -10,6 +10,7 @@ class Omr_Review_Paper_Classifier:
         if objective_classifier:
             self.objective_classifier = objective_classifier
         else:
+            print('Need GPU to faster things..')
             self.objective_classifier = Objective_classifier(dir=path_objective_classifier)
         self.paper = paper
 
