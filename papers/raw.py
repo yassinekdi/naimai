@@ -69,7 +69,13 @@ class paper_full_base(paper_base):
         get all abbreviations of the papers in Introduction & Methods sections.
         :return:
         '''
-        abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
+        abstract_abbrevs={}
+        if isinstance(self.Abstract,str):
+            abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
+        elif isinstance(self.Abstract,dict):
+            for elt in self.Abstract:
+                abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract[elt])
+                abstract_abbrevs.update(abstract_abbrevs)
 
         for elt in self.Introduction:
             intro_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Introduction[elt])

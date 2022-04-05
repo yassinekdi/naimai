@@ -20,8 +20,8 @@ class Omr_Review_Paper_Classifier:
         :param paper:
         :return:
         '''
-        abstract =self.paper.get_Abstract(stacked=False)
-        return abstract
+        self.paper.get_Abstract(stacked=False)
+        return self.paper.Abstract
 
     def get_paper_title(self) -> str:
         '''

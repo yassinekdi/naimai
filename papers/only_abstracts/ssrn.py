@@ -27,7 +27,7 @@ class paper_ssrn(paper_base):
         if doi:
             self.doi = doi
         else:
-            self.doi = 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id='+ self.paper_infos['abstract_id']
+            self.doi = 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id='+ str(self.paper_infos['abstract_id'])
 
     def get_fields(self) -> list:
         papers_field = self.paper_infos['papers_field']
@@ -79,15 +79,15 @@ class paper_ssrn(paper_base):
 
 
 class papers_ssrn(papers):
-    def __init__(self, papers_path,data):
+    def __init__(self, papers_path,data=None):
         super().__init__() # loading self.naimai_dois & other attributes
         if isinstance(data,pd.DataFrame):
-            self.data = data[data['abstract_text'].notna()]
+            self.data = data[data['abstract_text'].notna()].reset_index(drop=True)
             self.data = self.data.fillna('')
             print('Len data : ', len(self.data))
         else:
             data2 = pd.read_csv(papers_path)
-            self.data = data2[data2['abstract_text'].notna()]
+            self.data = data2[data2['abstract_text'].notna()].reset_index(drop=True)
             self.data['papers_field'] = papers_path.split('/')[-2].replace('_',' ')
             print('Len data : ', len(self.data))
             print('')

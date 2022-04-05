@@ -15,13 +15,14 @@ class paper_pmc(paper_full_base):
         self.database ="pmc"
         self.paper_infos = df.iloc[idx_in_df,:]
 
-    def get_doi(self):
+    def get_doi(self) -> str:
         self.doi = self.paper_infos['doi']
 
-    def get_Abstract(self,stacked=True):
+    def get_Abstract(self,stacked=True,dict_format=False) -> str:
         '''
         clean & stack (if stacked=True) abstract elements into one text.
-        The spaced abstract case (a b s t r a c t..) is considered. if stacked = False, it returns abstract as dictionary
+        The spaced abstract case (a b s t r a c t..) is considered. if stacked = False, it puts the abstract elements in
+        str format. It can returns in dict format if dict_format=True
         :return:
         '''
         abstract_dict_str = self.paper_infos['abstract']
@@ -42,10 +43,13 @@ class paper_pmc(paper_full_base):
             self.Abstract = cleaned_text
         else:
             result = {elt: ' '.join(abstract_dict[elt]) for elt in abstract_dict}
-            result_txt = ''
-            for elt in result:
-                result_txt+=' '+ elt+': '+result[elt]
-            return result_txt.strip()
+            if dict_format:
+                self.Abstract = result
+            else:
+                result_txt = ''
+                for elt in result:
+                    result_txt+=' '+ elt+': '+result[elt]
+                self.Abstract= result_txt.strip()
 
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
@@ -114,7 +118,7 @@ class paper_pmc(paper_full_base):
                 cleaned_text = self.clean_text(text)
                 self.unclassified_section[head] =cleaned_text
 
-    def get_Introduction(self,body,imr_sections):
+    def get_Introduction(self,body,imr_sections) -> dict:
         '''
         get introductions elements & clean & stack them in introduction section
         :param body:
@@ -128,7 +132,7 @@ class paper_pmc(paper_full_base):
                 cleaned_text = self.clean_text(text)
                 self.Introduction[head] =cleaned_text
 
-    def get_Methods(self,body,imr_sections):
+    def get_Methods(self,body,imr_sections) -> dict:
         '''
         get methods elements & clean & stack them in method section
         :param body:
@@ -142,7 +146,7 @@ class paper_pmc(paper_full_base):
                 cleaned_text = self.clean_text(text)
                 self.Methods[head]= cleaned_text
 
-    def get_Results(self, body, imr_sections):
+    def get_Results(self, body, imr_sections) -> dict:
         '''
         get methods elements & clean & stack them in method section
         :param body:
@@ -168,14 +172,14 @@ class paper_pmc(paper_full_base):
             cleaned_text = self.clean_text(text)
             self.unclassified_section[head] = cleaned_text
 
-    def get_content(self):
+    def get_content(self,stacked_abstract=True,abstract_dict_format=False):
         '''
         get body infos and decompose it to abstract and IMR sections
         :return:
         '''
         body = self.get_body()
         headers = list(body.keys())
-        self.get_Abstract()
+        self.get_Abstract(stacked=stacked_abstract,dict_format=abstract_dict_format)
         try:
             imr_sections = self.headers2imr(headers)
             self.get_abstract_extra(body=body, imr_sections=imr_sections)
@@ -199,7 +203,11 @@ class paper_pmc(paper_full_base):
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
         if abbreviations_dict:
-            self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
+            if isinstance(self.Abstract,str):
+                self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
+            elif isinstance(self.Abstract,dict):
+                for elt in self.Abstract:
+                    self.Abstract[elt] = multiple_replace(abbreviations_dict, self.Abstract[elt])
             for elt in self.Introduction:
                 self.Introduction[elt] = multiple_replace(abbreviations_dict, self.Introduction[elt])
             for elt in self.Methods:
@@ -209,10 +217,12 @@ class paper_pmc(paper_full_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
 class papers_pmc(papers):
-    def __init__(self, papers_path):
+    def __init__(self, papers_path,stacked_abstract=True,abstract_dict_format=False):
         super().__init__() # loading self.naimai_dois & other attributes
         self.naimai_dois = []
         self.data = pd.read_csv(papers_path)
+        self.stacked_abstract=stacked_abstract
+        self.abstract_dict_format=abstract_dict_format
         print('Len data : ', len(self.data))
 
     def add_paper(self,idx_in_data):
@@ -225,7 +235,8 @@ class papers_pmc(papers):
             new_paper.get_Authors()
             new_paper.get_journal()
             new_paper.get_year()
-            new_paper.get_content()
+            new_paper.get_content(stacked_abstract=self.stacked_abstract,
+                                  abstract_dict_format=self.abstract_dict_format)
             new_paper.replace_abbreviations()
             new_paper.get_numCitedBy()
             self.elements[new_paper.doi] = new_paper.save_dict()
