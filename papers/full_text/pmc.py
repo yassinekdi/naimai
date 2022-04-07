@@ -2,12 +2,16 @@ import ast
 import re
 import pandas as pd
 from tqdm.notebook import tqdm
+from spacy_langdetect import LanguageDetector
+import spacy
 
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
 from naimai.constants.regex import regex_spaced_chars
+from naimai.constants.nlp import nlp_vocab
 from naimai.utils.regex import multiple_replace
 from naimai.utils.general import get_soup
+
 
 class paper_pmc(paper_full_base):
     def __init__(self ,df ,idx_in_df):
@@ -199,6 +203,19 @@ class paper_pmc(paper_full_base):
             if isinstance(soup_list,list):
                 self.numCitedBy = len(soup_list)
 
+    def is_paper_english(self,nlp) -> bool:
+        '''
+        Detect language if paper language is english based on its title.
+        :return:
+        '''
+        if self.Title:
+            title_nlp = nlp(self.Title)
+            language_score=title_nlp._.language
+            condition_english = (language_score['language']=='en') and (language_score['score']>0.9)
+            if condition_english:
+                return True
+        return False
+
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -217,13 +234,19 @@ class paper_pmc(paper_full_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
 class papers_pmc(papers):
-    def __init__(self, papers_path,stacked_abstract=True,abstract_dict_format=False):
+    def __init__(self, papers_path,stacked_abstract=True,abstract_dict_format=False,nlp=None):
         super().__init__() # loading self.naimai_dois & other attributes
         self.naimai_dois = []
         self.data = pd.read_csv(papers_path)
         self.stacked_abstract=stacked_abstract
         self.abstract_dict_format=abstract_dict_format
         print('Len data : ', len(self.data))
+        if nlp:
+            self.nlp = nlp
+        else:
+            print('Loading nlp vocab..')
+            self.nlp = spacy.load(nlp_vocab)
+        self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
 
     def add_paper(self,idx_in_data):
             new_paper = paper_pmc(df=self.data,
@@ -232,14 +255,17 @@ class papers_pmc(papers):
             # if not new_paper.is_in_database(self.naimai_dois):
             # self.naimai_dois.append(new_paper.doi)
             new_paper.get_Title()
-            new_paper.get_Authors()
-            new_paper.get_journal()
-            new_paper.get_year()
-            new_paper.get_content(stacked_abstract=self.stacked_abstract,
-                                  abstract_dict_format=self.abstract_dict_format)
-            new_paper.replace_abbreviations()
-            new_paper.get_numCitedBy()
-            self.elements[new_paper.doi] = new_paper.save_dict()
+            if new_paper.is_paper_english(self.nlp):
+                new_paper.get_Authors()
+                new_paper.get_journal()
+                new_paper.get_year()
+                new_paper.get_content(stacked_abstract=self.stacked_abstract,
+                                      abstract_dict_format=self.abstract_dict_format)
+                new_paper.replace_abbreviations()
+                new_paper.get_numCitedBy()
+                self.elements[new_paper.doi] = new_paper.save_dict()
+            else:
+                print(f'Paper in index {idx_in_data} is not english..')
 
 
     # @update_naimai_dois
