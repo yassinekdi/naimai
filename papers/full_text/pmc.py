@@ -7,7 +7,7 @@ import spacy
 
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
-from naimai.constants.regex import regex_spaced_chars
+from naimai.constants.regex import regex_spaced_chars,regex_keywords
 from naimai.constants.nlp import nlp_vocab
 from naimai.utils.regex import multiple_replace
 from naimai.utils.general import get_soup
@@ -22,17 +22,60 @@ class paper_pmc(paper_full_base):
     def get_doi(self) -> str:
         self.doi = self.paper_infos['doi']
 
+    def get_Keywords_from_dict_abstract(self) -> str:
+        '''
+        get keywords from abstract when it's in a dict format & filter from abstract
+        :return:
+        '''
+        for elt in self.Abstract:
+            txt = self.Abstract[elt]
+            keywords_in_txt = re.findall(regex_keywords, txt, re.I)
+            if keywords_in_txt:
+                self.Keywords = keywords_in_txt[0].strip()
+                regex_filter = 'key\s?words:\s?' + self.Keywords
+                self.Abstract[elt] = re.sub(regex_filter,'',txt,flags=re.I).strip()
+
+    def get_Keywords_from_str_abstract(self)-> str:
+        '''
+        get keywords from abstract when it's in str format & filter from abstract
+        :return:
+        '''
+        txt = self.Abstract
+        keywords_in_txt = re.findall(regex_keywords, txt, re.I)
+        if keywords_in_txt:
+            self.Keywords = keywords_in_txt[0].strip()
+            regex_filter = 'key\s?words:\s?' + self.Keywords
+            self.Abstract = re.sub(regex_filter, '', txt, flags=re.I).strip()
+
+    def get_Keywords(self) -> str:
+        '''
+        Get keywords from abstracts elements & remove them from abstract
+        :return:
+        '''
+        if isinstance(self.Abstract,dict):
+            self.get_Keywords_from_dict_abstract()
+        elif isinstance(self.Abstract,str):
+            self.get_Keywords_from_str_abstract()
+
+
     def get_Abstract(self,stacked=True,dict_format=False) -> str:
         '''
-        clean & stack (if stacked=True) abstract elements into one text.
+        clean & stack (if stacked=True) abstract elements into one text & get Keywords from abstract.
         The spaced abstract case (a b s t r a c t..) is considered. if stacked = False, it puts the abstract elements in
         str format. It can returns in dict format if dict_format=True
         :return:
         '''
         abstract_dict_str = self.paper_infos['abstract']
         abstract_dict = ast.literal_eval(abstract_dict_str)
+        if 'text' not in abstract_dict.keys():
+            abstract_dict = {elt: ' '.join(abstract_dict[elt]) for elt in abstract_dict}
+
+        for elt in abstract_dict:
+            clean1=re.sub('abstract', '',abstract_dict[elt], flags=re.I).strip()
+            clean2 = self.clean_text(clean1)
+            abstract_dict[elt]=clean2
+
         if stacked:
-            abstract_dict = {elt: abstract_dict[elt] for elt in abstract_dict if not re.findall('electronic', elt, re.I)}
             abstract = ' '.join([elt for elt2 in list(abstract_dict.values()) for elt in elt2])
             no_space = re.findall('\w\w',abstract)
             if no_space: # normal case
@@ -41,20 +84,16 @@ class paper_pmc(paper_full_base):
                 despacing1 = re.sub(regex_spaced_chars, r'\1\2', abstract)
                 self.Abstract = re.sub(regex_spaced_chars, r'\1\2', despacing1).replace('\n',' ')
 
-            # clean abstract
-            text = re.sub('abstract', '',self.Abstract).strip()
-            cleaned_text = self.clean_text(text)
-            self.Abstract = cleaned_text
         else:
-            result = {elt: ' '.join(abstract_dict[elt]) for elt in abstract_dict}
+            # result = {elt: ' '.join(abstract_dict[elt]) for elt in abstract_dict}
             if dict_format:
-                self.Abstract = result
+                self.Abstract = abstract_dict
             else:
                 result_txt = ''
-                for elt in result:
-                    result_txt+=' '+ elt+': '+result[elt]
+                for elt in abstract_dict:
+                    result_txt+=' '+ elt+': '+abstract_dict[elt]
                 self.Abstract= result_txt.strip()
-
+        self.get_Keywords()
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
 
@@ -214,6 +253,9 @@ class paper_pmc(paper_full_base):
             condition_english = (language_score['language']=='en') and (language_score['score']>0.9)
             if condition_english:
                 return True
+        lang = language_score['language']
+        score = language_score['score']
+        print(f'Langage {lang} - Score {score}')
         return False
 
 
@@ -265,7 +307,7 @@ class papers_pmc(papers):
                 new_paper.get_numCitedBy()
                 self.elements[new_paper.doi] = new_paper.save_dict()
             else:
-                print(f'Paper in index {idx_in_data} is not english..')
+                print(f'in Title : {new_paper.Title} - index in data {idx_in_data} is not english..')
 
 
     # @update_naimai_dois
