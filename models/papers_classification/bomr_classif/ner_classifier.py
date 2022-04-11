@@ -153,10 +153,10 @@ class NER_BOMR_classifier:
                                    datasets=None)
         df = prp.prepare_one_prediction("doi", prediction, tokens)
 
-        visualize(text,df,show=visualize_) #transform df & visualize
+        new_df=visualize(text,df,show=visualize_) #transform df & visualize
 
         if dict_format:
-            df['text']=df.apply(get_text,args=(text,),axis=1)
-            prediction_dict = df[['class','text']].set_index('class')['text'].to_dict()
+            new_df['text']=new_df.apply(get_text,args=(text,),axis=1)
+            prediction_dict = new_df[['class','text']].set_index('class')['text'].to_dict()
             return prediction_dict
-        return df
+        return new_df

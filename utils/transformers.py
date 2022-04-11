@@ -201,8 +201,8 @@ def get_last_char_id(elt,text):
   end_char = text.index(last_wds)+len(last_wds)
   return end_char
 
-def get_doc_options(txt, old_df):
-    df = process_df(old_df)
+def get_doc_options(txt, df):
+    df = process_df(df)
     df['start'] = df['new_pstring'].apply(lambda x: int(x.split()[0]) - 1)
     df['end'] = df['new_pstring'].apply(lambda x: int(x.split()[-1]))
     df['start_char'] = df.apply(get_first_char_id, args=(txt,), axis=1)
@@ -222,7 +222,7 @@ def get_doc_options(txt, old_df):
 
     doc = {'text': txt, "ents": ents}
     options = {'ents': labels_list, "colors": colors}
-    return {'doc': doc, "options": options}
+    return {'doc': doc, "options": options,"new_df": df}
 
 
 def visualize(txt, df,show=True):
@@ -237,6 +237,7 @@ def visualize(txt, df,show=True):
         doc = results['doc']
         options = results['options']
         displacy.render(doc, style="ent", options=options, manual=True, jupyter=True)
+    return results['new_df']
 
 def get_text(elt,txt):
     '''
