@@ -156,8 +156,26 @@ def get_doc_options(txt, df):
     return {'doc': doc, "options": options}
 
 
-def visualize(txt, df):
+def visualize(txt, df,show=True):
+    '''
+    Visualize segmented text in data frame df using displacy
+    :param txt:
+    :param df:
+    :return:
+    '''
     results = get_doc_options(txt, df)
-    doc = results['doc']
-    options = results['options']
-    displacy.render(doc, style="ent", options=options, manual=True, jupyter=True)
+    if show:
+        doc = results['doc']
+        options = results['options']
+        displacy.render(doc, style="ent", options=options, manual=True, jupyter=True)
+
+def get_text(elt,txt):
+    '''
+    used in df.apply to extract text using start char and last char of predicted classes.
+    :param elt:
+    :param txt:
+    :return:
+    '''
+    start_char = elt['start_char']
+    last_char = elt['last_char']
+    return txt[start_char:last_char]

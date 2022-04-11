@@ -1,7 +1,7 @@
 from transformers import TrainingArguments, DataCollatorForTokenClassification
 from datasets import Dataset
 from naimai.utils.general import correct_ner_data
-from naimai.utils.transformers import visualize, compute_metrics
+from naimai.utils.transformers import visualize, compute_metrics, get_text
 from naimai.constants.models import output_labels
 from naimai.constants.paths import path_ner_data_total
 from .trainer import BOMR_Trainer, Predictions_preparer
@@ -132,7 +132,14 @@ class NER_BOMR_classifier:
             print('  >> GPU Used in objective classification !')
             self.model = self.model.to('cuda')
 
-    def predict(self,text,visualize_=True):
+    def predict(self,text,visualize_=True,dict_format=True):
+        '''
+        Predict sentences class in text and return dict format (default) or in pandas format
+        :param text:
+        :param visualize_:
+        :param dict_format:
+        :return:
+        '''
         tokens = text.split()
         if torch.cuda.is_available():
             encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True,return_tensors='pt',padding='max_length',max_length=self.config['max_length']).to('cuda')
@@ -145,6 +152,11 @@ class NER_BOMR_classifier:
                                    tokenizer=self.tokenizer,
                                    datasets=None)
         df = prp.prepare_one_prediction("doi", prediction, tokens)
-        if visualize_:
-            visualize(text,df)
+
+        visualize(text,df,show=visualize_) #transform df & visualize
+
+        if dict_format:
+            df['text']=df.apply(get_text,args=(text,),axis=1)
+            prediction_dict = df[['class','text']].set_index('class')['text'].to_dict()
+            return prediction_dict
         return df
