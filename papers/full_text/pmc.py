@@ -250,7 +250,7 @@ class paper_pmc(paper_full_base):
         if self.Title:
             title_nlp = nlp(self.Title)
             language_score=title_nlp._.language
-            condition_english = (language_score['language']=='en') and (language_score['score']>0.9)
+            condition_english = (language_score['language']=='en') and (language_score['score']>0.7)
             if condition_english:
                 return True
         lang = language_score['language']

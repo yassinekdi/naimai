@@ -2,6 +2,32 @@ import torch
 from sklearn.metrics import classification_report
 from spacy import displacy
 from naimai.constants.models import colors_labels
+import numpy as np
+from naimai.constants.models import output_labels
+from datasets import load_metric
+
+metric = load_metric("seqeval")
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    predictions = np.argmax(predictions, axis=2)
+
+    # Remove ignored index (special tokens)
+    true_predictions = [
+        [output_labels[eval_pred] for (eval_pred, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    true_labels = [
+        [output_labels[l] for (eval_pred, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+
+    results = metric.compute(predictions=true_predictions, references=true_labels)
+    return {
+        "accuracy": results["overall_accuracy"],
+    }
+
+
 def sklearn_scores(labels,predictions):
   scores=classification_report(labels,predictions, output_dict=True, zero_division=0)
   result = {'f1 macro avg': scores['macro avg']['f1-score'],

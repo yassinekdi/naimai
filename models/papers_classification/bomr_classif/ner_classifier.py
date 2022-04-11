@@ -1,39 +1,16 @@
-# from transformers import AutoModelForTokenClassification, AutoTokenizer, TrainingArguments, \
-#      DataCollatorForTokenClassification
 from transformers import TrainingArguments, DataCollatorForTokenClassification
-from datasets import Dataset, load_metric
+from datasets import Dataset
 from naimai.utils.general import correct_ner_data
-from naimai.utils.transformers import visualize
+from naimai.utils.transformers import visualize, compute_metrics
 from naimai.constants.models import output_labels
 from naimai.constants.paths import path_ner_data_total
 from .trainer import BOMR_Trainer, Predictions_preparer
 import pandas as pd
-import numpy as np
 import torch
 
-metric = load_metric("seqeval")
-
-def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    predictions = np.argmax(predictions, axis=2)
-
-    # Remove ignored index (special tokens)
-    true_predictions = [
-        [output_labels[eval_pred] for (eval_pred, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
-    true_labels = [
-        [output_labels[l] for (eval_pred, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
-
-    results = metric.compute(predictions=true_predictions, references=true_labels)
-    return {
-        "accuracy": results["overall_accuracy"],
-    }
 
 class NER_BOMR_classifier:
-    def __init__(self, config, path_ner_data=path_ner_data_total, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None):
+    def __init__(self, config={}, path_ner_data=path_ner_data_total, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None,predict_mode=False):
         self.config = config
         self.tokenized_data = None
         self.trainer = None
@@ -46,15 +23,16 @@ class NER_BOMR_classifier:
         self.labels2ids = {v: k for k, v in enumerate(output_labels)}
 
         # DATA -----------------
-        if isinstance(ner_data_df, pd.DataFrame):
-            self.NER_data_df = ner_data_df
-        else:
-            df = pd.read_csv(path_ner_data)
-            df['entities'] = df.apply(correct_ner_data, axis=1)
-            df['tokens'] = df['text'].str.split()
-            df['ner_tags'] = df['entities'].apply(lambda x: [self.labels2ids[elt] for elt in x])
-            self.NER_data_df = df.dropna()
-            print(f'NER data shape : {self.NER_data_df.shape}')
+        if not predict_mode:
+            if isinstance(ner_data_df, pd.DataFrame):
+                self.NER_data_df = ner_data_df
+            else:
+                df = pd.read_csv(path_ner_data)
+                df['entities'] = df.apply(correct_ner_data, axis=1)
+                df['tokens'] = df['text'].str.split()
+                df['ner_tags'] = df['entities'].apply(lambda x: [self.labels2ids[elt] for elt in x])
+                self.NER_data_df = df.dropna()
+                print(f'NER data shape : {self.NER_data_df.shape}')
 
         # TOKENIZER ------------------
         if tokenizer:
@@ -76,21 +54,23 @@ class NER_BOMR_classifier:
             #                                                              num_labels=len(output_labels))
 
         # Data Collator ------------
-        self.data_collator = DataCollatorForTokenClassification(self.tokenizer)
+        if not predict_mode:
+            self.data_collator = DataCollatorForTokenClassification(self.tokenizer)
 
         # Training ARGS ----------
-        self.training_args = TrainingArguments(
-            output_dir=f"{self.config['output_dir']}",
-            save_total_limit = 1,
-            evaluation_strategy="epoch",
-            logging_strategy="epoch",
-            save_strategy="epoch",
-            learning_rate=config['learning_rates'],
-            per_device_train_batch_size=config['batch_size'],
-            per_device_eval_batch_size=config['batch_size'],
-            num_train_epochs=config['epochs'],
-            weight_decay=config['weight_decay'],
-        )
+        if not predict_mode:
+            self.training_args = TrainingArguments(
+                output_dir=f"{self.config['output_dir']}",
+                save_total_limit = 1,
+                evaluation_strategy="epoch",
+                logging_strategy="epoch",
+                save_strategy="epoch",
+                learning_rate=config['learning_rates'],
+                per_device_train_batch_size=config['batch_size'],
+                per_device_eval_batch_size=config['batch_size'],
+                num_train_epochs=config['epochs'],
+                weight_decay=config['weight_decay'],
+            )
 
     def tokenize_and_align_labels(self, examples):
         tokenized_inputs = self.tokenizer(examples["tokens"], truncation=True, is_split_into_words=True,
@@ -144,6 +124,7 @@ class NER_BOMR_classifier:
         self.trainer.train()
 
     def load_model(self,path_model):
+        from transformers import AutoModelForTokenClassification, AutoTokenizer
         print('Loading model & tokenizer...')
         self.model = AutoModelForTokenClassification.from_pretrained(path_model, num_labels=len(output_labels))
         self.tokenizer = AutoTokenizer.from_pretrained(path_model)
