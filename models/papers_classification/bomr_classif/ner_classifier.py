@@ -132,9 +132,9 @@ class NER_BOMR_classifier:
             print('  >> GPU Used in objective classification !')
             self.model = self.model.to('cuda')
 
-    def predict(self,text,visualize_=True,dict_format=True):
+    def predict(self,text,visualize_=True,dict_format=False):
         '''
-        Predict sentences class in text and return dict format (default) or in pandas format
+        Predict sentences class in text and return dict format or in pandas format
         :param text:
         :param visualize_:
         :param dict_format:

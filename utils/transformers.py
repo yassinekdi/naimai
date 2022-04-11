@@ -5,6 +5,7 @@ from naimai.constants.models import colors_labels
 import numpy as np
 from naimai.constants.models import output_labels
 from datasets import load_metric
+import pandas as pd
 
 metric = load_metric("seqeval")
 
@@ -120,6 +121,72 @@ def score_feedback_comp(pred_df, gt_df):
 
     return my_f1_score
 
+
+def split_list(lst) -> list:
+    '''
+    split list lst into list of sequences retrieved in lst
+    :param lst:
+    :return:
+    '''
+    preceding_elt = lst[0]
+    new_starting_idxs = []
+    for idx, elt in enumerate(lst[1:]):
+        if elt == preceding_elt + 1:
+            preceding_elt = elt
+        else:
+            new_starting_idxs.append(idx + 1)
+            preceding_elt = elt
+
+    if new_starting_idxs:
+        first_elt = lst[0]
+        new_list = []
+        for idx in new_starting_idxs:
+            ls_ = list(np.arange(first_elt, lst[idx - 1] + 1))
+            new_list.append(ls_)
+            try:
+                first_elt = lst[idx + 1] - 1
+            except:
+                first_elt = lst[idx]
+        last_elt = list(np.arange(first_elt, lst[-1] + 1))
+        new_list.append(last_elt)
+
+        return new_list
+    else:
+        return [lst]
+
+def process_predictionstring(elt):
+  # process predictionstring column to split lists into sequences
+  list_pstring = list(map(int,elt.split()))
+  list_processed = split_list(list_pstring)
+  return list_processed
+
+def list2pstring(lst):
+  # convert list to predictionstring format
+  lst_str = list(map(str,lst))
+  return ' '.join(lst_str)
+
+def process_df(df):
+  # transform original df into df with splitted predictionstring following sequences
+  new_dict = {'class': [], 'new_pstring':[]}
+  df['pstring_processed']=df['predictionstring'].apply(process_predictionstring)
+  for idx in range(len(df)):
+    elts = df.iloc[idx]
+    classe = elts['class']
+    new_pstrings = elts['pstring_processed']
+    if len(new_pstrings)==1:
+      pstring_elt = new_pstrings[0]
+      new_dict['class'].append(classe)
+      list_pstring = list2pstring(pstring_elt)
+      new_dict['new_pstring'].append(list_pstring)
+    else:
+      for elt in new_pstrings:
+        if elt:
+          new_dict['class'].append(classe)
+          list_pstring = list2pstring(elt)
+          new_dict['new_pstring'].append(list_pstring)
+  new_df = pd.DataFrame(new_dict)
+  return new_df
+
 def get_first_char_id(elt,text):
   start_wd = elt['start']
   split=text.split()
@@ -134,11 +201,13 @@ def get_last_char_id(elt,text):
   end_char = text.index(last_wds)+len(last_wds)
   return end_char
 
-def get_doc_options(txt, df):
-    df['start'] = df['predictionstring'].apply(lambda x: int(x.split()[0]) - 1)
-    df['end'] = df['predictionstring'].apply(lambda x: int(x.split()[-1]))
+def get_doc_options(txt, old_df):
+    df = process_df(old_df)
+    df['start'] = df['new_pstring'].apply(lambda x: int(x.split()[0]) - 1)
+    df['end'] = df['new_pstring'].apply(lambda x: int(x.split()[-1]))
     df['start_char'] = df.apply(get_first_char_id, args=(txt,), axis=1)
     df['last_char'] = df.apply(get_last_char_id, args=(txt,), axis=1)
+    df = df.sort_values(by=['start'])
 
     labels_list = df['class'].tolist()
     labels_list = [elt[:3].upper() for elt in labels_list]

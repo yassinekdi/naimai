@@ -1,4 +1,4 @@
-from models.papers_classification.obj_classifier import Objective_classifier
+from naimai.models.papers_classification.obj_classifier import Objective_classifier
 from naimai.constants.nlp import max_len_objective_sentence, nlp_vocab
 from naimai.constants.paths import path_objective_classifier, path_produced, path_dispatched
 from naimai.constants.regex import regex_objectives, regex_filtered_words_obj

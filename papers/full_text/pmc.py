@@ -288,7 +288,7 @@ class papers_pmc(papers):
         else:
             print('Loading nlp vocab..')
             self.nlp = spacy.load(nlp_vocab)
-        self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
+            self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
 
     def add_paper(self,idx_in_data):
             new_paper = paper_pmc(df=self.data,
