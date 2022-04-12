@@ -215,3 +215,55 @@ def get_duplicates(text,threshold):
     duplicate.sort(key=lambda x: x[1])
     set_duplicate = set(duplicate[::-1])
     return [elt[0] for elt in set_duplicate]
+
+def sentence_span_in_text(sentence,text):
+  # get first string & last string indices for a sentence in the original text
+  pattern = re.escape(sentence)
+  match = re.search(pattern,text)
+  return match.span()
+
+def first_last_tokens(sentence):
+  tokens = sentence.split()
+  return (tokens[0],tokens[-1])
+
+def tokenId_in_txt(token,text):
+  # find token index in word level in text
+  tokens = text.split()
+  list_ids = [idx for idx,tok in enumerate(tokens) if tok==token]
+  return list_ids
+
+# def strId_in_txt(token,text):
+#    # find token index in string level in text
+#    pattern = re.escape(token)
+#    return [elt.start() for elt in re.finditer(pattern,text)]
+
+def check_tokenId(tokenId,strId,text):
+  # check if a give the tokenId correspond to strId
+  text_tokens = text.split()
+  input_token = text_tokens[tokenId]
+  input_token_strId = text.find(input_token)
+  if input_token_strId == strId:
+    return True
+  return False
+
+def get_first_last_token_ids(sentence,text):
+  first_token,last_token = first_last_tokens(sentence)
+  first_str,last_str = sentence_span_in_text(sentence,text)
+  # Id1, IdN=-1,-1
+
+  #first token id
+  first_token_id = tokenId_in_txt(first_token,text)
+  if len(first_token_id)>1:
+    print('PROBLEM: many first token ids..')
+  first_token_id=first_token_id[0]
+  # if check_tokenId(first_token_id,first_str,text):
+  #   Id1=first_token_id
+
+  #last token id
+  last_token_id = tokenId_in_txt(last_token,text)
+  if len(last_token_id)>1:
+    print('PROBLEM: many last token ids..')
+  last_token_id=last_token_id[0]
+  # if check_tokenId(last_token_id,last_str-len(last_token),text):
+  #   IdN=last_token_id
+  return (first_token_id,last_token_id)

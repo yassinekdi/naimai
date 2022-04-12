@@ -154,38 +154,10 @@ def split_list(lst) -> list:
     else:
         return [lst]
 
-def process_predictionstring(elt):
-  # process predictionstring column to split lists into sequences
-  list_pstring = list(map(int,elt.split()))
-  list_processed = split_list(list_pstring)
-  return list_processed
-
 def list2pstring(lst):
   # convert list to predictionstring format
   lst_str = list(map(str,lst))
   return ' '.join(lst_str)
-
-def process_df(df):
-  # transform original df into df with splitted predictionstring following sequences
-  new_dict = {'class': [], 'new_pstring':[]}
-  df['pstring_processed']=df['predictionstring'].apply(process_predictionstring)
-  for idx in range(len(df)):
-    elts = df.iloc[idx]
-    classe = elts['class']
-    new_pstrings = elts['pstring_processed']
-    if len(new_pstrings)==1:
-      pstring_elt = new_pstrings[0]
-      new_dict['class'].append(classe)
-      list_pstring = list2pstring(pstring_elt)
-      new_dict['new_pstring'].append(list_pstring)
-    else:
-      for elt in new_pstrings:
-        if elt:
-          new_dict['class'].append(classe)
-          list_pstring = list2pstring(elt)
-          new_dict['new_pstring'].append(list_pstring)
-  new_df = pd.DataFrame(new_dict)
-  return new_df
 
 def get_first_char_id(elt,text):
   start_wd = elt['start']
@@ -202,13 +174,12 @@ def get_last_char_id(elt,text):
   return end_char
 
 def get_doc_options(txt, df):
-    df = process_df(df)
-    df['start'] = df['new_pstring'].apply(lambda x: int(x.split()[0]) - 1)
-    df['end'] = df['new_pstring'].apply(lambda x: int(x.split()[-1]))
-    df['start_char'] = df.apply(get_first_char_id, args=(txt,), axis=1)
-    df['last_char'] = df.apply(get_last_char_id, args=(txt,), axis=1)
-    df = df.sort_values(by=['start'])
-
+    '''
+    get necessary elements to visualize ner results with displacy
+    :param txt:
+    :param df:
+    :return:
+    '''
     labels_list = df['class'].tolist()
     labels_list = [elt[:3].upper() for elt in labels_list]
     start_list = df['start_char'].tolist()
@@ -222,7 +193,7 @@ def get_doc_options(txt, df):
 
     doc = {'text': txt, "ents": ents}
     options = {'ents': labels_list, "colors": colors}
-    return {'doc': doc, "options": options,"new_df": df}
+    return {'doc': doc, "options": options}
 
 
 def visualize(txt, df,show=True):
@@ -237,7 +208,7 @@ def visualize(txt, df,show=True):
         doc = results['doc']
         options = results['options']
         displacy.render(doc, style="ent", options=options, manual=True, jupyter=True)
-    return results['new_df']
+
 
 def get_text(elt,txt):
     '''

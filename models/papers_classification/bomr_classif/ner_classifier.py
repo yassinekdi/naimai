@@ -5,6 +5,7 @@ from naimai.utils.transformers import visualize, compute_metrics, get_text
 from naimai.constants.models import output_labels
 from naimai.constants.paths import path_ner_data_total
 from .trainer import BOMR_Trainer, Predictions_preparer
+from .ner_processor import NER_BOMR_processor
 import pandas as pd
 import torch
 
@@ -136,7 +137,7 @@ class NER_BOMR_classifier:
         '''
         Predict sentences class in text and return dict format or in pandas format
         :param text:
-        :param visualize_:
+        :param visualize_: to visualize results using displacy
         :param dict_format:
         :return:
         '''
@@ -153,10 +154,14 @@ class NER_BOMR_classifier:
                                    datasets=None)
         df = prp.prepare_one_prediction("doi", prediction, tokens)
 
-        new_df=visualize(text,df,show=visualize_) #transform df & visualize
+        ner_processor = NER_BOMR_processor(text=text,df=df)
+        ner_processor.add_metadata()
+        processed_df = ner_processor.df
+
+        visualize(text,processed_df,show=visualize_) #transform df & visualize
 
         if dict_format:
-            new_df['text']=new_df.apply(get_text,args=(text,),axis=1)
-            prediction_dict = new_df[['class','text']].set_index('class')['text'].to_dict()
+            processed_df['text']=processed_df.apply(get_text,args=(text,),axis=1)
+            prediction_dict = processed_df[['class','text']].set_index('class')['text'].to_dict()
             return prediction_dict
-        return new_df
+        return processed_df
