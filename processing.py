@@ -1,18 +1,29 @@
 import re
-from naimai.constants.regex import regex_eft, regex_abbrvs, regex_some_brackets, regex_numbers_in_brackets
+import spacy
+from naimai.constants.regex import regex_eft, regex_abbrvs,regex_abbrvs2, regex_some_brackets, regex_numbers_in_brackets
+from naimai.constants.nlp import nlp_vocab
+
+print('nlp loaded for TextCleaner')
+loaded_nlp = spacy.load(nlp_vocab)
 
 class TextCleaner:
-    def __init__(self, text):
+    def __init__(self, text,nlp=None):
         self.text = text
         self.cleaned_text = ''
+        if nlp:
+            self.nlp = nlp
+        else:
+            print('Loading nlp for TextCleaner..')
+            self.nlp = loaded_nlp
 
     def replace_abbrevs(self,text):
         '''
-        replace i.e. and e.g. by meaning in the text.
+        replace i.e. and e.g. by meaning in the text, and cf. by "see"
         :param text:
         :return:
         '''
-        return re.sub(regex_abbrvs,'meaning', text)
+        text1= re.sub(regex_abbrvs,'meaning', text)
+        return re.sub(regex_abbrvs2,'see', text1)
 
     def remove_some_brackets(self,text):
         '''
@@ -38,7 +49,8 @@ class TextCleaner:
         :param text:
         :return:
         '''
-        sentences = text.split('.')
+        doc = self.nlp(text)
+        sentences = [sent.text.strip() for sent in doc.sents]
         sentences_filtered = [stc for stc in sentences if not re.findall(regex_eft,stc,flags=re.I)]
         cleaned_text = '. '.join(sentences_filtered)
         return cleaned_text

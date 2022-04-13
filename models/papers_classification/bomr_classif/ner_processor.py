@@ -2,6 +2,9 @@ from naimai.utils.transformers import split_list, list2pstring, get_first_char_i
 import pandas as pd
 
 class NER_BOMR_processor:
+    '''
+    Process ner BOMR classifier predictions
+    '''
     def __init__(self, text, df):
         self.text = text
         self.df = df

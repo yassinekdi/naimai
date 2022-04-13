@@ -6,6 +6,9 @@ from naimai.constants.paths import path_objective_classifier
 from naimai.constants.regex import regex_filtered_words_obj, regex_objectives, regex_review
 
 class Omr_Review_Paper_Classifier:
+    '''
+    classify if paper is OMR type or a review
+    '''
     def __init__(self,paper: paper_pmc,objective_classifier=None):
         if objective_classifier:
             self.objective_classifier = objective_classifier

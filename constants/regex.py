@@ -33,6 +33,7 @@ regex_objectives = rgx1 + rgx_or + rgx2 + rgx_or + rgx3 + rgx_or + rgx4 + rgx_or
 
 regex_spaced_chars = '(.) (.)'
 regex_abbrvs = 'i\.e\.?,?|e\.g\.?,?'
+regex_abbrvs2 = 'cf\.'
 regex_some_brackets = r'\((figure|table|meaning).*?\)'
 regex_numbers_in_brackets = r'(\(|\[)\d\d?(\)|\])\s?'
 regex_eft = r'(\(|\[)?(figure|fig\.|table|equation|eq\.)(\)|\])?'

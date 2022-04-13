@@ -1,17 +1,21 @@
 from naimai.constants.regex import regex_sentences, regex_filtered_words_obj
+from naimai.constants.nlp import nlp_vocab
 from naimai.constants.paths import path_objective_classifier
 from naimai.utils.regex import get_first_last_token_ids
 from naimai.models.papers_classification.bomr_classif.ner_processor import NER_BOMR_processor
 from naimai.models.papers_classification.bomr_classif.ner_classifier import NER_BOMR_classifier
 from naimai.models.papers_classification.obj_classifier import Objective_classifier
 import re
+import spacy
 
 
 class OMR_Text_Segmentor:
-    def __init__(self, text, bomr_classifier=None, objective_classifier=None, path_model=''):
+    '''
+    Segment a text to Objective, Method and Results
+    '''
+    def __init__(self, text, bomr_classifier=None, objective_classifier=None, path_model='',nlp=None):
         self.text = text
         self.ner_processor = None
-        self.sentences = re.split(regex_sentences, text)
         if bomr_classifier:
             self.bomr_classifier = bomr_classifier
         elif path_model:
@@ -23,6 +27,12 @@ class OMR_Text_Segmentor:
         else:
           print('Getting objectif classifier..')
           self.objective_classifier = Objective_classifier(dir=path_objective_classifier)
+        if nlp:
+            self.nlp = nlp
+        else:
+            self.nlp = spacy.load(nlp_vocab)
+        doc = self.nlp(text)
+        self.sentences = [sent.text.strip() for sent in doc.sents]
 
         print('Done!')
     def text2bomr(self, text, visualize_=False):
