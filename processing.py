@@ -1,10 +1,12 @@
 import re
 import spacy
-from naimai.constants.regex import regex_eft, regex_abbrvs,regex_abbrvs2, regex_some_brackets, regex_numbers_in_brackets
+from naimai.constants.regex import regex_eft, regex_abbrvs,regex_abbrvs2, regex_some_brackets,\
+    regex_numbers_in_brackets, regex_equation, regex_etal, regex_equation_tochange
 from naimai.utils.regex import remove_between_brackets
 from naimai.constants.nlp import nlp_vocab
 
 print('nlp loaded for TextCleaner')
+print('')
 loaded_nlp = spacy.load(nlp_vocab)
 
 class TextCleaner:
@@ -19,12 +21,13 @@ class TextCleaner:
 
     def replace_abbrevs(self,text):
         '''
-        replace i.e. and e.g. by meaning in the text, and cf. by "see"
+        replace i.e. and e.g. by meaning in the text & cf. by "see" & et al. by et al
         :param text:
         :return:
         '''
         text1= re.sub(regex_abbrvs,'meaning', text)
-        return re.sub(regex_abbrvs2,'see', text1)
+        text2 = re.sub(regex_etal,'et al', text1)
+        return re.sub(regex_abbrvs2,'see', text2)
 
     def remove_some_brackets(self,text):
         '''
@@ -47,14 +50,17 @@ class TextCleaner:
 
     def remove_sentence_with_eft(self,text):
         '''
-        remove sentences that contains the eft terms : equation, figure or table!
+        remove sentences that contains equations & the eft terms : equation, figure or table!
         :param text:
         :return:
         '''
-        doc = self.nlp(text)
+        text_stacked_eqs = re.sub(regex_equation_tochange,r'\1=\2',text)
+        doc = self.nlp(text_stacked_eqs)
         sentences = [sent.text.strip() for sent in doc.sents]
-        sentences_filtered = [stc for stc in sentences if not re.findall(regex_eft,stc,flags=re.I)]
-        cleaned_text = '. '.join(sentences_filtered)
+        sentences_filtered1 = [stc for stc in sentences if not re.findall(regex_equation, stc, flags=re.I)] # remove sentences with eqs
+        sentences_filtered2 = [stc for stc in sentences_filtered1 if not re.findall(regex_eft,stc,flags=re.I)] # remove sentences with eft
+        sentences_filtered3 = [stc for stc in sentences_filtered2 if len(stc.split())>3]
+        cleaned_text = '. '.join(sentences_filtered3)
         return cleaned_text
 
     def fix_spaces(self,text):
