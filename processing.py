@@ -1,6 +1,7 @@
 import re
 import spacy
 from naimai.constants.regex import regex_eft, regex_abbrvs,regex_abbrvs2, regex_some_brackets, regex_numbers_in_brackets
+from naimai.utils.regex import remove_between_brackets
 from naimai.constants.nlp import nlp_vocab
 
 print('nlp loaded for TextCleaner')
@@ -27,12 +28,13 @@ class TextCleaner:
 
     def remove_some_brackets(self,text):
         '''
-        remove brackets & square brackets with words figure, table, meaning (that would have replaced i.e. and
+        remove brackets with > 5 words & brackets and square brackets with words figure, table, meaning (that would have replaced i.e. and
         e.g. using replace_abbrevs)
         :param text:
         :return:
         '''
-        return re.sub(regex_some_brackets,'',text, flags=re.I)
+        txt2 = remove_between_brackets(text)
+        return re.sub(regex_some_brackets,'',txt2, flags=re.I)
 
 
     def remove_sentence_with_nbs_brackets(self,text):
@@ -57,11 +59,12 @@ class TextCleaner:
 
     def fix_spaces(self,text):
         '''
-        keep only one space between words
+        keep only one space between words & replace 2 points in row
         :param text:
         :return:
         '''
-        return re.sub('\s+',' ', text)
+        txt2 = re.sub('\.\s*\.','.',text)
+        return re.sub('\s+',' ', txt2)
 
     def clean(self):
         '''
@@ -70,7 +73,7 @@ class TextCleaner:
             2. removing brackets with table, figure
             3. removing sentences with [x] or (x), x being a digit
             4. removing sentences with equations, figure or table terms
-            5. fixing additional spaces resulted by cleaning methods
+            5. fixing additional spaces & other stuff resulted by cleaning methods
         :return:
         '''
         self.text = self.replace_abbrevs(self.text)

@@ -1,5 +1,5 @@
 import re
-from naimai.constants.regex import regex_doi, regex_words_authors, regex_words_in_brackets, regex_capital
+from naimai.constants.regex import regex_doi, regex_words_authors, regex_words_in_brackets, regex_capital, regex_in_brackets
 from naimai.constants.nlp import this_year
 from collections import OrderedDict
 
@@ -234,3 +234,16 @@ def get_first_last_token_ids(sentence, text,last_tokenId=0):
     last_token_id = first_token_id + len(sentence.split()) - 1
 
     return range(first_token_id, last_token_id)
+
+def remove_between_brackets(text,nb_words=5):
+  txt_in_brackets = re.findall(regex_in_brackets,text)
+  txt_to_remove=[]
+  if txt_in_brackets:
+    for txt in txt_in_brackets:
+      nb_words_txt = len(txt.split())
+      if nb_words_txt>nb_words:
+        rgx = re.escape('('+txt+')')
+        txt_to_remove.append(rgx)
+
+  regex_remove = '|'.join(txt_to_remove)
+  return re.sub(regex_remove,'',text)

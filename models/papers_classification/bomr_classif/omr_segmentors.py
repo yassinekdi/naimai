@@ -51,7 +51,7 @@ class OMR_Text_Segmentor:
 
     def segment_naive(self) -> dict:
         '''
-        segment text into bomr using longformer predictions & ner processor
+        segment text into bomr using longformer/bigbird predictions & ner processor
         :return:
         '''
         last_tokenId = 0
@@ -63,13 +63,13 @@ class OMR_Text_Segmentor:
 
     def segment(self) -> dict:
         '''
-        segment naively the text & process each background & objective classes : get matched objective sentences with objective classifier
+        segment naively the text & process each background classes : get matched objective sentences with objective classifier
         :return:
         '''
         segmented_text = self.segment_naive()
-        regex_objective_bground = 'background|objectives'
+        regex_bground = 'background'
         objective_bground_sentences = [self.sentences[idx] for idx in segmented_text if
-                                       re.findall(regex_objective_bground, segmented_text[idx])]
+                                       re.findall(regex_bground, segmented_text[idx])]
         objectives = self.objective_classifier.predict(objective_bground_sentences)
         objectives_with_classifier = [obj for obj in objectives if
                                       not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
@@ -80,7 +80,7 @@ class OMR_Text_Segmentor:
             corrected[idx] = 'objectives'
 
         for idx in segmented_text:
-            if not re.findall(regex_objective_bground, segmented_text[idx]):
+            if not re.findall(regex_bground, segmented_text[idx]):
                 corrected[idx] = segmented_text[idx]
         return corrected
 

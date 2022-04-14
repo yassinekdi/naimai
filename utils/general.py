@@ -75,7 +75,7 @@ def correct_saved_ner_data(ner_df):
     ner_df['entities']=ner_df.apply(correct_ner_data,axis=1)
     return ner_df
 
-def get_doi_by_title(title,crossref,sleep=3):
+def get_doi_by_title(title,crossref,sleep=2):
   try:
     x = crossref.works(query = title, limit = 1)
     doi = x['message']['items'][0]['DOI']
