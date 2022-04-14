@@ -32,7 +32,7 @@ class OMR_Text_Segmentor:
         else:
             self.nlp = spacy.load(nlp_vocab)
         doc = self.nlp(text)
-        self.sentences = [sent.text.strip() for sent in doc.sents if len(sent.text.split())>4]
+        self.sentences = [sent.text.strip() for sent in doc.sents if len(sent.text.split())>5]
         if summarize:
             self.summarize()
 
