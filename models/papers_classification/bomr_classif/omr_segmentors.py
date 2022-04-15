@@ -9,7 +9,7 @@ import re
 import spacy
 
 
-def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=True, check_bg=False, visualize_=True, filter_bg=False):
+def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=True, check_bg=False, visualize_=True):
     '''
     segment a text using OMR_Text_Segmentor.
     :param text:
@@ -27,14 +27,20 @@ def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=Tru
         segmentor.bomr_classifier.predict(text=segmentor.text, visualize_=True, dict_format=False)
 
     segmented = segmentor.segment(check_bg=check_bg)
-    if filter_bg:
+    all_classes_in = ('objectives' in segmented.values()) and ('methods' in segmented.values()) and ('results' in segmented.values())
+    if not all_classes_in:
         stcs = [segmentor.sentences[idx] for idx in segmented if segmented[idx] != 'background']
         summarized = ' '.join(stcs)
-        new_segm = OMR_Text_Segmentor(text=summarized, objective_classifier=segmentor.objective_classifier,
+        segmentor = OMR_Text_Segmentor(text=summarized, objective_classifier=segmentor.objective_classifier,
                                       bomr_classifier=segmentor.bomr_classifier, summarize=False)
-        segmented = new_segm.segment(check_bg=False)
+        if visualize_:
+            print('')
+            print('visualization of summarized : ')
+            segmentor.bomr_classifier.predict(text=segmentor.text, visualize_=True, dict_format=False)
 
-    return segmented
+        segmented = segmentor.segment(check_bg=False)
+    return (segmented,segmentor.sentences,segmentor.objective_classifier,segmentor.bomr_classifier)
+
 class OMR_Text_Segmentor:
     '''
     Segment a text to Objective, Method and Results
@@ -48,7 +54,8 @@ class OMR_Text_Segmentor:
         if not nlp:
             nlp = spacy.load(nlp_vocab)
         doc = nlp(text)
-        self.sentences = [sent.text.strip() for sent in doc.sents if len(sent.text.split())>5]
+        regex_online_version = 'online version'
+        self.sentences = [sent.text.strip() for sent in doc.sents if len(sent.text.split())>5 and not re.findall(regex_online_version,sent.text,flags=re.I)]
         self.text = ' '.join(self.sentences)
 
         # Get obj classifier
