@@ -9,9 +9,9 @@ import re
 import spacy
 
 
-def segment(text, obj_clf=None, bomr_clf=None, summarize=True, check_bg=False, visualize_=True, filter_bg=False):
+def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=True, check_bg=False, visualize_=True, filter_bg=False):
     '''
-    segment a text using OMR_Text_Segmentor. 
+    segment a text using OMR_Text_Segmentor.
     :param text:
     :param obj_clf:
     :param bomr_clf:
@@ -22,7 +22,7 @@ def segment(text, obj_clf=None, bomr_clf=None, summarize=True, check_bg=False, v
     :return:
     '''
     segmentor = OMR_Text_Segmentor(text=text, objective_classifier=obj_clf,
-                                   bomr_classifier=bomr_clf, summarize=summarize)
+                                   bomr_classifier=bomr_clf, summarize=summarize,path_model=path_bomr_model)
     if visualize_:
         segmentor.bomr_classifier.predict(text=segmentor.text, visualize_=True, dict_format=False)
 
@@ -63,7 +63,7 @@ class OMR_Text_Segmentor:
         # Get bomr classifier
         if bomr_classifier:
             self.bomr_classifier = bomr_classifier
-        elif path_model:
+        else:
             self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_model, predict_mode=True)
         # print('Predicting & getting ner processor..')
         # self.get_ner_processor()
