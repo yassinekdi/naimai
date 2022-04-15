@@ -1,4 +1,4 @@
-from transformers import TrainingArguments, DataCollatorForTokenClassification
+from transformers import TrainingArguments, DataCollatorForTokenClassification, EarlyStoppingCallback
 from datasets import Dataset
 from naimai.utils.general import correct_ner_data
 from naimai.utils.transformers import visualize, compute_metrics, get_text
@@ -61,16 +61,20 @@ class NER_BOMR_classifier:
         # Training ARGS ----------
         if not predict_mode:
             self.training_args = TrainingArguments(
-                output_dir=f"{self.config['output_dir']}",
+                output_dir=f"{config['output_dir']}",
                 save_total_limit = 1,
-                evaluation_strategy="epoch",
+                evaluation_strategy="steps",
+                eval_steps=1000,
+                metric_for_best_model='eval_F1-avg',
                 logging_strategy="epoch",
-                save_strategy="epoch",
+                save_strategy="steps",
+                save_steps=1000,
                 learning_rate=config['learning_rates'],
                 per_device_train_batch_size=config['batch_size'],
                 per_device_eval_batch_size=config['batch_size'],
                 num_train_epochs=config['epochs'],
                 weight_decay=config['weight_decay'],
+                load_best_model_at_end=True
             )
 
     def tokenize_and_align_labels(self, examples):
@@ -118,7 +122,8 @@ class NER_BOMR_classifier:
             eval_dataset=self.tokenized_data["test"],
             data_collator=self.data_collator,
             tokenizer=self.tokenizer,
-            compute_metrics=compute_metrics
+            compute_metrics=compute_metrics,
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=5)]
         )
 
     def train(self):

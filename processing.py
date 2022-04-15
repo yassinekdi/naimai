@@ -1,7 +1,7 @@
 import re
 import spacy
 from naimai.constants.regex import regex_eft, regex_abbrvs,regex_abbrvs2, regex_some_brackets,\
-    regex_numbers_in_brackets, regex_equation, regex_etal, regex_equation_tochange
+    regex_numbers_in_brackets, regex_equation, regex_etal, regex_equation_tochange, regex_explained_2pts
 from naimai.utils.regex import remove_between_brackets
 from naimai.constants.nlp import nlp_vocab
 
@@ -16,9 +16,15 @@ class TextCleaner:
         if nlp:
             self.nlp = nlp
         else:
-            print('Loading nlp for TextCleaner..')
             self.nlp = loaded_nlp
 
+    def remove_explanations(self,text):
+        '''
+        remove text after ':' that explains stuff.
+        :param text:
+        :return:
+        '''
+        return re.sub(regex_explained_2pts,'.',text)
     def replace_abbrevs(self,text):
         '''
         replace i.e. and e.g. by meaning in the text & cf. by "see" & et al. by et al
@@ -75,13 +81,15 @@ class TextCleaner:
     def clean(self):
         '''
         clean the text by :
-            1. replacing i.e. & e.g. abbreviations by "meaning"
-            2. removing brackets with table, figure
-            3. removing sentences with [x] or (x), x being a digit
-            4. removing sentences with equations, figure or table terms
-            5. fixing additional spaces & other stuff resulted by cleaning methods
+            1. remove explained text that happens after ':'
+            2. replacing i.e. & e.g. abbreviations by "meaning"
+            3. removing brackets with table, figure
+            4. removing sentences with [x] or (x), x being a digit
+            5. removing sentences with equations, figure or table terms
+            6. fixing additional spaces & other stuff resulted by cleaning methods
         :return:
         '''
+        self.text = self.remove_explanations(self.text)
         self.text = self.replace_abbrevs(self.text)
         self.text = self.remove_some_brackets(self.text)
         self.text = self.remove_sentence_with_nbs_brackets(self.text)
