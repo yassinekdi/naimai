@@ -27,8 +27,8 @@ def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=Tru
         segmentor.bomr_classifier.predict(text=segmentor.text, visualize_=True, dict_format=False)
 
     segmented = segmentor.segment(check_bg=check_bg)
-    all_classes_in = ('objectives' in segmented.values()) and ('methods' in segmented.values()) and ('results' in segmented.values())
-    if not all_classes_in:
+    background_in = 'background' in segmented.values()
+    if background_in:
         stcs = [segmentor.sentences[idx] for idx in segmented if segmented[idx] != 'background']
         summarized = ' '.join(stcs)
         segmentor = OMR_Text_Segmentor(text=summarized, objective_classifier=segmentor.objective_classifier,
