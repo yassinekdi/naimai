@@ -1,12 +1,12 @@
 from naimai.models.papers_classification.obj_classifier import Objective_classifier
+from naimai.models.papers_classification.bomr_classif.ner_classifier import NER_BOMR_classifier
 from naimai.constants.nlp import max_len_objective_sentence, nlp_vocab
-from naimai.constants.paths import path_objective_classifier, path_produced, path_dispatched
+from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
 from naimai.constants.regex import regex_objectives, regex_filtered_words_obj
 from naimai.utils.regex import clean_objectives
 from naimai.utils.general import save_gzip, load_gzip
 from naimai.models.text_generation.paper2reported import Paper2Reported
 from naimai.models.papers_classification.semantic_search import Search_Model
-
 import os
 import re
 import spacy
@@ -17,52 +17,70 @@ import numpy as np
 
 class Paper_Producer:
     '''
-    Takes formatted paper & transforms it to production paper, in dict format :
-    {'doi': xx, 'reported':xx, 'year': xx, 'database': xx}
+    Takes formatted paper 'fname' & transforms it to production paper, a dict of 3 differents dicts (obj,meth and res) :
+    {'obj': {'website': xx,
+             'year':xx,
+             'database': xx,
+             'authors': et al,
+             'message': xx,
+             'reported': xx,
+             'title': xx,
+             'journal': xx},
+     'meth': {'message': xx, 'reported': xx},
+     'res': {'message': xx, 'reported': xx}
+     }
+
     '''
-    def __init__(self, paper, paper_name='', obj_classifier_model=None, nlp=None):
+    def __init__(self, paper, paper_name='', obj_classifier=None,  bomr_classifier=None, nlp=None):
         self.paper_name = paper_name
         self.paper = paper
         self.objectives_with_regex = []
         self.objectives_with_classifier = []
         self.objectives = []
         self.objectives_reported = []
-        self.obj_classifier_model = obj_classifier_model
-        self.nlp = nlp
-        self.production_paper = {}
-
-    def load_objective_model(self):
-        if not self.obj_classifier_model:
-            print('>> Loading obj model..')
-            self.obj_classifier_model = Objective_classifier(dir=path_objective_classifier)
-
-    def get_objectives_with_regex(self):
-        objective_phrases = list(set(re.findall(regex_objectives, self.paper['Abstract'], flags=re.I)))
-        self.objectives_with_regex = clean_objectives(objective_phrases)
-
-    def get_objectives_with_classifier(self, add_sentences=[]):
-        if self.objectives_with_regex:
-            list_sentences = self.objectives_with_regex + add_sentences
+        if obj_classifier:
+            self.obj_classifier = obj_classifier
         else:
-            list_sentences = self.paper['Abstract'].split('.') + add_sentences
-        list_sentences = [elt for elt in list_sentences if len(elt.split()) < max_len_objective_sentence]
-        objectives = self.obj_classifier_model.predict(list_sentences)
-        self.objectives_with_classifier = [obj for obj in objectives if
-                                           not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
-
-    def get_objective_paper(self, add_sentences=[]):
-        self.load_objective_model()
-        self.get_objectives_with_regex()
-        self.get_objectives_with_classifier(add_sentences=add_sentences)
-        if self.objectives_with_classifier:
-            self.objectives = self.objectives_with_classifier
+            print('>> Loading bomr classifier..')
+            self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
+                                                       predict_mode=True)
+        if bomr_classifier:
+            self.bomr_classifier = bomr_classifier
         else:
-            self.objectives = self.objectives_with_regex
+            print('>> Loading obj classifier..')
+            self.obj_classifier = Objective_classifier()
 
-    def report_objectives(self):
-        if not self.nlp:
+        if nlp:
+            self.nlp = nlp
+        else:
             print('>> Loading nlp..')
             self.nlp = spacy.load(nlp_vocab)
+        self.production_paper = {}
+
+    # def get_objectives_with_regex(self):
+    #     objective_phrases = list(set(re.findall(regex_objectives, self.paper['Abstract'], flags=re.I)))
+    #     self.objectives_with_regex = clean_objectives(objective_phrases)
+
+    # def get_objectives_with_classifier(self, add_sentences=[]):
+    #     if self.objectives_with_regex:
+    #         list_sentences = self.objectives_with_regex + add_sentences
+    #     else:
+    #         list_sentences = self.paper['Abstract'].split('.') + add_sentences
+    #     list_sentences = [elt for elt in list_sentences if len(elt.split()) < max_len_objective_sentence]
+    #     objectives = self.obj_classifier.predict(list_sentences)
+    #     self.objectives_with_classifier = [obj for obj in objectives if
+    #                                        not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
+
+    # def get_objective_paper(self, add_sentences=[]):
+    #     self.load_objective_classifier()
+    #     self.get_objectives_with_regex()
+    #     self.get_objectives_with_classifier(add_sentences=add_sentences)
+    #     if self.objectives_with_classifier:
+    #         self.objectives = self.objectives_with_classifier
+    #     else:
+    #         self.objectives = self.objectives_with_regex
+
+    def report_objectives(self):
         review = Paper2Reported(paper=self.paper,
                                 paper_name=self.paper_name,
                                 paper_objectives=self.objectives,
@@ -90,19 +108,19 @@ class Field_Producer:
     '''
     Takes formatted papers of a field and transform them to a produced paper using Paper Producer obj
     '''
-    def __init__(self, field, obj_classifier_model=None, nlp=None, encoder=None):
+    def __init__(self, field, obj_classifier=None, nlp=None, encoder=None):
         self.field = field
         self.field_papers = {}
-        self.obj_classifier_model = obj_classifier_model
+        self.obj_classifier = obj_classifier
         self.nlp = nlp
         self.production_field = {}
         self.field_index = None
         self.encoder = encoder
 
     def load_objective_model(self):
-        if not self.obj_classifier_model:
+        if not self.obj_classifier:
             print(' - obj model..')
-            self.obj_classifier_model = Objective_classifier(dir=path_objective_classifier)
+            self.obj_classifier = Objective_classifier()
 
     def load_nlp(self):
         if not self.nlp:
@@ -125,7 +143,7 @@ class Field_Producer:
 
     def produce_paper(self, paper, paper_name):
         pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,
-                                      obj_classifier_model=self.obj_classifier_model, nlp=self.nlp)
+                                      obj_classifier=self.obj_classifier, nlp=self.nlp)
         pap_producer.produce_paper(add_sentences=paper['highlights'])
         prod = pap_producer.production_paper
         if prod['reported']:

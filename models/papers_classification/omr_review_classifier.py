@@ -2,7 +2,6 @@ from naimai.papers.full_text.pmc import paper_pmc
 import re
 from naimai.constants.regex import regex_abstract_omr
 from naimai.models.papers_classification.obj_classifier import Objective_classifier
-from naimai.constants.paths import path_objective_classifier
 from naimai.constants.regex import regex_filtered_words_obj, regex_objectives, regex_review
 
 class Omr_Review_Paper_Classifier:
@@ -14,7 +13,7 @@ class Omr_Review_Paper_Classifier:
             self.objective_classifier = objective_classifier
         else:
             print('Need GPU to faster things..')
-            self.objective_classifier = Objective_classifier(dir=path_objective_classifier)
+            self.objective_classifier = Objective_classifier()
         self.paper = paper
 
     def get_paper_abstract(self ) -> str:

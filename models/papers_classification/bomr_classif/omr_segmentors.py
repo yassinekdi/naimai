@@ -1,6 +1,6 @@
 from naimai.constants.regex import regex_filtered_words_obj
 from naimai.constants.nlp import nlp_vocab
-from naimai.constants.paths import path_objective_classifier
+from naimai.constants.paths import path_bomr_classifier
 from naimai.utils.regex import get_first_last_token_ids
 from naimai.models.papers_classification.bomr_classif.ner_processor import NER_BOMR_processor
 from naimai.models.papers_classification.bomr_classif.ner_classifier import NER_BOMR_classifier
@@ -9,7 +9,7 @@ import re
 import spacy
 
 
-def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=True, check_bg=False, visualize_=True):
+def segment(text, obj_clf=None, bomr_clf=None, path_bomr_clf=path_bomr_classifier, summarize=True, check_bg=False, visualize_=True):
     '''
     segment a text using OMR_Text_Segmentor.
     :param text:
@@ -22,7 +22,7 @@ def segment(text, obj_clf=None, bomr_clf=None, path_bomr_model='', summarize=Tru
     :return:
     '''
     segmentor = OMR_Text_Segmentor(text=text, objective_classifier=obj_clf,
-                                   bomr_classifier=bomr_clf, summarize=summarize,path_model=path_bomr_model)
+                                   bomr_classifier=bomr_clf, summarize=summarize,path_bomr_clf=path_bomr_clf)
     if visualize_:
         segmentor.bomr_classifier.predict(text=segmentor.text, visualize_=True, dict_format=False)
 
@@ -45,7 +45,7 @@ class OMR_Text_Segmentor:
     '''
     Segment a text to Objective, Method and Results
     '''
-    def __init__(self, text, bomr_classifier=None, objective_classifier=None, path_model='',nlp=None,summarize=False):
+    def __init__(self, text, bomr_classifier=None, objective_classifier=None, path_bomr_clf=path_bomr_classifier,nlp=None,summarize=False):
         self.text = text
         self.ner_processor = None
         # self.range_wids_labels=None
@@ -59,22 +59,30 @@ class OMR_Text_Segmentor:
         self.text = ' '.join(self.sentences)
 
         # Get obj classifier
-        if objective_classifier:
-          self.objective_classifier = objective_classifier
-        else:
-          print('Getting objectif classifier..')
-          self.objective_classifier = Objective_classifier(dir=path_objective_classifier)
+        self.objective_classifier = None
+        self.load_obj_classifier(objective_classifier)
 
         if summarize:
             self.summarize()
+
         # Get bomr classifier
+        self.bomr_classifier=None
+        self.load_bomr_classifier(bomr_classifier,path=path_bomr_clf)
+
+    def load_obj_classifier(self, obj_classifier):
+        if obj_classifier:
+            self.objective_classifier = obj_classifier
+        else:
+            print('>> Loading obj classifier..')
+            self.objective_classifier = Objective_classifier()
+
+    def load_bomr_classifier(self, bomr_classifier,path=path_bomr_classifier):
         if bomr_classifier:
             self.bomr_classifier = bomr_classifier
         else:
-            self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_model, predict_mode=True)
-        # print('Predicting & getting ner processor..')
-        # self.get_ner_processor()
-        print('Done!')
+            print('>> Loading bomr classifier..')
+            self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path,
+                                                       predict_mode=True)
 
     def text2bomr(self, text, visualize_=False):
         return self.bomr_classifier.predict(text=text, visualize_=visualize_, dict_format=False)
@@ -144,23 +152,6 @@ class OMR_Text_Segmentor:
             if not re.findall(regex_bground, segmented_text[idx]):
                 corrected[idx] = segmented_text[idx]
         return corrected
-
-    # def segment_without_bground(self,segmented_text: dict) -> dict:
-    #     sentences = [self.sentences[idx] for idx in segmented_text if segmented_text[idx]!='background']
-    #     new_text = ' '.join(sentences)
-    #
-    #     last_tokenId = 0
-    #     ner_processor = self.get_ner_processor(new_text)
-    #     range_wids_labels = ner_processor.get_range_wids_labels()
-    #     new_segmented_text={}
-    #     for idx, sentence in enumerate(sentences):
-    #         new_segmented_text[idx], last_tokenId = self.get_sentence_label(sentence=sentence,
-    #                                                                     ner_processor=ner_processor,
-    #                                                                     range_wids_labels=range_wids_labels,
-    #                                                                     last_token=last_tokenId)
-    #     return new_segmented_text
-
-
 
     def segment(self,check_bg=False) -> dict:
         '''

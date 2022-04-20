@@ -3,6 +3,11 @@ from naimai.constants.regex import regex_doi, regex_words_authors, regex_words_i
 from naimai.constants.nlp import this_year
 from collections import OrderedDict
 
+def get_nb_words(text):
+    split = text.split()
+    return len(split)
+
+
 def multiple_replace(dictt, text):
     # Create a regular expression  from the dictionary keys
     regex = re.compile("(%s)" % "|".join(map(re.escape, dictt.keys())))

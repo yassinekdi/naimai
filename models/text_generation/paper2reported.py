@@ -6,10 +6,10 @@ import spacy
 import numpy as np
 
 class Paper2Reported:
-    def __init__(self, paper, paper_objectives, paper_name='',nlp=None):
+    def __init__(self, paper, messages, paper_name='',nlp=None):
         self.paper = paper
         self.paper_name = paper_name
-        self.paper_objectives = paper_objectives
+        self.messages = messages
         self.paper_year = 999
         self.paper_authors = ''
         self.list_reported = []
@@ -57,20 +57,20 @@ class Paper2Reported:
         return result
 
     # def choose_objective(self):
-    #     len_objs = len(self.paper_objectives)
+    #     len_objs = len(self.messages)
     #     idx_obj = 0
     #     if len_objs > 1:
-    #         len_obj_elts = [len(el.split()) for el in self.paper_objectives]
+    #         len_obj_elts = [len(el.split()) for el in self.messages]
     #         if self.complexity:  # long objectives
     #             idx_obj = len_obj_elts.index(max(len_obj_elts))
     #         else:
     #             idx_obj = len_obj_elts.index(min(len_obj_elts))
-    #     chosen = self.paper_objectives[idx_obj]
-    #     self.objective_queue = [obj for obj in self.paper_objectives if obj != chosen]
+    #     chosen = self.messages[idx_obj]
+    #     self.objective_queue = [obj for obj in self.messages if obj != chosen]
     #     return chosen
 
     # def gather_authors_objectives(self):
-    #     if self.paper_objectives:
+    #     if self.messages:
     #         self.get_paper_authors()
     #         authors = self.process_authors()
     #         self.get_paper_year()
@@ -90,7 +90,7 @@ class Paper2Reported:
         authors = self.process_authors()
 
 
-        for obj in self.paper_objectives:
+        for obj in self.messages:
             try :
                 obj_processor = objective_sentence_processor(sentence=obj, nlp=self.nlp)
                 obj_processor.process()

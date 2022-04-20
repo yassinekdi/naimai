@@ -1,16 +1,15 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from naimai.constants.paths import path_encoder
+from naimai.constants.paths import path_objective_classifier
 import torch
 
 class Objective_classifier:
-    def __init__(self,dir,model=None,tokenizer=None):
-        self.dir = dir
+    def __init__(self,model=None,tokenizer=None):
         if model and tokenizer:
             self.model= model
             self.tokenizer =  tokenizer
         else:
-            self.model = AutoModelForSequenceClassification.from_pretrained(path_encoder,num_labels=2)
-            self.tokenizer = AutoTokenizer.from_pretrained(path_encoder)
+            self.model = AutoModelForSequenceClassification.from_pretrained(path_objective_classifier, num_labels=2)
+            self.tokenizer = AutoTokenizer.from_pretrained(path_objective_classifier)
             if torch.cuda.is_available():
                 print('  >> GPU Used in objective classification !')
                 self.model = self.model.to('cuda')

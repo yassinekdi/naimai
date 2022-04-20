@@ -104,7 +104,10 @@ class papers_ssrn(papers):
                 new_paper.get_Abstract()
                 new_paper.get_fields()
                 new_paper.get_Title()
-                new_paper.get_journal()
+                try:
+                    new_paper.get_journal()
+                except:
+                    pass
                 new_paper.get_Authors()
                 new_paper.get_Keywords()
                 new_paper.get_year()
