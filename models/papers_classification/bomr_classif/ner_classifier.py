@@ -137,10 +137,10 @@ class NER_BOMR_classifier:
         self.model = AutoModelForTokenClassification.from_pretrained(path_model, num_labels=len(output_labels))
         self.tokenizer = AutoTokenizer.from_pretrained(path_model)
         if torch.cuda.is_available():
-            print('  >> GPU Used in objective classification !')
+            print('  >> GPU Used in ner classifier !')
             self.model = self.model.to('cuda')
         else:
-            print('  >> No GPU used..')
+            print('  >> No GPU used in ner classifier..')
 
     def predict(self,text,visualize_=True,dict_format=False):
         '''

@@ -3,6 +3,7 @@ from naimai.constants.paths import path_dispatched
 from naimai.constants.nlp import nlp_vocab
 from naimai.utils.general import load_gzip
 from naimai.models.text_generation.query_generation import QueryGeneration
+import torch
 
 import pandas as pd
 import spacy
@@ -12,7 +13,7 @@ from sentence_transformers import SentenceTransformer, InputExample, losses, mod
 
 
 class Search_Model:
-  def __init__(self, field,batch_size=16,n_epochs=10,checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
+  def __init__(self, field,papers,batch_size=16,n_epochs=10,checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
     self.field = field
     self.papers = {}
     self.batch_size = batch_size
@@ -21,10 +22,17 @@ class Search_Model:
     self.nlp = spacy.load(nlp_vocab)
     self.training_data_df = None
 
-  def load_data(self):
-    path_data = os.path.join(path_dispatched,self.field, 'all_papers')
-    self.papers = load_gzip(path_data)
-    print('Len data : ', len(self.papers))
+    self.load_papers(papers)
+
+  def load_papers(self, papers):
+    if papers:
+      self.papers = papers
+    else:
+      print('>> Loading papers..')
+      path = os.path.join(path_dispatched,self.field,"all_papers")
+      self.papers = load_gzip(path)
+      print('Len data : ', len(self.papers))
+
 
   def prepare_data(self, size):
     keys = random.sample(self.papers.keys(),k=size)
@@ -52,7 +60,14 @@ class Search_Model:
   def create_model(self):
     word_emb = models.Transformer(self.checkpoint)
     pooling = models.Pooling(word_emb.get_word_embedding_dimension())
-    self.model = SentenceTransformer(modules=[word_emb, pooling], device='cuda')
+    if torch.cuda.is_available():
+      print('  >> GPU Used in search model !')
+      self.model = SentenceTransformer(modules=[word_emb, pooling], device='cuda')
+    else:
+      print('  >> No GPU used in search model..')
+      self.model = SentenceTransformer(modules=[word_emb, pooling])
+
+
 
   def train(self):
     train_loss = losses.MultipleNegativesRankingLoss(self.model)
@@ -61,7 +76,6 @@ class Search_Model:
                     warmup_steps=warmup_steps, show_progress_bar=True)
   def fine_tune(self,size_data,model_path_saving=''):
     print('>> Preparing data..')
-    self.load_data()
     self.prepare_data(size=size_data)
     self.process_data()
 
