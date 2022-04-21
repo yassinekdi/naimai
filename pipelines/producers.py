@@ -1,9 +1,9 @@
 from naimai.models.papers_classification.obj_classifier import Objective_classifier
 from naimai.models.papers_classification.bomr_classif.ner_classifier import NER_BOMR_classifier
-from naimai.constants.nlp import max_len_objective_sentence, nlp_vocab
+from naimai.models.papers_classification.bomr_classif.omr_segmentors import segment
+from naimai.constants.nlp import nlp_vocab
+from naimai.utils.regex import get_ref_url
 from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
-from naimai.constants.regex import regex_objectives, regex_filtered_words_obj
-from naimai.utils.regex import clean_objectives
 from naimai.utils.general import save_gzip, load_gzip
 from naimai.models.text_generation.paper2reported import Paper2Reported
 from naimai.models.papers_classification.semantic_search import Search_Model
@@ -15,6 +15,7 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 
+
 class Paper_Producer:
     '''
     Takes formatted paper 'fname' & transforms it to production paper, a dict of 3 differents dicts (obj,meth and res) :
@@ -23,84 +24,121 @@ class Paper_Producer:
              'database': xx,
              'authors': et al,
              'message': xx,
+             'reported': xx,
              'title': xx,
              'journal': xx},
-     'meth': {'message': xx, },
-     'res': {'message': xx, 'reported': xx}
+     'meth': {'message': xx},
+     'res': {'message': xx}
      }
-
+    When no objective is found after segmentation, we correct by looking for it in results, otherwise in methods.
     '''
-    def __init__(self, paper, paper_name='', obj_classifier=None,  bomr_classifier=None, nlp=None):
+
+    def __init__(self, paper, paper_name='', obj_classifier=None, bomr_classifier=None, nlp=None):
         self.paper_name = paper_name
         self.paper = paper
-        self.objectives_with_regex = []
-        self.objectives_with_classifier = []
-        self.objectives = []
-        self.objectives_reported = []
+        self.authors = ''
+        self.bomr_classifier = None
+        self.obj_classifier = None
+        self.nlp = None
+        self.production_paper = {}
+        self.omr = {'objectives': [], 'methods': [], 'results': [], 'other': []}
+        self.reported = ''
+
+        self.load_obj_classifier(obj_classifier)
+        self.load_bomr_classifier(bomr_classifier)
+        self.load_nlp(nlp)
+
+    def load_obj_classifier(self, obj_classifier):
         if obj_classifier:
             self.obj_classifier = obj_classifier
-        else:
-            print('>> Loading bomr classifier..')
-            self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
-                                                       predict_mode=True, verbose=False)
-        if bomr_classifier:
-            self.bomr_classifier = bomr_classifier
         else:
             print('>> Loading obj classifier..')
             self.obj_classifier = Objective_classifier()
 
+    def load_bomr_classifier(self, bomr_classifier):
+        if bomr_classifier:
+            self.bomr_classifier = bomr_classifier
+        else:
+            print('>> Loading bomr classifier..')
+            self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
+                                                       predict_mode=True)
+
+    def load_nlp(self, nlp):
         if nlp:
             self.nlp = nlp
         else:
             print('>> Loading nlp..')
             self.nlp = spacy.load(nlp_vocab)
-        self.production_paper = {}
 
-    # def get_objectives_with_regex(self):
-    #     objective_phrases = list(set(re.findall(regex_objectives, self.paper['Abstract'], flags=re.I)))
-    #     self.objectives_with_regex = clean_objectives(objective_phrases)
+    def get_omr_dict(self) -> dict:
+        '''
+        get {'obj': [xx,yy], 'methods': [xx,yy], 'results': [zz,ff]}
+        :return:
+        '''
+        abstract = self.paper['Abstract']
+        segments, sentences, _, _ = segment(text=abstract,
+                                            obj_clf=self.obj_classifier,
+                                            bomr_clf=self.bomr_classifier,
+                                            summarize=True,
+                                            check_bg=True,
+                                            visualize_=False,
+                                            )
+        for stc_idx in segments:
+            label = segments[stc_idx]
+            self.omr[label].append(sentences[stc_idx])
 
-    # def get_objectives_with_classifier(self, add_sentences=[]):
-    #     if self.objectives_with_regex:
-    #         list_sentences = self.objectives_with_regex + add_sentences
-    #     else:
-    #         list_sentences = self.paper['Abstract'].split('.') + add_sentences
-    #     list_sentences = [elt for elt in list_sentences if len(elt.split()) < max_len_objective_sentence]
-    #     objectives = self.obj_classifier.predict(list_sentences)
-    #     self.objectives_with_classifier = [obj for obj in objectives if
-    #                                        not re.findall(regex_filtered_words_obj, obj, flags=re.I)]
+    def report(self) -> str:
+        '''
+        report objectives, else report results, else methods
+        :return:
+        '''
+        objectives, methods, results = self.omr['objectives'], self.omr['methods'], self.omr['results']
+        if objectives:
+            messages_reported = self.report_messages(objectives)
+            self.reported = messages_reported
+        if methods and not self.reported:
+            messages_reported = self.report_messages(methods)
+            self.reported = messages_reported
+        if results and not self.reported:
+            messages_reported = self.report_messages(results)
+            self.reported = messages_reported
 
-    # def get_objective_paper(self, add_sentences=[]):
-    #     self.load_objective_classifier()
-    #     self.get_objectives_with_regex()
-    #     self.get_objectives_with_classifier(add_sentences=add_sentences)
-    #     if self.objectives_with_classifier:
-    #         self.objectives = self.objectives_with_classifier
-    #     else:
-    #         self.objectives = self.objectives_with_regex
-
-    def report_objectives(self):
+    def report_messages(self, messages: list) -> list:
+        messages_reported = []
         review = Paper2Reported(paper=self.paper,
                                 paper_name=self.paper_name,
-                                paper_objectives=self.objectives,
+                                messages=messages,
                                 nlp=self.nlp,
                                 )
         review.generate()
         review.choose_objective()
+        self.authors = review.processed_authors
         if review.list_reported:
-            self.objectives_reported = review.reported_objective
+            messages_reported = review.reported_objective
+        return messages_reported
 
-    def format_paper(self):
-        formatted_paper = {"doi": self.paper['doi'],
-                           "reported": self.objectives_reported,
-                           "year": self.paper['year'],
-                           "database": self.paper['database']}
-        self.production_paper = formatted_paper
+    def format_paper(self) -> dict:
+        journal = self.paper['Journal']
+        if not re.findall('[a-zA-Z]', journal):
+            journal = ''
+        objectives = {"website": get_ref_url(self.paper),
+                      "year": self.paper['year'],
+                      "database": self.paper['database'],
+                      "message": self.omr['objectives'],
+                      "reported": self.reported,
+                      "title": self.paper['Title'],
+                      "journal": journal,
+                      "authors": self.authors}
+        methods = {"message": self.omr['methods']}
+        results = {"message": self.omr['results']}
+        self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
 
-    def produce_paper(self, add_sentences=[]):
-        self.get_objective_paper(add_sentences=add_sentences)
-        self.report_objectives()
-        self.format_paper()
+    def produce_paper(self):
+        self.get_omr_dict()
+        objectives, methods, results = self.omr['objectives'], self.omr['methods'], self.omr['results']
+        if objectives or methods or results:
+            self.report()
+            self.format_paper()
 
 
 class Field_Producer:

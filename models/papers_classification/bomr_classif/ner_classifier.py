@@ -12,7 +12,7 @@ import torch
 
 class NER_BOMR_classifier:
     def __init__(self, config={}, path_ner_data=path_ner_data_total, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,
-                 path_model=None,predict_mode=False, verbose=True):
+                 path_model=None,predict_mode=False, verbose=False):
         self.config = config
         self.tokenized_data = None
         self.trainer = None
@@ -130,10 +130,10 @@ class NER_BOMR_classifier:
     def train(self):
         self.trainer.train()
 
-    def load_model(self,path_model,verbose=True):
+    def load_model(self,path_model,verbose):
         from transformers import AutoModelForTokenClassification, AutoTokenizer
         if verbose:
-            print('Loading model & tokenizer...')
+            print('  Loading model & tokenizer...')
         self.model = AutoModelForTokenClassification.from_pretrained(path_model, num_labels=len(output_labels))
         self.tokenizer = AutoTokenizer.from_pretrained(path_model)
         if torch.cuda.is_available():
