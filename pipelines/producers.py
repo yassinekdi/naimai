@@ -119,8 +119,11 @@ class Paper_Producer:
 
     def format_paper(self) -> dict:
         journal = self.paper['Journal']
-        if not re.findall('[a-zA-Z]', journal):
-            journal = ''
+        if journal and re.findall('[a-zA-Z]', journal):
+            journal = re.sub('^nd|ISSN','',journal).strip()
+        else:
+            journal=''
+
         objectives = {"website": get_ref_url(self.paper),
                       "year": self.paper['year'],
                       "database": self.paper['database'],

@@ -261,8 +261,9 @@ def get_ref_url(paper):
         url = os.path.join(aws_root_pdfs, 'Geophysics', transform_field_name(paper['filename']))
         return url
     if database == "arxiv":
-        url = arxiv_pdfs_url + paper['filename']
+        url = arxiv_pdfs_url + paper['doi']
         return url
-    if database == "elsevier_kaggle":
+    if (database == "elsevier_kaggle") or (database == "issn") or (database == "ssrn"):
         url = doi_url + paper['doi']
         return url
+    return ''
