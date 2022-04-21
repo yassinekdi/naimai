@@ -82,7 +82,7 @@ class OMR_Text_Segmentor:
         else:
             print('>> Loading bomr classifier..')
             self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path,
-                                                       predict_mode=True)
+                                                       predict_mode=True, verbose=False)
 
     def text2bomr(self, text, visualize_=False):
         return self.bomr_classifier.predict(text=text, visualize_=visualize_, dict_format=False)

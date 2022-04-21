@@ -11,7 +11,8 @@ import torch
 
 
 class NER_BOMR_classifier:
-    def __init__(self, config={}, path_ner_data=path_ner_data_total, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,path_model=None,predict_mode=False):
+    def __init__(self, config={}, path_ner_data=path_ner_data_total, ner_data_df=None, model=None, tokenizer=None,label_all_subtokens=False,load_model=False,
+                 path_model=None,predict_mode=False, verbose=True):
         self.config = config
         self.tokenized_data = None
         self.trainer = None
@@ -39,7 +40,7 @@ class NER_BOMR_classifier:
         if tokenizer:
             self.tokenizer = tokenizer
         elif load_model:
-            self.load_model(path_model)
+            self.load_model(path_model,verbose=verbose)
         else:
             print('Getting Tokenizer..')
             # self.tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'])
@@ -129,14 +130,17 @@ class NER_BOMR_classifier:
     def train(self):
         self.trainer.train()
 
-    def load_model(self,path_model):
+    def load_model(self,path_model,verbose=True):
         from transformers import AutoModelForTokenClassification, AutoTokenizer
-        print('Loading model & tokenizer...')
+        if verbose:
+            print('Loading model & tokenizer...')
         self.model = AutoModelForTokenClassification.from_pretrained(path_model, num_labels=len(output_labels))
         self.tokenizer = AutoTokenizer.from_pretrained(path_model)
         if torch.cuda.is_available():
             print('  >> GPU Used in objective classification !')
             self.model = self.model.to('cuda')
+        else:
+            print('  >> No GPU used..')
 
     def predict(self,text,visualize_=True,dict_format=False):
         '''

@@ -1,7 +1,9 @@
 import re
 from naimai.constants.regex import regex_doi, regex_words_authors, regex_words_in_brackets, regex_capital, regex_in_brackets
 from naimai.constants.nlp import this_year
+from naimai.constants.paths import aws_root_pdfs,doi_url,arxiv_pdfs_url
 from collections import OrderedDict
+import os
 
 def get_nb_words(text):
     split = text.split()
@@ -252,3 +254,15 @@ def remove_between_brackets(text,nb_words=5):
 
   regex_remove = '|'.join(txt_to_remove)
   return re.sub(regex_remove,'',text)
+
+def get_ref_url(paper):
+    database = paper['database']
+    if database == "mine":
+        url = os.path.join(aws_root_pdfs, 'Geophysics', transform_field_name(paper['filename']))
+        return url
+    if database == "arxiv":
+        url = arxiv_pdfs_url + paper['filename']
+        return url
+    if database == "elsevier_kaggle":
+        url = doi_url + paper['doi']
+        return url

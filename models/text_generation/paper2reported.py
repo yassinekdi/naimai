@@ -12,6 +12,7 @@ class Paper2Reported:
         self.messages = messages
         self.paper_year = 999
         self.paper_authors = ''
+        self.processed_authors=''
         self.list_reported = []
         self.reported_objective = ''
         self.objective_queue = []
@@ -54,7 +55,7 @@ class Paper2Reported:
                         result = 'Some authors ' + str_year
             except:
                 print('problem authors with paper of doi {} - dbase {} '.format(self.paper['doi'],self.paper['database']))
-        return result
+        self.processed_authors= result
 
     # def choose_objective(self):
     #     len_objs = len(self.messages)
@@ -87,7 +88,7 @@ class Paper2Reported:
         writer = None
         self.get_paper_year()
         self.get_paper_authors()
-        authors = self.process_authors()
+        self.process_authors()
 
 
         for obj in self.messages:
@@ -98,12 +99,12 @@ class Paper2Reported:
             except:
                 obj_transformed = obj
             try:
-                writer = Direct2Reported(authors=authors, sentence=obj_transformed, nlp=self.nlp)
+                writer = Direct2Reported(authors=self.processed_authors, sentence=obj_transformed, nlp=self.nlp)
                 writer.generate()
                 if writer.reported:
                     self.list_reported.append(writer.reported)
                 else:
-                    writer = Direct2Reported(authors=authors, sentence=obj, nlp=self.nlp)
+                    writer = Direct2Reported(authors=self.processed_authors, sentence=obj, nlp=self.nlp)
                     writer.generate()
                     self.list_reported.append(writer.reported)
             except:

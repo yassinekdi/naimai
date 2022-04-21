@@ -67,4 +67,4 @@ regex_journal_names = '[^A-Za-z\s]'
 regex_journal_names2 = 'volume|issue|\n|doi'
 
 regex_abstract_omr = 'objectives?:|results?:|questions?:|purposes?:|findings:|methods:|conclusion:|report:|discussions?:'
-regex_review = 'review|summarize'
+regex_review = 'review|summarizes?|document'

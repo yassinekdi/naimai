@@ -9,6 +9,7 @@ import pandas as pd
 import re
 import time
 
+
 def load_gzip(path):
     with gzip.open(path, 'rb') as f:
         p = pickle.Unpickler(f)
@@ -90,3 +91,4 @@ def ssrn_len_docs(path_csvs):
   dfs = [pd.read_csv(elt) for elt in paths]
   csvs_dict = {field: len(df) for field, df in zip(csvs,dfs)}
   return csvs_dict
+

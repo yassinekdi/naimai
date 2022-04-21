@@ -23,10 +23,9 @@ class Paper_Producer:
              'database': xx,
              'authors': et al,
              'message': xx,
-             'reported': xx,
              'title': xx,
              'journal': xx},
-     'meth': {'message': xx, 'reported': xx},
+     'meth': {'message': xx, },
      'res': {'message': xx, 'reported': xx}
      }
 
@@ -43,7 +42,7 @@ class Paper_Producer:
         else:
             print('>> Loading bomr classifier..')
             self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
-                                                       predict_mode=True)
+                                                       predict_mode=True, verbose=False)
         if bomr_classifier:
             self.bomr_classifier = bomr_classifier
         else:
