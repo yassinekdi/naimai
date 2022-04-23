@@ -43,6 +43,7 @@ path_detailed_data_total = "drive/MyDrive/MyProject/data/Intent_classif_data/det
 
 path_ner_data = "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df.csv"
 path_ner_balanced_data = "drive/MyDrive/MyProject/data/Intent_classif_data/path_ner_balanced_data.csv"
+path_ner_balanced_data2 = "drive/MyDrive/MyProject/data/Intent_classif_data/path_ner_balanced_data2.csv"
 path_ner_data_reduced = "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_reduced.csv"
 path_ner_data_500_1000= "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df_500-1000.csv"
 path_ner_data_0_500= "drive/MyDrive/MyProject/data/Intent_classif_data/NER_data_df_0-500.csv"
