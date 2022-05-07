@@ -149,7 +149,10 @@ class papers_pmc(papers):
                     new_paper.get_Authors()
                     new_paper.get_year()
                     new_paper.replace_abbreviations()
-                    new_paper.get_numCitedBy()
+                    try:
+                        new_paper.get_numCitedBy()
+                    except:
+                        pass
                     self.elements[new_paper.doi] = new_paper.save_dict()
                     self.naimai_dois.append(new_paper.doi)
 
