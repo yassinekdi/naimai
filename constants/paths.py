@@ -13,7 +13,7 @@ import os
 # path_nlp = os.path.join('paper2','deps','SpaCy_Ner_data')
 path_nlp = 'drive/MyDrive/MyProject/paper2/deps/SpaCy_Ner_data'
 path_objective_classifier = 'drive/MyDrive/MyProject/data/Intent_classif_data/distil_bert_obj_classifier'
-path_bomr_classifier = "drive/MyDrive/MyProject/data/Intent_classif_data/OMR_classifier/bigbird_roberta10"
+path_bomr_classifier = "drive/MyDrive/MyProject/data/Intent_classif_data/OMR_classifier/bigbird_roberta16"
 path_main_pipelines = os.path.join('main_pipelines_dir')
 path_author_classifier = os.path.join('paper2','models','papers_classification','authors classif','authors_classif_GP')
 codes_fields_path = "drive/MyDrive/MyProject/data_pipeline/landing_zone/Elsevier_Open_Journals/ASJC.xlsx"

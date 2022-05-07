@@ -1,5 +1,6 @@
 import os
 from naimai.constants.paths import path_dispatched, path_formatted, path_produced
+from naimai.utils.general import load_gzip
 import shutil
 
 class Zone:
@@ -17,6 +18,17 @@ class Zone:
                     self.elements[elt] = os.listdir(path_elt)
                 else:
                     self.elements[elt] = ''
+
+    def get_database(self,database):
+        '''
+        load database
+        :param database:
+        :return:
+        '''
+        path_db = os.path.join(self.zone_path,database)
+        data=load_gzip(path_db)
+        print('Len data: ', len(data))
+        return data
 
     def create_fields(self, fields_names):
         for field in fields_names:
