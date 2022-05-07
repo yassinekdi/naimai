@@ -6,11 +6,12 @@ import faiss
 import os
 
 class Querier:
-  def __init__(self,field,encoder=None,field_index=None,papers={}):
+  def __init__(self,field,fname='all_papers',encoder=None,field_index=None,papers={}):
     self.encoder=encoder
     self.field = field
     self.field_index=field_index
     self.papers= papers
+    self.fname = fname
 
   def load_field_index(self):
     if not self.field_index:
@@ -19,7 +20,7 @@ class Querier:
 
   def load_papers(self):
     if not self.papers:
-      path = os.path.join(path_produced,self.field,'all_papers')
+      path = os.path.join(path_produced,self.field,self.fname)
       self.papers = load_gzip(path)
 
   def load_encoder(self):

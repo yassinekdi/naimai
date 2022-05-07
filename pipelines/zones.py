@@ -105,3 +105,14 @@ class Production_Zone(Zone):
         self.get_elements()
 
 
+    def get_field(self,field,fname):
+        '''
+        load database
+        :param database:
+        :return:
+        '''
+        path_db = os.path.join(self.zone_path,field,fname)
+        data=load_gzip(path_db)
+        print('Len data: ', len(data))
+        return data
+
