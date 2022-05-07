@@ -85,10 +85,9 @@ def get_doi_by_title(title,crossref,sleep=2):
   time.sleep(sleep)
   return doi
 
-def ssrn_len_docs(path_csvs):
-  csvs = os.listdir(path_csvs)
+def ssrn_len_docs(path_csvs,idx_start=0,idx_finish=-1):
+  csvs = os.listdir(path_csvs)[idx_start:idx_finish]
   paths = [os.path.join(path_csvs,elt) for elt in csvs]
   dfs = [pd.read_csv(elt) for elt in paths]
   csvs_dict = {field: len(df) for field, df in zip(csvs,dfs)}
   return csvs_dict
-
