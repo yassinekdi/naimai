@@ -152,7 +152,11 @@ class NER_BOMR_classifier:
         '''
         tokens = text.split()
         if torch.cuda.is_available():
-            encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True,return_tensors='pt',padding='max_length',max_length=self.config['max_length']).to('cuda')
+            if self.config:
+                max_length=self.config['max_length']
+            else:
+                max_length = 256*5
+            encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True,return_tensors='pt',padding='max_length',max_length=max_length).to('cuda')
         else:
             encoding = self.tokenizer(tokens, truncation=True, is_split_into_words=True, return_tensors='pt')
         outputs = self.model(**encoding)

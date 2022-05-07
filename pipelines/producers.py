@@ -2,6 +2,7 @@ from naimai.models.papers_classification.obj_classifier import Objective_classif
 from naimai.models.papers_classification.bomr_classif.ner_classifier import NER_BOMR_classifier
 from naimai.models.papers_classification.bomr_classif.omr_segmentors import segment
 from naimai.constants.nlp import nlp_vocab
+from naimai.constants.regex import regex_not_converted2
 from naimai.utils.regex import get_ref_url
 from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
 from naimai.utils.general import save_gzip, load_gzip
@@ -63,6 +64,14 @@ class Paper_Producer:
             self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
                                                        predict_mode=True)
 
+    def clean_abstract(self,text) -> str:
+        '''
+        clean abstract by removing the non converted expressions
+        :param text:
+        :return:
+        '''
+        return re.sub(regex_not_converted2,'',text)
+
     def load_nlp(self, nlp):
         if nlp:
             self.nlp = nlp
@@ -75,7 +84,7 @@ class Paper_Producer:
         get {'obj': [xx,yy], 'methods': [xx,yy], 'results': [zz,ff]}
         :return:
         '''
-        abstract = self.paper['Abstract']
+        abstract = self.clean_abstract(self.paper['Abstract'])
         segments, sentences, _, _ = segment(text=abstract,
                                             obj_clf=self.obj_classifier,
                                             bomr_clf=self.bomr_classifier,
@@ -208,6 +217,7 @@ class Field_Producer:
         print('>> Loading field papers..')
         path = os.path.join(path_dispatched,self.field,"all_papers")
         self.field_papers = load_gzip(path)
+        print(' >> Len papers: ', len(self.field_papers))
 
     def produce_paper(self, paper: dict, paper_name: str) -> dict:
         '''
@@ -294,6 +304,8 @@ class Field_Producer:
                 self.save_field_index()
             print(' ')
             print('>> Done!')
+        else:
+            print('>> The production is not done (no field encoder). You need to fine tune.')
 
     def save_field_index(self):
         path = os.path.join(path_produced, self.field, 'encodings.index')

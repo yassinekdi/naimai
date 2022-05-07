@@ -19,17 +19,6 @@ class Zone:
                 else:
                     self.elements[elt] = ''
 
-    def get_database(self,database):
-        '''
-        load database
-        :param database:
-        :return:
-        '''
-        path_db = os.path.join(self.zone_path,database)
-        data=load_gzip(path_db)
-        print('Len data: ', len(data))
-        return data
-
     def create_fields(self, fields_names):
         for field in fields_names:
             path = os.path.join(self.zone_path, field)
@@ -83,12 +72,32 @@ class Dispatched_Zone(Zone):
         super().__init__(zone_path=path_dispatched, zone_name='dispatched')
         self.get_elements()
 
+    def get_field(self,field):
+        '''
+        load database
+        :param database:
+        :return:
+        '''
+        path_db = os.path.join(self.zone_path,field,'all_papers')
+        data=load_gzip(path_db)
+        print('Len data: ', len(data))
+        return data
 
 class Formatted_Zone(Zone):
     def __init__(self):
         super().__init__(zone_path=path_formatted, zone_name='formatted')
         self.get_elements()
 
+    def get_database(self,database):
+        '''
+        load database
+        :param database:
+        :return:
+        '''
+        path_db = os.path.join(self.zone_path,database)
+        data=load_gzip(path_db)
+        print('Len data: ', len(data))
+        return data
 
 class Production_Zone(Zone):
     def __init__(self):

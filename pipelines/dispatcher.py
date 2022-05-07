@@ -12,7 +12,7 @@ class Dispatcher:
     Takes the formatted papers of a database and dispatches papers over the fields.
     Principle : Similarity between the papers data (fields or keywords) with the fields encoded & stored using faiss.
     '''
-    def __init__(self, papers_dict, top_n=4, model=None, fields_index=None):
+    def __init__(self, papers_dict, top_n=3, model=None, fields_index=None):
         self.papers = papers_dict
         self.top_n = top_n
         self.model = model
