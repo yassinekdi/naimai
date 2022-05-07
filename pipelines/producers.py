@@ -255,10 +255,11 @@ class Field_Producer:
       :param fname:
       :return:
       '''
+      messages = ' '.join(self.production_field[fname]['message'])
       if '_objectives' in fname:
-        return self.production_field[fname]['title']+ ' ' + self.production_field[fname]['message']
+        return self.production_field[fname]['title']+ ' ' + messages
       else:
-        return self.production_field[fname]['message']
+        return messages
 
     def get_field_index(self):
         print('>> Computing Faiss Index..')
