@@ -141,7 +141,7 @@ class papers_pmc(papers):
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
             new_paper.get_Title()
-            if new_paper.is_paper_english(self.nlp):
+            if new_paper.is_paper_english(self.nlp) and isinstance(self.doi,str):
                 if not new_paper.is_in_database(self.naimai_dois):
                     new_paper.get_Abstract()
                     new_paper.get_journal()
