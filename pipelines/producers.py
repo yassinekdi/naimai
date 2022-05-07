@@ -160,7 +160,7 @@ class Field_Producer:
     3 Compute field Faiss index
     '''
     def __init__(self, field, obj_classifier=None,bomr_classifier=None, nlp=None,
-                 encoder=None, field_papers=None):
+                 encoder=None, field_papers=None,,idx_start=0,idx_finish=-1):
         self.field = field
         self.field_papers = {}
         self.obj_classifier = None
@@ -175,7 +175,14 @@ class Field_Producer:
         self.load_bomr_classifier(bomr_classifier)
         self.load_nlp(nlp)
         self.load_encoder(encoder)
-        self.load_field_papers(field_papers)
+        self.load_field_papers(field_papers,idx_start=idx_start,idx_finish=idx_finish)
+        self.idx_finish = idx_finish
+        self.idx_start= idx_start
+        if idx_finish!=-1 or idx_start!=0:
+            self.extracted=True
+        else:
+            self.extracted=False
+
 
     def load_obj_classifier(self, obj_classifier):
         if obj_classifier:
@@ -210,13 +217,16 @@ class Field_Producer:
           else:
               print('>> No field encoder.. You need to fine tune !')
 
-    def load_field_papers(self, field_papers):
+    def load_field_papers(self, field_papers,idx_start=0,idx_finish=-1):
       if field_papers:
-        self.field_papers = field_papers
+          keys = list(field_papers)[idx_start:idx_finish]
+          self.field_papers = {elt: field_papers[elt] for elt in keys}
       else:
         print('>> Loading field papers..')
         path = os.path.join(path_dispatched,self.field,"all_papers")
         self.field_papers = load_gzip(path)
+        keys = list(self.field_papers)[idx_start:idx_finish]
+        self.field_papers = {elt: self.field_papers[elt] for elt in keys}
         print(' >> Len papers: ', len(self.field_papers))
 
     def produce_paper(self, paper: dict, paper_name: str) -> dict:
@@ -312,5 +322,9 @@ class Field_Producer:
         faiss.write_index(self.field_index, path)
 
     def save_papers(self):
-        path = os.path.join(path_produced, self.field, 'all_papers')
+        if self.extracted:
+            file_name = f'all_papers_{self.idx_start}_{self.idx_finish}'
+        else:
+            file_name = 'all_papers'
+        path = os.path.join(path_produced, self.field, file_name)
         save_gzip(path, self.production_field)
