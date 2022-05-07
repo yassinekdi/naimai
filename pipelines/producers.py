@@ -156,11 +156,12 @@ class Paper_Producer:
 class Field_Producer:
     '''
     1 Takes formatted papers of a field and transform them to a produced paper using Paper Producer obj
+        Can also produce a new dispatched database using the selected_fnames list
     2 Can finetune search model to get the field encoder
     3 Compute field Faiss index
     '''
     def __init__(self, field, obj_classifier=None,bomr_classifier=None, nlp=None,
-                 encoder=None, field_papers=None,idx_start=0,idx_finish=-1):
+                 encoder=None, field_papers=None,idx_start=0,idx_finish=-1,selected_fnames=[]):
         self.field = field
         self.field_papers = {}
         self.obj_classifier = None
@@ -170,12 +171,13 @@ class Field_Producer:
 
         self.production_field = {}
         self.field_index = None
-
+        self.produce_only_fnames=False
         self.load_obj_classifier(obj_classifier)
         self.load_bomr_classifier(bomr_classifier)
         self.load_nlp(nlp)
         self.load_encoder(encoder)
-        self.load_field_papers(field_papers,idx_start=idx_start,idx_finish=idx_finish)
+        self.load_field_papers(field_papers=field_papers,idx_start=idx_start,idx_finish=idx_finish)
+        self.selected_fnames=selected_fnames
         self.idx_finish = idx_finish
         self.idx_start= idx_start
         if idx_finish!=-1 or idx_start!=0:
@@ -225,7 +227,10 @@ class Field_Producer:
         print('>> Loading field papers..')
         path = os.path.join(path_dispatched,self.field,"all_papers")
         self.field_papers = load_gzip(path)
-        keys = list(self.field_papers)[idx_start:idx_finish]
+        if self.selected_fnames:
+            keys = self.selected_fnames[idx_start:idx_finish]
+        else:
+            keys = list(self.field_papers)[idx_start:idx_finish]
         self.field_papers = {elt: self.field_papers[elt] for elt in keys}
         print(' >> Len papers: ', len(self.field_papers))
 
@@ -303,18 +308,21 @@ class Field_Producer:
             self.produce_field_papers()
 
             #compute Faiss index
-            self.get_field_index()
+            if not self.selected_fnames:
+                self.get_field_index()
 
-            #save
-            if save_papers:
-                print('>> Saving papers..')
-                self.save_papers()
+                #save
+                if save_papers:
+                    print('>> Saving papers..')
+                    self.save_papers()
 
-            if save_field_index:
-                print('>> Saving field index..')
-                self.save_field_index()
-            print(' ')
-            print('>> Done!')
+                if save_field_index:
+                    print('>> Saving field index..')
+                    self.save_field_index()
+                print(' ')
+                print('>> Done!')
+            else:
+                print('Paper produced. Since the filenames are selected, you try to do the rest manually for this first time!')
         else:
             print('>> The production is not done (no field encoder). You need to fine tune.')
 
