@@ -43,9 +43,35 @@ class paper_base:
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
 
+    def clean_text(self,text):
+        '''
+        clean the text based on TextCleaner object
+        :param text:
+        :return:
+        '''
+        cleaner = TextCleaner(text)
+        cleaner.clean()
+        return cleaner.cleaned_text
+
     def is_in_database(self,list_dois):
         if self.doi in list_dois:
             return True
+        return False
+
+    def is_paper_english(self,nlp) -> bool:
+        '''
+        Detect language if paper language is english based on its title.
+        :return:
+        '''
+        if self.Title:
+            title_nlp = nlp(self.Title)
+            language_score=title_nlp._.language
+            condition_english = (language_score['language']=='en') and (language_score['score']>0.7)
+            if condition_english:
+                return True
+        lang = language_score['language']
+        score = language_score['score']
+        print(f'Langage {lang} - Score {score}')
         return False
 
     def save_dict(self):
@@ -88,16 +114,6 @@ class paper_full_base(paper_base):
         for k in abstract_abbrevs:
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
-
-    def clean_text(self,text):
-        '''
-        clean the text based on TextCleaner object
-        :param text:
-        :return:
-        '''
-        cleaner = TextCleaner(text)
-        cleaner.clean()
-        return cleaner.cleaned_text
 
     def save_dict(self):
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords','unclassified_section', 'Title','numCitedBy','numCiting', 'Journal']
