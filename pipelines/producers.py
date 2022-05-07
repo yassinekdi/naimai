@@ -160,7 +160,7 @@ class Field_Producer:
     3 Compute field Faiss index
     '''
     def __init__(self, field, obj_classifier=None,bomr_classifier=None, nlp=None,
-                 encoder=None, field_papers=None,,idx_start=0,idx_finish=-1):
+                 encoder=None, field_papers=None,idx_start=0,idx_finish=-1):
         self.field = field
         self.field_papers = {}
         self.obj_classifier = None
