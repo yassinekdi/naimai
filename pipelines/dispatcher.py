@@ -29,8 +29,8 @@ class Dispatcher:
         self.fields_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.fields_index.add_with_ids(encoded_fields, np.array(range(len(all_fields))))
 
-    def query_from_fields(self, paper):
-        return ', '.join(paper['fields'])
+    def query_from_fields(self, fields):
+        return ', '.join(fields)
 
     def query_from_keywords(self, paper):
         return paper['Keywords']
@@ -39,10 +39,11 @@ class Dispatcher:
         return paper['Title']
 
     def get_query(self, paper):
-        if len(paper['fields']) > 2:
-            query = self.query_from_fields(paper)
+        fields = [elt for elt in paper['fields'] if isinstance(elt, str)]
+        if len(fields) > 2:
+            query = self.query_from_fields(fields)
         else:
-            query = self.query_from_fields(paper) + ' ' + self.query_from_keywords(paper) + ' ' + self.query_from_title(
+            query = self.query_from_fields(fields) + ' ' + self.query_from_keywords(paper) + ' ' + self.query_from_title(
                 paper)
         return query
 
