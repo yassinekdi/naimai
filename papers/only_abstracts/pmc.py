@@ -110,12 +110,11 @@ class paper_pmc(paper_base):
         self.Journal =  self.paper_infos['journal']
 
     def get_numCitedBy(self) -> int:
-        if self.doi!=self.file_name:
-            path = path_open_citations + self.doi
-            soup = get_soup(path)
-            soup_list = ast.literal_eval(soup.text)
-            if isinstance(soup_list,list):
-                self.numCitedBy = len(soup_list)
+        path = path_open_citations + self.doi
+        soup = get_soup(path)
+        soup_list = ast.literal_eval(soup.text)
+        if isinstance(soup_list,list):
+            self.numCitedBy = len(soup_list)
 
 
     def replace_abbreviations(self):
