@@ -59,9 +59,9 @@ class Dispatcher:
         for field in paper_fields:
             self.fields_elements[field].update({fname: paper})
 
-    def save_field_elements(self, field, update=False):
+    def save_field_elements(self, field, file_name='all_papers', update=False):
         papers_field = self.fields_elements[field]
-        path_field = os.path.join(path_dispatched, field, 'all_papers')
+        path_field = os.path.join(path_dispatched, field, file_name)
         if update and os.path.exists(path_field):
             loaded_papers = load_gzip(path_field)
             loaded_papers.update(papers_field)
@@ -69,12 +69,12 @@ class Dispatcher:
         else:
             save_gzip(path_field, papers_field)
 
-    def save_elements(self, update=False):
+    def save_elements(self,file_name='all_papers', update=False):
         for field in tqdm(self.fields_elements):
             if self.fields_elements[field]:
-                self.save_field_elements(field=field, update=update)
+                self.save_field_elements(field=field, file_name=file_name,update=update)
 
-    def dispatch(self, save=False, update=False):
+    def dispatch(self, save=False,file_name='all_papers', update=False):
         print('>> Initialization..')
         self.load_model()
         self.get_fields_index()
@@ -85,7 +85,7 @@ class Dispatcher:
             self.update_fields_elements(fname, paper, paper_fields)
         if save:
             print('>> Saving..')
-            self.save_elements(update=update)
+            self.save_elements(update=update,file_name=file_name)
             print('>> Finished dispatching!')
 
 
