@@ -24,12 +24,12 @@ class Paper_Producer:
              'year':xx,
              'database': xx,
              'authors': et al,
-             'message': xx,
+             'messages': xx,
              'reported': xx,
              'title': xx,
              'journal': xx},
-     'methods': {'message': xx},
-     'results': {'message': xx}
+     'methods': {'messages': xx},
+     'results': {'messages': xx}
      }
     When no objective is found after segmentation, we correct by looking for it in results, otherwise in methods.
     '''
@@ -136,13 +136,13 @@ class Paper_Producer:
         objectives = {"website": get_ref_url(self.paper),
                       "year": self.paper['year'],
                       "database": self.paper['database'],
-                      "message": self.omr['objectives'],
+                      "messages": self.omr['objectives'],
                       "reported": self.reported,
                       "title": self.paper['Title'],
                       "journal": journal,
                       "authors": self.authors}
-        methods = {"message": self.omr['methods']}
-        results = {"message": self.omr['results']}
+        methods = {"messages": self.omr['methods']}
+        results = {"messages": self.omr['results']}
         self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
 
     def produce_paper(self):
@@ -260,7 +260,7 @@ class Field_Producer:
       :param fname:
       :return:
       '''
-      messages = ' '.join(self.production_field[fname]['message'])
+      messages = ' '.join(self.production_field[fname]['messages'])
       if '_objectives' in fname:
         return self.production_field[fname]['title']+ ' ' + messages
       else:
