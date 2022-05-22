@@ -78,10 +78,15 @@ class Dispatched_Zone(Zone):
         :param database:
         :return:
         '''
-        path_db = os.path.join(self.zone_path,field,'all_papers')
-        data=load_gzip(path_db)
-        print('Len data: ', len(data))
-        return data
+        path_field = os.path.join(self.zone_path,field)
+        all_papers = os.listdir(path_field)
+        paths_papers = [os.path.join(path_field,pap) for pap in all_papers]
+        data_list=[]
+        for path_db,paper in zip(paths_papers, all_papers):
+            data=load_gzip(path_db)
+            print(f'paper {paper} - Len data: {len(data)}')
+            data_list.append(data)
+        return data_list
 
 class Formatted_Zone(Zone):
     def __init__(self):
