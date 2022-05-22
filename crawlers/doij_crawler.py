@@ -6,7 +6,7 @@ import time
 
 class doij_crawler:
   def __init__(self,html):
-    self.soup = BeautifulSoup(html)
+    self.soup = BeautifulSoup(html,features="lxml")
     self.cards = []
     self.docs = {'title': [], 'authors': [], 'date': [], 'fields': [], "abstract": [], "doi": [],
                      "numCitedBy": [], "numCiting": [], 'journals': []}
@@ -43,7 +43,7 @@ class doij_crawler:
           issn = self.get_issn(card)
           cw = ISSN_crawler(issn=issn, field_issn='')
           print('idx: ', idx)
-          cw.get_dois()
+          cw.get_dois(idx_start=0,idx_finish=-1)
           self.docs['doi']+=cw.docs['doi']
           slp = random.randint(t_min, t_max)
           time.sleep(slp)
