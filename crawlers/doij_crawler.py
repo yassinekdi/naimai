@@ -34,9 +34,9 @@ class doij_crawler:
     except:
       return
 
-  def get_docs(self):
+  def get_docs(self,page_start=0,page_end=-1):
     self.get_cards()
-    for card in tqdm(self.cards):
+    for card in tqdm(self.cards)[page_start:page_end]:
       issn = self.get_issn(card)
       issn_docs = self.get_data_with_issn(issn)
       if issn_docs:
