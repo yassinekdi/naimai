@@ -72,9 +72,9 @@ class papers_biorxiv(papers):
             new_paper = paper_biorxiv(df=self.data,
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
+            new_paper.get_Title()
             if new_paper.is_paper_english(self.nlp):
                 if not new_paper.is_in_database(self.naimai_dois):
-                    new_paper.get_Title()
                     new_paper.get_Abstract()
                     new_paper.get_journal()
                     new_paper.get_fields()

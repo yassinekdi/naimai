@@ -69,10 +69,12 @@ class paper_base:
             condition_english = (language_score['language']=='en') and (language_score['score']>0.7)
             if condition_english:
                 return True
+            else:
+                return False
         # lang = language_score['language']
         # score = language_score['score']
         # print(f'Langage {lang} - Score {score}')
-        return False
+        return True
 
     def save_dict(self):
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting', 'highlights','Journal']
