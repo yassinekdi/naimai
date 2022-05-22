@@ -42,8 +42,11 @@ class doij_crawler:
       for idx,card in tqdm(enumerate(self.cards), total=len(self.cards)):
           issn = self.get_issn(card)
           cw = ISSN_crawler(issn=issn, field_issn='')
-          print('idx: ', idx)
-          cw.get_dois(idx_start=0,idx_finish=-1)
+          try:
+              print('idx: ', idx)
+              cw.get_dois(idx_start=0,idx_finish=-1)
+          except:
+              print('problem in idx : ', idx)
           self.docs['doi']+=cw.docs['doi']
           slp = random.randint(t_min, t_max)
           time.sleep(slp)
