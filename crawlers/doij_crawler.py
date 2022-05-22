@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from naimai.crawlers.issn_crawler import ISSN_crawler
 from tqdm.notebook import tqdm
+import random
+import time
 
 class doij_crawler:
   def __init__(self,html):
@@ -8,6 +10,8 @@ class doij_crawler:
     self.cards = []
     self.docs = {'title': [], 'authors': [], 'date': [], 'fields': [], "abstract": [], "doi": [],
                      "numCitedBy": [], "numCiting": [], 'journals': []}
+
+    self.get_cards()
 
   def get_cards(self):
     self.cards=self.soup.find_all(name="li", attrs={"class": "card search-results__record"})
@@ -34,8 +38,16 @@ class doij_crawler:
     except:
       return
 
+  def get_dois(self,t_min=2, t_max=5):
+      for idx,card in tqdm(enumerate(self.cards), total=len(self.cards)):
+          issn = self.get_issn(card)
+          cw = ISSN_crawler(issn=issn, field_issn='')
+          print('idx: ', idx)
+          cw.get_dois()
+          slp = random.randint(t_min, t_max)
+          time.sleep(slp)
+
   def get_docs(self,page_start=0,page_end=-1):
-    self.get_cards()
     for card in tqdm(self.cards)[page_start:page_end]:
       issn = self.get_issn(card)
       issn_docs = self.get_data_with_issn(issn)
