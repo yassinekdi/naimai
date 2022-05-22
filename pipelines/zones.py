@@ -90,6 +90,19 @@ class Dispatched_Zone(Zone):
                 print(f'paper {paper} - Len data: {len(data)}')
         return data_list
 
+    def reset_allpapers_elt(self,all_papers):
+        '''
+        reset 'all_papers' in all fields
+        :param all_papers:
+        :return:
+        '''
+        fields = list(self.elements)
+        for field in fields:
+            path = os.path.join(self.zone_path,field,all_papers)
+            if os.path.isfile(path):
+                os.remove(path)
+
+
     def plot_distribution(self, verbose=False):
         fields = list(self.elements)
         lens = []
