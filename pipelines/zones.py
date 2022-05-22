@@ -2,6 +2,7 @@ import os
 from naimai.constants.paths import path_dispatched, path_formatted, path_produced
 from naimai.utils.general import load_gzip
 import shutil
+import matplotlib.pyplot as plt
 
 class Zone:
     def __init__(self, zone_path, zone_name):
@@ -72,7 +73,7 @@ class Dispatched_Zone(Zone):
         super().__init__(zone_path=path_dispatched, zone_name='dispatched')
         self.get_elements()
 
-    def get_field(self,field):
+    def get_field(self,field,verbose=True):
         '''
         load database
         :param database:
@@ -84,9 +85,29 @@ class Dispatched_Zone(Zone):
         data_list=[]
         for path_db,paper in zip(paths_papers, all_papers):
             data=load_gzip(path_db)
-            print(f'paper {paper} - Len data: {len(data)}')
             data_list.append(data)
+            if verbose:
+                print(f'paper {paper} - Len data: {len(data)}')
         return data_list
+
+    def plot_distribution(self, verbose=False):
+        fields = list(self.elements)
+        lens = []
+        for field in fields:
+            data_list = self.get_field(field=field, verbose=verbose)
+            len_field = sum([len(elt) for elt in data_list])
+            lens.append(len_field)
+
+        x,y = fields, lens
+        plt.figure(figsize=(10, 8))
+        plt.rcParams.update({'font.size': 17})
+        plt.barh(x, y, alpha=.5)
+        plt.xlabel('N° of papers', fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.ylabel('Field', fontsize=20)
+        for ind, val in enumerate(y):
+            plt.text(val + 3, ind - .25, str(val))
 
 class Formatted_Zone(Zone):
     def __init__(self):

@@ -7,6 +7,7 @@ from naimai.utils.regex import get_ref_url
 from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
 from naimai.utils.general import save_gzip, load_gzip
 from naimai.models.text_generation.paper2reported import Paper2Reported
+from naimai.pipelines.zones import Dispatched_Zone
 from naimai.models.papers_classification.semantic_search import Search_Model
 import os
 import re
@@ -155,12 +156,12 @@ class Paper_Producer:
 
 class Field_Producer:
     '''
-    1 Takes formatted papers of a field and transform them to a produced paper using Paper Producer obj
+    1 Takes formatted papers of a all_papers in a field (dispatched zone) and transform them into a produced all_paper using Paper Producer obj
         Can also produce a new dispatched database using the selected_fnames list
     2 Can finetune search model to get the field encoder
     3 Compute field Faiss index
     '''
-    def __init__(self, field, obj_classifier=None,bomr_classifier=None, nlp=None,
+    def __init__(self, field, all_papers='',obj_classifier=None,bomr_classifier=None, nlp=None,
                  encoder=None, field_papers=None,idx_start=0,idx_finish=-1,selected_fnames=[]):
         self.field = field
         self.field_papers = {}
@@ -172,11 +173,12 @@ class Field_Producer:
         self.production_field = {}
         self.field_index = None
         self.produce_only_fnames=False
+        self.all_papers = all_papers
         self.load_obj_classifier(obj_classifier)
         self.load_bomr_classifier(bomr_classifier)
         self.load_nlp(nlp)
         self.load_encoder(encoder)
-        self.load_field_papers(field_papers=field_papers,idx_start=idx_start,idx_finish=idx_finish)
+        self.load_field_papers(field_papers=field_papers,all_papers=all_papers,idx_start=idx_start,idx_finish=idx_finish)
         self.selected_fnames=selected_fnames
         self.idx_finish = idx_finish
         self.idx_start= idx_start
@@ -219,13 +221,13 @@ class Field_Producer:
           else:
               print('>> No field encoder.. You need to fine tune !')
 
-    def load_field_papers(self, field_papers,idx_start=0,idx_finish=-1):
+    def load_field_papers(self, field_papers, all_papers, idx_start=0,idx_finish=-1):
       if field_papers:
           keys = list(field_papers)[idx_start:idx_finish]
           self.field_papers = {elt: field_papers[elt] for elt in keys}
       else:
-        print('>> Loading field papers..')
-        path = os.path.join(path_dispatched,self.field,"all_papers")
+        print('>> Loading field papers : ', all_papers)
+        path = os.path.join(path_dispatched,self.field, all_papers)
         self.field_papers = load_gzip(path)
         if self.selected_fnames:
             keys = self.selected_fnames[idx_start:idx_finish]
@@ -276,16 +278,26 @@ class Field_Producer:
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
         print(' ')
 
+    def load_combine_allpapers(self):
+        disp_zone = Dispatched_Zone()
+        all_allpapers=disp_zone.get_field(field=self.field, verbose=False)
+        paps = all_allpapers[0]
+        for pap in all_allpapers[1:]:
+            paps.update(pap)
+        return paps
+
     def fine_tune_field_encoder(self, size_data: int,save_model: bool,batch_size=16,n_epochs=10):
         '''
-        finetune search model using a size 'size_data' from field_papers
+        load & combine all the "all papers" & finetune search model using a size 'size_data' from field_papers
         :param size_data:
         :param save_model:
         :param batch_size:
         :param n_epochs:
         :return:
         '''
-        smodel = Search_Model(field=self.field,papers=self.field_papers,batch_size=batch_size,n_epochs=n_epochs)
+        combined_papers = self.load_combine_allpapers()
+        print('Len everything : ', len(combined_papers))
+        smodel = Search_Model(field=self.field,papers=combined_papers,batch_size=batch_size,n_epochs=n_epochs)
         smodel.fine_tune(size_data=size_data)
         self.encoder = smodel.model
         if save_model:
@@ -332,8 +344,8 @@ class Field_Producer:
 
     def save_papers(self):
         if self.extracted:
-            file_name = f'all_papers_{self.idx_start}_{self.idx_finish}'
+            file_name = f'{self.all_papers}_{self.idx_start}_{self.idx_finish}'
         else:
-            file_name = 'all_papers'
+            file_name = self.all_papers
         path = os.path.join(path_produced, self.field, file_name)
         save_gzip(path, self.production_field)
