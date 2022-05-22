@@ -44,6 +44,7 @@ class doij_crawler:
           cw = ISSN_crawler(issn=issn, field_issn='')
           print('idx: ', idx)
           cw.get_dois()
+          self.docs['doi']+=cw.docs['doi']
           slp = random.randint(t_min, t_max)
           time.sleep(slp)
 
@@ -52,14 +53,14 @@ class doij_crawler:
       issn = self.get_issn(card)
       issn_docs = self.get_data_with_issn(issn)
       if issn_docs:
-        self.docs['abstract'].append(issn_docs['abstract'])
+        self.docs['abstract']+=issn_docs['abstract']
         if self.docs['abstract']:
-          self.docs['title'].append(issn_docs['title'])
-          self.docs['authors'].append( issn_docs['authors'])
-          self.docs['date'].append( issn_docs['date'])
-          self.docs['doi'].append(issn_docs['doi'])
-          self.docs['numCitedBy'].append(issn_docs['numCitedBy'])
+          self.docs['title']+=issn_docs['title']
+          self.docs['authors']+= issn_docs['authors']
+          self.docs['date']+= issn_docs['date']
+          self.docs['doi']+=issn_docs['doi']
+          self.docs['numCitedBy']+=issn_docs['numCitedBy']
 
-          self.docs['journals'].append(self.get_journal(card))
-          self.docs['fields'].append(self.get_fields(card))
+          self.docs['journals']+=self.get_journal(card)
+          self.docs['fields']+=self.get_fields(card)
 
