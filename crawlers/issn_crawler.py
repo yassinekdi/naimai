@@ -32,12 +32,16 @@ class ISSN_crawler:
         else:
             return ""
 
-    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=5):
+    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=5,show_tqdm=True):
         if not self.docs['doi']:
             self.get_dois(idx_start, idx_finish)
         sch = SemanticScholar(timeout=20)
         dois_to_remove = []
-        for doi in tqdm(self.docs['doi']):
+        if show_tqdm:
+            range_=tqdm(self.docs['doi'])
+        else:
+            range_ = self.docs['doi']
+        for doi in range_:
             try:
                 paper = sch.paper(doi)
                 slp = random.randint(t_min, t_max)
