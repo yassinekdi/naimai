@@ -9,26 +9,26 @@ class doij_crawler:
     self.soup = BeautifulSoup(html,features="lxml")
     self.cards = []
     self.docs = {'title': [], 'authors': [], 'date': [], 'fields': [], "abstract": [], "doi": [],
-                     "numCitedBy": [], "numCiting": [], 'journals': []}
+                     "numCitedBy": [], 'journals': []}
 
     self.get_cards()
 
   def get_cards(self):
     self.cards=self.soup.find_all(name="li", attrs={"class": "card search-results__record"})
 
-  def get_journal(self,card):
+  def get_journal(self,card,len_dois):
     heading = card.find(name="h3", attrs={"class": "search-results__heading"})
-    return heading.text.strip()
+    return [heading.text.strip()]*len_dois
 
   def get_issn(self,card):
     heading = card.find(name="h3", attrs={"class": "search-results__heading"})
     issn = heading.find(name="a")['href'].split('toc')[1][1:]
     return issn
 
-  def get_fields(self,card):
+  def get_fields(self,card,len_dois):
     listing = card.find(name='div', attrs={'class': 'search-results__body'})
     listing_lists = listing.find_all(name='ul')
-    return [elt.text for elt in listing_lists[1].find_all(name='li')]
+    return [[elt.text for elt in listing_lists[1].find_all(name='li')]]*len_dois
 
   def get_data_with_issn(self,issn):
     cw = ISSN_crawler(issn=issn,field_issn='')
@@ -64,6 +64,6 @@ class doij_crawler:
           self.docs['doi']+=issn_docs['doi']
           self.docs['numCitedBy']+=issn_docs['numCitedBy']
 
-          self.docs['journals']+=self.get_journal(card)
-          self.docs['fields']+=self.get_fields(card)*len(self.docs['doi'])
+          self.docs['journals']+=self.get_journal(card, len(issn_docs['doi']))
+          self.docs['fields']+=self.get_fields(card, len(issn_docs['doi']))
 
