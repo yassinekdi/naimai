@@ -65,5 +65,5 @@ class doij_crawler:
           self.docs['numCitedBy']+=issn_docs['numCitedBy']
 
           self.docs['journals']+=self.get_journal(card)
-          self.docs['fields']+=self.get_fields(card)
+          self.docs['fields']+=self.get_fields(card)*len(self.docs['doi'])
 
