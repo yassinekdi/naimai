@@ -51,8 +51,8 @@ class doij_crawler:
           slp = random.randint(t_min, t_max)
           time.sleep(slp)
 
-  def get_docs(self,page_start=0,page_end=-1):
-    for card in tqdm(self.cards)[page_start:page_end]:
+  def get_docs(self, idx_start=0, idx_end=-1):
+    for card in tqdm(self.cards[idx_start:idx_end]):
       issn = self.get_issn(card)
       issn_docs = self.get_data_with_issn(issn)
       if issn_docs:
