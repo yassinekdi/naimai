@@ -45,6 +45,7 @@ class Paper_Producer:
         self.production_paper = {}
         self.omr = {'objectives': [], 'methods': [], 'results': [], 'other': []}
         self.reported = ''
+        self.smodel = None
 
         self.load_obj_classifier(obj_classifier)
         self.load_bomr_classifier(bomr_classifier)
@@ -293,9 +294,9 @@ class Field_Producer:
         '''
         combined_papers = self.load_combine_allpapers()
         print('Len everything : ', len(combined_papers))
-        smodel = Search_Model(field=self.field,papers=combined_papers,batch_size=batch_size,n_epochs=n_epochs)
-        smodel.fine_tune(size_data=size_data)
-        self.encoder = smodel.model
+        self.smodel = Search_Model(field=self.field,papers=combined_papers,batch_size=batch_size,n_epochs=n_epochs)
+        self.smodel.fine_tune(size_data=size_data)
+        self.encoder = self.smodel.model
         if save_model:
           self.save_model()
 
