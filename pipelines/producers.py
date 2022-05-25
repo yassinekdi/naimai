@@ -308,7 +308,8 @@ class Field_Producer:
       print('>> Producing field papers..')
       for fname in tqdm(self.field_papers):
           pap = self.field_papers[fname]
-          self.produce_paper(paper=pap, paper_name=fname)
+          if pap['Abstract']:
+              self.produce_paper(paper=pap, paper_name=fname)
       print(' ')
 
     def produce(self,save_papers=False,save_field_index=False):
