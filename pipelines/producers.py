@@ -304,9 +304,9 @@ class Field_Producer:
         path = os.path.join(path_produced, self.field, 'search_model')
         self.encoder.save(path)
 
-    def produce_field_papers(self,idx_start=0,idx_finish=-1):
+    def produce_field_papers(self):
       print('>> Producing field papers..')
-      for fname in tqdm(self.field_papers[idx_start:idx_finish]):
+      for fname in tqdm(self.field_papers):
           pap = self.field_papers[fname]
           self.produce_paper(paper=pap, paper_name=fname)
       print(' ')
