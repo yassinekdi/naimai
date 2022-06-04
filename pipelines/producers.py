@@ -169,6 +169,7 @@ class Field_Producer:
         self.bomr_classifier = None
         self.nlp = None
         self.encoder = None
+        self.smodel = None
 
         self.production_field = {}
         self.field_index = None
