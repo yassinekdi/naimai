@@ -21,7 +21,7 @@ class Search_Model:
     self.checkpoint = checkpoint
     self.nlp = spacy.load(nlp_vocab)
     self.training_data_df = None
-
+    self.model = None
     self.load_papers(papers)
 
   def load_papers(self, papers):
@@ -70,6 +70,7 @@ class Search_Model:
 
 
   def train(self):
+
     train_loss = losses.MultipleNegativesRankingLoss(self.model)
     warmup_steps = int(len(self.processed_data) * self.n_epochs * 0.1)
     self.model.fit(train_objectives=[(self.processed_data, train_loss)], epochs=self.n_epochs,
@@ -80,7 +81,12 @@ class Search_Model:
     self.process_data()
 
     print('>> Modelling..')
-    self.create_model()
+
+    if not self.model:
+      self.create_model()
+    else:
+      print('>> Training the loaded encoding model  .. ')
+      self.model.to('cuda')
     self.train()
 
     if model_path_saving:

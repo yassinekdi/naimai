@@ -295,10 +295,8 @@ class Field_Producer:
         '''
         combined_papers = self.load_combine_allpapers()
         print('Len everything : ', len(combined_papers))
-        if not self.smodel:
-            self.smodel = Search_Model(field=self.field,papers=combined_papers,batch_size=batch_size,n_epochs=n_epochs)
-        else:
-            self.load_encoder()
+        self.smodel = Search_Model(field=self.field, papers=combined_papers, batch_size=batch_size, n_epochs=n_epochs)
+        if self.encoder:
             self.smodel.model = self.encoder
         self.smodel.fine_tune(size_data=size_data)
         self.encoder = self.smodel.model
