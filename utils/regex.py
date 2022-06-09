@@ -263,7 +263,6 @@ def get_ref_url(paper):
     if database == "arxiv":
         url = arxiv_pdfs_url + paper['doi']
         return url
-    if (database == "elsevier_kaggle") or (database == "issn") or (database == "ssrn"):
+    else:
         url = doi_url + paper['doi']
         return url
-    return ''
