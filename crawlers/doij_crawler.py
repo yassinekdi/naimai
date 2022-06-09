@@ -38,8 +38,9 @@ class doij_crawler:
     except:
       return
 
-  def get_dois(self,t_min=2, t_max=5):
-      for idx,card in tqdm(enumerate(self.cards), total=len(self.cards)):
+  def get_dois(self,idx_start=0, idx_end=-1,t_min=2, t_max=5):
+      cards = self.cards[idx_start:idx_end]
+      for idx,card in tqdm(enumerate(cards), total=len(cards)):
           issn = self.get_issn(card)
           cw = ISSN_crawler(issn=issn, field_issn='')
           try:
