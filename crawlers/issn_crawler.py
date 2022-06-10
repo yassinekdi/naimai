@@ -32,7 +32,7 @@ class ISSN_crawler:
         else:
             return ""
 
-    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=5,show_tqdm=True):
+    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=4,show_tqdm=True):
         if not self.docs['doi']:
             self.get_dois(idx_start, idx_finish)
         sch = SemanticScholar(timeout=20)
