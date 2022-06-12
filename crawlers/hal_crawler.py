@@ -23,7 +23,7 @@ class HAL_crawler:
         header = {}
         header[
             'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        soup = BeautifulSoup(requests.get(path, headers=header, timeout=15).content, 'html.parser')
+        soup = BeautifulSoup(requests.get(path, headers=header, timeout=30).content, 'html.parser')
         slp = random.randint(self.t_min, self.t_max)
         if timeit:
             time.sleep(slp)
@@ -119,7 +119,7 @@ class HAL_crawler:
       range_ = range(first_page, last_page + 1)
       for page in tqdm(range_, total=len(range_)):
             path = self.path + str(page)
-            soup_page = self.get_soup(path, timeit=False)
+            soup_page = self.get_soup(path, timeit=True)
             self.soup[page] = soup_page
 
     def get_docs(self, soups):
