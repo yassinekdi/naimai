@@ -60,7 +60,7 @@ regex_doi = r"""
     """
 regex_references = r'references(.*)\b'
 regex_urlsoup=r'q=(.*)&sa=U&ved'
-regex_paper_year = ' 19[0-9]{2}|20[01][0-9]|202[01] '
+regex_paper_year = '19[0-9]{2}|20[01][0-9]|202[0-2]'
 
 regex_filtered_words_obj = 'this section|Corresponding| PhD '
 regex_remove_from_ssrn_fields = '&\s?|eJournal|Educator:?|Courses, Cases & Teaching|Teaching'
