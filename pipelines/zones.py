@@ -144,7 +144,7 @@ class Production_Zone(Zone):
         self.get_elements()
 
 
-    def get_field(self,field,fname):
+    def get_papers(self, field, fname, verbose=True):
         '''
         load database
         :param database:
@@ -152,6 +152,6 @@ class Production_Zone(Zone):
         '''
         path_db = os.path.join(self.zone_path,field,fname)
         data=load_gzip(path_db)
-        print('Len data: ', len(data))
+        if verbose:
+            print('Len data: ', len(data))
         return data
-

@@ -7,7 +7,7 @@ from naimai.utils.regex import get_ref_url
 from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
 from naimai.utils.general import save_gzip, load_gzip, load_gzip_and_update
 from naimai.models.text_generation.paper2reported import Paper2Reported
-from naimai.pipelines.zones import Dispatched_Zone
+from naimai.pipelines.zones import Dispatched_Zone, Production_Zone
 from naimai.models.papers_classification.semantic_search import Search_Model
 import os
 import re
@@ -17,6 +17,10 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 
+D = 768
+vecs = faiss.IndexFlatIP(D)
+ncentroids = 256
+code_size = 32
 
 class Paper_Producer:
     '''
@@ -161,17 +165,17 @@ class Field_Producer:
     2 Can finetune search model to get the field encoder
     3 Compute field Faiss index
     '''
-    def __init__(self, field, all_papers='',obj_classifier=None,bomr_classifier=None, nlp=None, encoder=None, field_papers=None,idx_start=0,idx_finish=-1,load_field_papers=True, load_obj_classifier=True,
-                 load_bomr_classifier=True,load_nlp=True,load_field_encoder=True):
+    def __init__(self, field, all_papers='', obj_classifier=None, bomr_classifier=None, nlp=None, encoder=None, field_papers=None, idx_start=0, idx_finish=-1, load_dispatched_field_papers=True, load_obj_classifier=True,
+                 load_bomr_classifier=True, load_nlp=True, load_field_encoder=True):
         self.field = field
-        self.field_papers = {}
+        self.dispatched_field_papers = {}
         self.obj_classifier = None
         self.bomr_classifier = None
         self.nlp = None
         self.encoder = None
         self.smodel = None
 
-        self.production_field = {}
+        self.produced_field_papers = {}
         self.field_index = None
         self.produce_only_fnames=False
         self.all_papers = all_papers
@@ -183,8 +187,8 @@ class Field_Producer:
             self.load_nlp(nlp)
         if load_field_encoder:
             self.load_encoder(encoder)
-        if load_field_papers:
-            self.load_field_papers(field_papers=field_papers,all_papers=all_papers,idx_start=idx_start,idx_finish=idx_finish)
+        if load_dispatched_field_papers:
+            self.load_dispatched_field_papers_(field_papers=field_papers, all_papers=all_papers, idx_start=idx_start, idx_finish=idx_finish)
         self.idx_finish = idx_finish
         self.idx_start= idx_start
         if idx_finish!=-1 or idx_start!=0:
@@ -226,7 +230,7 @@ class Field_Producer:
           else:
               print('>> No field encoder.. You need to fine tune !')
 
-    def load_field_papers(self, field_papers: str, all_papers: str, idx_start=0,idx_finish=-1):
+    def load_dispatched_field_papers_(self, field_papers: str, all_papers: str, idx_start=0, idx_finish=-1):
       '''
       Load field papers from dispatched zone
       :param field_papers: field of papers
@@ -237,14 +241,14 @@ class Field_Producer:
       '''
       if field_papers:
           keys = list(field_papers)[idx_start:idx_finish]
-          self.field_papers = {elt: field_papers[elt] for elt in keys}
+          self.dispatched_field_papers = {elt: field_papers[elt] for elt in keys}
       else:
         print('>> Loading field papers : ', all_papers)
         path = os.path.join(path_dispatched,self.field, all_papers)
-        self.field_papers = load_gzip(path)
-        keys = list(self.field_papers)[idx_start:idx_finish]
-        self.field_papers = {elt: self.field_papers[elt] for elt in keys}
-        print(' >> Len papers: ', len(self.field_papers))
+        self.dispatched_field_papers = load_gzip(path)
+        keys = list(self.dispatched_field_papers)[idx_start:idx_finish]
+        self.dispatched_field_papers = {elt: self.dispatched_field_papers[elt] for elt in keys}
+        print(' >> Len papers: ', len(self.dispatched_field_papers))
 
     def produce_paper(self, paper: dict, paper_name: str) -> dict:
         '''
@@ -262,19 +266,22 @@ class Field_Producer:
         pap_producer.produce_paper()
         prod = pap_producer.production_paper
         if prod:
-          self.production_field[paper_name+'_objectives'] = prod['objectives']
-          self.production_field[paper_name+'_methods'] = prod['methods']
-          self.production_field[paper_name+'_results'] = prod['results']
+          self.produced_field_papers[paper_name+'_objectives'] = prod['objectives']
+          self.produced_field_papers[paper_name+'_methods'] = prod['methods']
+          self.produced_field_papers[paper_name+'_results'] = prod['results']
 
-    def txt_to_encode(self,fname: str)-> str:
+    def txt_to_encode(self,fname: str,papers_dict=None)-> str:
       '''
-      get what text to encode from produced paper (element of self.production_field)
+      get what text to encode from papers_dict (element of self.produced_field_papers)
       :param fname:
       :return:
       '''
-      messages = ' '.join(self.production_field[fname]['messages'])
+      if not papers_dict:
+          papers_dict = self.produced_field_papers
+
+      messages = ' '.join(papers_dict[fname]['messages'])
       if '_objectives' in fname:
-        return self.production_field[fname]['title']+ ' ' + messages
+        return papers_dict[fname]['title']+ ' ' + messages
       else:
         return messages
 
@@ -306,7 +313,7 @@ class Field_Producer:
                 path = os.path.join(path_produced_papers,fname)
                 save_gzip(path,all_papers[fname])
                 for paper in all_papers[fname]:
-                    self.production_field[paper]= all_papers[fname][paper]
+                    self.produced_field_papers[paper]= all_papers[fname][paper]
 
     def remove_chunks(self,all_papers_name):
         '''
@@ -321,23 +328,56 @@ class Field_Producer:
         for path in paths:
             os.remove(path)
 
-
     def get_field_index(self):
-        if self.production_field:
-            fnames = list(self.production_field.keys())
-        else:
-            self.production_field = self.load_combine_produced_allpapers()
-            fnames = list(self.production_field.keys())
+        '''
+        get field faiss index by computing the IVFPQ index
+        :return:
+        '''
 
-        print('>> Computing Faiss Index..')
-        to_encode = [self.txt_to_encode(fn) for fn in fnames]
+        if self.produced_field_papers:
+            fnames = list(self.produced_field_papers.keys())
+        else:
+            self.produced_field_papers = self.load_combine_produced_allpapers()
+            fnames = list(self.produced_field_papers.keys())
+
         print('>> Encoding ..')
+        to_encode = [self.txt_to_encode(fn) for fn in fnames]
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
+
         print('>> Getting ids ..')
-        self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
-        self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
-        print(' ')
+        self.field_index = faiss.IndexIVFPQ(vecs,D,ncentroids,code_size ,8)
+        self.field_index.train(encoded_fields)
+        self.field_index.add(encoded_fields)
+
+    def update_field_index(self,new_all_papers: str):
+        '''
+        update existing field index with new all_papers
+        :param new_all_papers:
+        :return:
+        '''
+        print(f'Loading new produced papers : {new_all_papers}')
+        prod_zone = Production_Zone()
+        papers_dict = prod_zone.get_papers(field=self.field, fname=new_all_papers, verbose=True)
+        fnames = list(papers_dict.keys())
+
+        print('>> Encoding ..')
+        to_encode = [self.txt_to_encode(fn,papers_dict) for fn in fnames]
+        encoded_fields = self.encoder.encode(to_encode)
+        encoded_fields = np.asarray(encoded_fields.astype('float32'))
+
+        print('>> Adding ids ..')
+        if self.field_index.is_trained:
+            print('  >> Index is trained !')
+            self.field_index.add(encoded_fields)
+        else:
+            print('  >> Index needs to be retrained ! ')
+
+
+    def load_field_index(self):
+        if not self.field_index:
+          path = os.path.join(path_produced,self.field,'encodings.index')
+          self.field_index = faiss.read_index(path)
 
     def load_combine_produced_allpapers(self):
         '''
@@ -393,8 +433,8 @@ class Field_Producer:
 
     def produce_field_papers(self):
       print('>> Producing field papers..')
-      for fname in tqdm(self.field_papers):
-          pap = self.field_papers[fname]
+      for fname in tqdm(self.dispatched_field_papers):
+          pap = self.dispatched_field_papers[fname]
           if pap['Abstract']:
               try:
                   self.produce_paper(paper=pap, paper_name=fname)
@@ -433,4 +473,4 @@ class Field_Producer:
         else:
             file_name = self.all_papers
         path = os.path.join(path_produced, self.field, file_name)
-        save_gzip(path, self.production_field)
+        save_gzip(path, self.produced_field_papers)
