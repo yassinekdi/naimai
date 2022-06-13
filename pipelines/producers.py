@@ -331,8 +331,10 @@ class Field_Producer:
 
         print('>> Computing Faiss Index..')
         to_encode = [self.txt_to_encode(fn) for fn in fnames]
+        print('>> Encoding ..')
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
+        print('>> Getting ids ..')
         self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
         print(' ')

@@ -53,6 +53,10 @@ class HAL_crawler:
         titles = [elt.find('strong').text for elt in divs_filtered]
         return titles
 
+    def get_authors(self,divs_filtered):
+        authors = [elt.find(name='span', attrs={'class': "ref-authors"}).text.replace('\xa0',' ') for elt in divs_filtered]
+        return authors
+
     def get_hal_addresses_page(self, divs_filtered):
         hal_addresses = [elt.find(name='a', attrs={'class': 'ref-halid'}).text for elt in divs_filtered]
         return hal_addresses
@@ -139,6 +143,7 @@ class HAL_crawler:
             self.docs['journal']+= self.get_journals_page(divs_filtered)
             self.docs['date']+= self.get_years_pages(divs_filtered,dois)
             self.docs['hal_address']+= self.get_hal_addresses_page(divs_filtered)
+            self.docs['authors']+= self.get_authors(divs_filtered)
 
         print('Abstracts..')
         zip_ = zip(self.docs['doi'], self.docs['hal_address'])
