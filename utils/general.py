@@ -2,6 +2,7 @@ import pickle, gzip, pickletools
 import requests
 from bs4 import BeautifulSoup
 import os
+from tqdm.notebook import tqdm
 from naimai.constants.paths import naimai_dois_path
 import ast
 from collections import Counter
@@ -20,6 +21,20 @@ def save_gzip(path,obj):
         pickled = pickle.dumps(obj)
         optimized_pickle = pickletools.optimize(pickled)
         f.write(optimized_pickle)
+
+def load_gzip_and_update(paths_fnames):
+  zips=[]
+  if len(paths_fnames)>1:
+      print('>> Loading for updating..')
+      for fname in tqdm(paths_fnames):
+        zips.append(load_gzip(fname))
+      print('>> Done loading!')
+      main_dict = zips[0]
+      for elt in zips[1:]:
+        main_dict.update(elt)
+      return main_dict
+  all_paps = load_gzip(paths_fnames[0])
+  return all_paps
 
 def get_soup(path):
     header = {}

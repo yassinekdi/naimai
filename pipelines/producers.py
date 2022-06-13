@@ -5,7 +5,7 @@ from naimai.constants.nlp import nlp_vocab
 from naimai.constants.regex import regex_not_converted2
 from naimai.utils.regex import get_ref_url
 from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
-from naimai.utils.general import save_gzip, load_gzip
+from naimai.utils.general import save_gzip, load_gzip, load_gzip_and_update
 from naimai.models.text_generation.paper2reported import Paper2Reported
 from naimai.pipelines.zones import Dispatched_Zone
 from naimai.models.papers_classification.semantic_search import Search_Model
@@ -266,9 +266,37 @@ class Field_Producer:
       else:
         return messages
 
-    def get_field_index(self):
+    def gather_production_papers(self,save=True):
+        '''
+        load all_papers chunks (produced between 2 indices for same database) and gather them in the same dictionary
+        :return: dictionary
+        '''
+        disp_zone_fnames = os.path.join(path_dispatched,self.field)
+        path_produced_papers = os.path.join(path_produced, self.field)
+        all_files = os.listdir(path_produced_papers)
+
+        new_fnames = {fname: [elt for elt in all_files if re.findall(fname + '_\d+', elt)] for fname in disp_zone_fnames}
+        for fname in disp_zone_fnames:
+            if not new_fnames[fname]:
+                new_fnames[fname] = fname
+
+        all_papers = {}
+        for fname in new_fnames:
+            fnames = new_fnames[fname]
+            path_fnames = [os.path.join(path_produced_papers,fname) for fname in fnames]
+            all_papers[fname]= load_gzip_and_update(path_fnames)
+
+        if save:
+            print('>> Saving..')
+            for fname in all_papers:
+                path = os.path.join(path_produced_papers,fname)
+                save_gzip(path,all_papers[fname])
+        return all_papers
+
+    def get_field_index(self,fnames=[]):
         print('>> Computing Faiss Index..')
-        fnames = list(self.production_field.keys())
+        if not fnames:
+            fnames = list(self.production_field.keys())
         to_encode = [self.txt_to_encode(fn) for fn in fnames]
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
