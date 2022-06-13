@@ -161,7 +161,7 @@ class Field_Producer:
     2 Can finetune search model to get the field encoder
     3 Compute field Faiss index
     '''
-    def __init__(self, field, all_papers='',obj_classifier=None,bomr_classifier=None, nlp=None, encoder=None, field_papers=None,idx_start=0,idx_finish=-1,load_field_papers=False, load_obj_classifier=True,
+    def __init__(self, field, all_papers='',obj_classifier=None,bomr_classifier=None, nlp=None, encoder=None, field_papers=None,idx_start=0,idx_finish=-1,load_field_papers=True, load_obj_classifier=True,
                  load_bomr_classifier=True,load_nlp=True,load_field_encoder=True):
         self.field = field
         self.field_papers = {}
