@@ -161,8 +161,8 @@ class Field_Producer:
     2 Can finetune search model to get the field encoder
     3 Compute field Faiss index
     '''
-    def __init__(self, field, all_papers='',obj_classifier=None,bomr_classifier=None, nlp=None,
-                 encoder=None, field_papers=None,idx_start=0,idx_finish=-1):
+    def __init__(self, field, all_papers='',obj_classifier=None,bomr_classifier=None, nlp=None, encoder=None, field_papers=None,idx_start=0,idx_finish=-1,load_field_papers=False, load_obj_classifier=True,
+                 load_bomr_classifier=True,load_nlp=True,load_field_encoder=True):
         self.field = field
         self.field_papers = {}
         self.obj_classifier = None
@@ -175,11 +175,16 @@ class Field_Producer:
         self.field_index = None
         self.produce_only_fnames=False
         self.all_papers = all_papers
-        self.load_obj_classifier(obj_classifier)
-        self.load_bomr_classifier(bomr_classifier)
-        self.load_nlp(nlp)
-        self.load_encoder(encoder)
-        self.load_field_papers(field_papers=field_papers,all_papers=all_papers,idx_start=idx_start,idx_finish=idx_finish)
+        if load_obj_classifier:
+            self.load_obj_classifier(obj_classifier)
+        if load_bomr_classifier:
+            self.load_bomr_classifier(bomr_classifier)
+        if load_nlp:
+            self.load_nlp(nlp)
+        if load_field_encoder:
+            self.load_encoder(encoder)
+        if load_field_papers:
+            self.load_field_papers(field_papers=field_papers,all_papers=all_papers,idx_start=idx_start,idx_finish=idx_finish)
         self.idx_finish = idx_finish
         self.idx_start= idx_start
         if idx_finish!=-1 or idx_start!=0:
@@ -221,8 +226,15 @@ class Field_Producer:
           else:
               print('>> No field encoder.. You need to fine tune !')
 
-    def load_field_papers(self, field_papers, all_papers, idx_start=0,idx_finish=-1):
-
+    def load_field_papers(self, field_papers: str, all_papers: str, idx_start=0,idx_finish=-1):
+      '''
+      Load field papers from dispatched zone
+      :param field_papers: field of papers
+      :param all_papers: all_papers name
+      :param idx_start:
+      :param idx_finish:
+      :return:
+      '''
       if field_papers:
           keys = list(field_papers)[idx_start:idx_finish]
           self.field_papers = {elt: field_papers[elt] for elt in keys}
