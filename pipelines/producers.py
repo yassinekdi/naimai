@@ -283,7 +283,8 @@ class Field_Producer:
         load all_papers chunks (produced between 2 indices for same database) and gather them in the same dictionary
         :return: dictionary
         '''
-        disp_zone_fnames = os.path.join(path_dispatched,self.field)
+        disp_zone_path = os.path.join(path_dispatched, self.field)
+        disp_zone_fnames = os.listdir(disp_zone_path)
         path_produced_papers = os.path.join(path_produced, self.field)
         all_files = os.listdir(path_produced_papers)
 
