@@ -25,10 +25,8 @@ def save_gzip(path,obj):
 def load_gzip_and_update(paths_fnames):
   zips=[]
   if len(paths_fnames)>1:
-      print('>> Loading for updating..')
       for fname in tqdm(paths_fnames):
         zips.append(load_gzip(fname))
-      print('>> Done loading!')
       main_dict = zips[0]
       for elt in zips[1:]:
         main_dict.update(elt)

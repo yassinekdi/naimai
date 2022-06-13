@@ -291,9 +291,10 @@ class Field_Producer:
         new_fnames = {fname: [elt for elt in all_files if re.findall(fname + '_\d+', elt)] for fname in disp_zone_fnames}
         for fname in disp_zone_fnames:
             if not new_fnames[fname]:
-                new_fnames[fname] = fname
+                new_fnames[fname] = [fname]
 
         all_papers = {}
+        print('>> Loading for updating..')
         for fname in new_fnames:
             fnames = new_fnames[fname]
             path_fnames = [os.path.join(path_produced_papers,fname) for fname in fnames]
@@ -304,7 +305,7 @@ class Field_Producer:
             for fname in all_papers:
                 path = os.path.join(path_produced_papers,fname)
                 save_gzip(path,all_papers[fname])
-        return all_papers
+        self.production_field= all_papers
 
     def remove_chunks(self,all_papers_name):
         '''
@@ -320,10 +321,10 @@ class Field_Producer:
             os.remove(path)
 
 
-    def get_field_index(self,fnames=[]):
+    def get_field_index(self):
         print('>> Computing Faiss Index..')
-        if not fnames:
-            fnames = list(self.production_field.keys())
+        fnames = list(self.production_field.keys())
+
         to_encode = [self.txt_to_encode(fn) for fn in fnames]
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))

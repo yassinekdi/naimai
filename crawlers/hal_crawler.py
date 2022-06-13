@@ -122,10 +122,11 @@ class HAL_crawler:
             soup_page = self.get_soup(path, timeit=True)
             self.soup[page] = soup_page
 
-    def get_docs(self, soups_df,idx_start=0,idx_finish=-1):
+    def get_docs(self):
         print('First data..')
-        soups = [BeautifulSoup(soup_df) for soup_df in soups_df['0']]
-        for soup_page in tqdm(soups[idx_start:idx_finish]):
+        # soups = [BeautifulSoup(soup_df) for soup_df in soups_df['0']]
+        for page in tqdm(self.soup):
+            soup_page = self.soup[page]
             divs = self.get_divs_page(soup_page)
             dois, divs_filtered = self.get_dois_page_and_divs_filtered(divs)
             self.docs['doi'] = dois
