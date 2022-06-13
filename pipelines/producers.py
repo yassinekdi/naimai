@@ -305,7 +305,8 @@ class Field_Producer:
             for fname in all_papers:
                 path = os.path.join(path_produced_papers,fname)
                 save_gzip(path,all_papers[fname])
-        self.production_field= all_papers
+                for paper in all_papers[fname]:
+                    self.production_field[paper]= all_papers[fname][paper]
 
     def remove_chunks(self,all_papers_name):
         '''
@@ -322,9 +323,13 @@ class Field_Producer:
 
 
     def get_field_index(self):
-        print('>> Computing Faiss Index..')
-        fnames = list(self.production_field.keys())
+        if self.production_field:
+            fnames = list(self.production_field.keys())
+        else:
+            self.production_field = self.load_combine_produced_allpapers()
+            fnames = list(self.production_field.keys())
 
+        print('>> Computing Faiss Index..')
         to_encode = [self.txt_to_encode(fn) for fn in fnames]
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
@@ -332,7 +337,28 @@ class Field_Producer:
         self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
         print(' ')
 
-    def load_combine_allpapers(self):
+    def load_combine_produced_allpapers(self):
+        '''
+        load & combine production papers in same dictionary
+        :return:
+        '''
+        print('>> Loading production papers')
+        path_produced_papers = os.path.join(path_produced, self.field)
+        all_files = os.listdir(path_produced_papers)
+        paths = [os.path.join(path_produced_papers,fl) for fl in all_files]
+        paths = [elt for elt in paths if os.path.isfile(elt)] # keep only files
+
+        all_paps = load_gzip(paths[0])
+        for p in paths[1:]:
+            paps2 = load_gzip(p)
+            all_paps.update(paps2)
+        return all_paps
+
+    def load_combine_dispatched_allpapers(self):
+        '''
+        load & combine dispatched papers in same dictionary
+        :return:
+        '''
         disp_zone = Dispatched_Zone()
         all_allpapers=disp_zone.get_field(field=self.field, verbose=False)
         paps = all_allpapers[0]
@@ -349,7 +375,7 @@ class Field_Producer:
         :param n_epochs:
         :return:
         '''
-        combined_papers = self.load_combine_allpapers()
+        combined_papers = self.load_combine_dispatched_allpapers()
         print('Len everything : ', len(combined_papers))
         self.smodel = Search_Model(field=self.field, papers=combined_papers, batch_size=batch_size, n_epochs=n_epochs)
         if self.encoder:

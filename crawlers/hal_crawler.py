@@ -81,10 +81,15 @@ class HAL_crawler:
             dates.append(year)
         return dates
 
-    def get_soup_article(self, hal_address):
+    def get_soup_article(self, hal_address,doi):
         path_article = 'https://hal.archives-ouvertes.fr/' + hal_address
-        soup_article = self.get_soup(path_article, timeit=True)
-        return soup_article
+        try:
+            soup_article = self.get_soup(path_article, timeit=True)
+            return soup_article
+        except:
+            print('problem in doi : ', doi)
+        return ''
+
 
     def get_abstract_article(self, soup_article):
         text = ''
@@ -129,19 +134,22 @@ class HAL_crawler:
             soup_page = self.soup[page]
             divs = self.get_divs_page(soup_page)
             dois, divs_filtered = self.get_dois_page_and_divs_filtered(divs)
-            self.docs['doi'] = dois
-            self.docs['title'] = self.get_titles_page(divs_filtered)
-            self.docs['journal'] = self.get_journals_page(divs_filtered)
-            self.docs['date'] = self.get_years_pages(divs_filtered,dois)
-            self.docs['hal_address'] = self.get_hal_addresses_page(divs_filtered)
+            self.docs['doi']+= dois
+            self.docs['title']+= self.get_titles_page(divs_filtered)
+            self.docs['journal']+= self.get_journals_page(divs_filtered)
+            self.docs['date']+= self.get_years_pages(divs_filtered,dois)
+            self.docs['hal_address']+= self.get_hal_addresses_page(divs_filtered)
 
         print('Abstracts..')
         zip_ = zip(self.docs['doi'], self.docs['hal_address'])
         for doi, hal_address in tqdm(zip_, total=len(self.docs['doi'])):
-            soup_article = self.get_soup_article(hal_address)
-            abstract = self.get_abstract_article(soup_article)
-            fields = self.get_fields_article(soup_article)
-            keywords = self.get_keywords(soup_article)
+            soup_article = self.get_soup_article(hal_address,doi)
+            if soup_article:
+                abstract = self.get_abstract_article(soup_article)
+                fields = self.get_fields_article(soup_article)
+                keywords = self.get_keywords(soup_article)
+            else:
+                abstract,fields,keywords='','',''
 
             self.docs['abstract'].append(abstract)
             self.docs['fields'].append(fields)
