@@ -348,7 +348,7 @@ class Field_Producer:
         path_produced_papers = os.path.join(path_produced, self.field)
         all_files = os.listdir(path_produced_papers)
         paths = [os.path.join(path_produced_papers,fl) for fl in all_files]
-        paths = [elt for elt in paths if os.path.isfile(elt)] # keep only files
+        paths = [elt for elt in paths if os.path.isfile(elt) and 'encoding' not in elt] # keep only files
 
         all_paps = load_gzip(paths[0])
         for p in paths[1:]:

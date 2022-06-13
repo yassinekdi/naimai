@@ -154,10 +154,25 @@ class HAL_crawler:
         for doi, hal_address in tqdm(zip_, total=len(self.docs['doi'])):
             soup_article = self.get_soup_article(hal_address,doi)
             if soup_article:
-                abstract = self.get_abstract_article(soup_article)
-                fields = self.get_fields_article(soup_article)
-                keywords = self.get_keywords(soup_article)
-                journal = self.get_journals_page(soup_article)
+                try:
+                    abstract = self.get_abstract_article(soup_article)
+                except:
+                    abstract=''
+
+                try:
+                    fields = self.get_fields_article(soup_article)
+                except:
+                    fields= ''
+
+                try:
+                    keywords = self.get_keywords(soup_article)
+                except:
+                    keywords= ''
+
+                try:
+                    journal = self.get_journals_page(soup_article)
+                except:
+                    journal=''
             else:
                 abstract,fields,keywords='','',''
 
