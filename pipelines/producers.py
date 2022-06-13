@@ -293,6 +293,20 @@ class Field_Producer:
                 save_gzip(path,all_papers[fname])
         return all_papers
 
+    def remove_chunks(self,all_papers_name):
+        '''
+        remove all_papers chunks (produced between 2 indices for same database)
+        :return:
+        '''
+        path_produced_papers = os.path.join(path_produced, self.field)
+        all_files = os.listdir(path_produced_papers)
+
+        chunks_fname = [elt for elt in all_files if re.findall(all_papers_name + '_\d+', elt)]
+        paths = [os.path.join(path_produced_papers,elt) for elt in chunks_fname]
+        for path in paths:
+            os.remove(path)
+
+
     def get_field_index(self,fnames=[]):
         print('>> Computing Faiss Index..')
         if not fnames:
