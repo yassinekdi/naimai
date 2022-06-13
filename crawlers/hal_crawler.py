@@ -61,13 +61,18 @@ class HAL_crawler:
         hal_addresses = [elt.find(name='a', attrs={'class': 'ref-halid'}).text for elt in divs_filtered]
         return hal_addresses
 
-    def get_journals_page(self, divs_filtered):
-        journals = []
-        for elt in divs_filtered:
-            for journal in elt.find_all('i'):
-                if journal.text != 'et al.':
-                    journals.append(journal.text)
-        return journals
+    def get_journals_page(self, soup_article):
+        # journals = []
+        div = soup_article.find('div', attrs={'class': "widget-content ref-biblio"})
+        if div.find('i'):
+            return div.find('i').text
+        return ''
+        # for elt in divs_filtered:
+        #     for journal in elt.find_all('i'):
+        #         if journal.text != 'et al.':
+        #             journals.append(journal.text)
+        #
+        # return journals
 
     def get_years_pages(self, divs_filtered,dois):
         dates = []
@@ -140,7 +145,6 @@ class HAL_crawler:
             dois, divs_filtered = self.get_dois_page_and_divs_filtered(divs)
             self.docs['doi']+= dois
             self.docs['title']+= self.get_titles_page(divs_filtered)
-            self.docs['journal']+= self.get_journals_page(divs_filtered)
             self.docs['date']+= self.get_years_pages(divs_filtered,dois)
             self.docs['hal_address']+= self.get_hal_addresses_page(divs_filtered)
             self.docs['authors']+= self.get_authors(divs_filtered)
@@ -153,10 +157,12 @@ class HAL_crawler:
                 abstract = self.get_abstract_article(soup_article)
                 fields = self.get_fields_article(soup_article)
                 keywords = self.get_keywords(soup_article)
+                journal = self.get_journals_page(soup_article)
             else:
                 abstract,fields,keywords='','',''
 
             self.docs['abstract'].append(abstract)
             self.docs['fields'].append(fields)
             self.docs['keywords'].append(keywords)
+            self.docs['journal'].append(journal)
 
