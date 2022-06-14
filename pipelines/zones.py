@@ -3,6 +3,7 @@ from naimai.constants.paths import path_dispatched, path_formatted, path_produce
 from naimai.utils.general import load_gzip
 import shutil
 import matplotlib.pyplot as plt
+import re
 
 class Zone:
     def __init__(self, zone_path, zone_name):
@@ -155,3 +156,39 @@ class Production_Zone(Zone):
         if verbose:
             print('Len data: ', len(data))
         return data
+
+    def clean_papers(self,field,fname):
+        papers = self.get_papers(field,fname)
+        new_papers = self.remove_empty_elts(papers)
+        new_papers = self.correct_years(new_papers)
+        return new_papers
+
+    def remove_empty_elts(self,papers):
+        '''
+        remove empty dictionaries from all_papers dict
+        :param papers:
+        :return:
+        '''
+        cleaned_paps = {}
+        for fname in papers:
+            paper = papers[fname]
+            for key in paper:
+                if paper[key]:
+                    cleaned_paps[fname] = papers[fname]
+                    break
+        return cleaned_paps
+
+    def correct_years(self,papers):
+        '''
+        correct some years wrongly saved: in format of xxxx.0
+        :param papers:
+        :return:
+        '''
+        new_papers = papers.copy()
+        for fname in new_papers:
+            if '_objectives' in fname:
+                new_papers[fname]['year'] = int(new_papers[fname]['year'])
+                new_papers[fname]['authors'] = re.sub('(\d)\.\d', r'\g<1>', new_papers[fname]['authors'])
+                if new_papers[fname]['reported']:
+                    new_papers[fname]['reported'] = re.sub('(\d)\.\d', r'\g<1>', new_papers[fname]['reported'])
+        return new_papers
