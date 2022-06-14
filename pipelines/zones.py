@@ -1,6 +1,8 @@
 import os
+from tqdm.notebook import tqdm
 from naimai.constants.paths import path_dispatched, path_formatted, path_produced
 from naimai.utils.general import load_gzip
+from naimai.utils.regex import get_ref_url
 import shutil
 import matplotlib.pyplot as plt
 import re
@@ -10,6 +12,18 @@ class Zone:
         self.elements = {}
         self.zone_path = zone_path
         self.zone_name = zone_name
+
+    def get_papers(self, field, fname, verbose=True):
+        '''
+        load database
+        :param database:
+        :return:
+        '''
+        path_db = os.path.join(self.zone_path,field,fname)
+        data=load_gzip(path_db)
+        if verbose:
+            print('Len data: ', len(data))
+        return data
 
     def get_elements(self):
         if self.zone_path:
@@ -144,23 +158,12 @@ class Production_Zone(Zone):
         super().__init__(zone_path=path_produced, zone_name='production')
         self.get_elements()
 
-
-    def get_papers(self, field, fname, verbose=True):
-        '''
-        load database
-        :param database:
-        :return:
-        '''
-        path_db = os.path.join(self.zone_path,field,fname)
-        data=load_gzip(path_db)
-        if verbose:
-            print('Len data: ', len(data))
-        return data
-
     def clean_papers(self,field,fname):
         papers = self.get_papers(field,fname)
         new_papers = self.remove_empty_elts(papers)
         new_papers = self.correct_years(new_papers)
+        new_papers = self.add_numCitedBy(field,fname,new_papers)
+        print('Pmc websites are not taken here!')
         return new_papers
 
     def remove_empty_elts(self,papers):
@@ -187,8 +190,44 @@ class Production_Zone(Zone):
         new_papers = papers.copy()
         for fname in new_papers:
             if '_objectives' in fname:
-                new_papers[fname]['year'] = int(new_papers[fname]['year'])
-                new_papers[fname]['authors'] = re.sub('(\d)\.\d', r'\g<1>', new_papers[fname]['authors'])
+                try:
+                    new_papers[fname]['year'] = int(new_papers[fname]['year'])
+                    new_papers[fname]['authors'] = re.sub('(\d)\.\d', r'\g<1>', new_papers[fname]['authors'])
+                except:
+                    print('problem in ', fname)
                 if new_papers[fname]['reported']:
                     new_papers[fname]['reported'] = re.sub('(\d)\.\d', r'\g<1>', new_papers[fname]['reported'])
         return new_papers
+
+    def add_numCitedBy(self,field,papers_name: str, produced_papers):
+        '''
+        add numCitedBy parameter in produced papers
+        :param field:
+        :param papers:
+        :return:
+        '''
+        # get dispatched papers
+        dispatched_papers = self.get_papers(path_dispatched,field,papers_name)
+
+        # add numCitedBy
+        for key in tqdm(dispatched_papers):
+            numCitedBy = dispatched_papers[key]['numCitedBy']
+
+            key_produced = key+'_objective'
+            if key_produced in produced_papers:
+                produced_papers[key_produced]['numCitedBy'] = numCitedBy
+
+        return produced_papers
+
+    def correct_pmc_websites(self,papers):
+        '''
+        some pmc papers websites were not correctly considered..
+        :param papers:
+        :return:
+        '''
+        for key in papers:
+            if '_objectives' in key:
+                papers[key]['website'] = get_ref_url(papers)
+        return papers
+
+

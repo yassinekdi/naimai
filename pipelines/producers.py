@@ -139,12 +139,19 @@ class Paper_Producer:
         else:
             journal=''
 
+        if self.paper['year']:
+            year = int(self.paper['year'])
+        else:
+            year = self.paper['year']
+            print('Year problem in paper: ', self.paper_name)
+
         objectives = {"website": get_ref_url(self.paper),
-                      "year": self.paper['year'],
+                      "year": year,
                       "database": self.paper['database'],
                       "messages": self.omr['objectives'],
                       "reported": self.reported,
                       "title": self.paper['Title'],
+                      'numCitedBy': self.paper['numCitedBy'],
                       "journal": journal,
                       "authors": self.authors}
         methods = {"messages": self.omr['methods']}

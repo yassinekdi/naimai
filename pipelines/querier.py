@@ -37,7 +37,7 @@ class Querier:
       self.encoder = SentenceTransformer(path)
 
   def get_similar_papers_fnames(self,query,top_n=5, year_from=0,year_to=3000):
-    default_top=100
+    default_top=150
     encoded_query = self.encoder.encode([query])
     top_n_results = self.field_index.search(encoded_query, default_top)
     ids = top_n_results[1].tolist()[0]
@@ -49,7 +49,12 @@ class Querier:
 
     # take years into account
     root_fnames = [get_root_fname(fname) for fname in similar_papers_fnames]
-    return (similar_papers_fnames,distances)
+    years = [self.papers[elt]['year'] for elt in root_fnames]
+    idxs_years_to_keep = [idx for idx, year in years if int(year) >= year_from and int(year) <= year_to]
+    results_papers = [similar_papers_fnames[idx] for idx in idxs_years_to_keep][:top_n]
+    results_distances = [distances[idx] for idx in idxs_years_to_keep][:top_n]
+
+    return (results_papers,results_distances)
 
   def review(self,query, top_n=4,text=True):
     pass
