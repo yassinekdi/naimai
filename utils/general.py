@@ -34,6 +34,17 @@ def load_gzip_and_update(paths_fnames):
   all_paps = load_gzip(paths_fnames[0])
   return all_paps
 
+def load_and_combine(path_papers):
+    all_files = os.listdir(path_papers)
+    paths = [os.path.join(path_papers, fl) for fl in all_files]
+    paths = [elt for elt in paths if os.path.isfile(elt) and 'encoding' not in elt]  # keep only files
+
+    all_paps = load_gzip(paths[0])
+    for p in paths[1:]:
+        paps2 = load_gzip(p)
+        all_paps.update(paps2)
+    return all_paps
+
 def get_soup(path):
     header = {}
     header[
