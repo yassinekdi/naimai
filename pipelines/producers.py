@@ -318,6 +318,7 @@ class Field_Producer:
             print('>> Saving..')
             for fname in all_papers:
                 path = os.path.join(path_produced_papers,fname)
+                print('  Saving : ', fname)
                 save_gzip(path,all_papers[fname])
                 for paper in all_papers[fname]:
                     self.produced_field_papers[paper]= all_papers[fname][paper]

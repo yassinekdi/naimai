@@ -43,7 +43,6 @@ class Querier:
     ids = top_n_results[1].tolist()[0]
     distances = top_n_results[0].tolist()[0]
 
-
     fnames = list(self.papers.keys())
     similar_papers_fnames = [self.papers[fnames[elt]] for elt in ids]
 
@@ -54,6 +53,8 @@ class Querier:
     results_papers = [similar_papers_fnames[idx] for idx in idxs_years_to_keep][:top_n]
     results_distances = [distances[idx] for idx in idxs_years_to_keep][:top_n]
 
+    # take num of citations into account
+    # ADD
     return (results_papers,results_distances)
 
   def review(self,query, top_n=4,text=True):
