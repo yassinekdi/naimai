@@ -1,16 +1,17 @@
 from tqdm.notebook import tqdm
 import pandas as pd
-import numpy as np
 from ast import literal_eval
 
 from naimai.utils.regex import multiple_replace
+from naimai.utils.general import get_soup
 from naimai.papers.raw import papers, paper_base
 from naimai.decorators import update_naimai_dois
+from naimai.constants.paths import path_open_citations
 
-class paper_doij(paper_base):
+class paper_hal(paper_base):
     def __init__(self,df,idx_in_df):
         super().__init__()
-        self.database = 'doij'
+        self.database = 'hal'
         self.file_name = idx_in_df
         self.paper_infos = df.iloc[idx_in_df,:]
 
@@ -18,7 +19,7 @@ class paper_doij(paper_base):
         self.doi = self.paper_infos['doi']
 
     def get_fields(self):
-        self.fields = literal_eval(self.paper_infos['fields'])
+        self.fields = self.paper_infos['fields'].split(',')
 
     def get_Abstract(self):
         self.Abstract = self.paper_infos['abstract'].replace('-\n', '').replace('\n', ' ')
@@ -37,7 +38,7 @@ class paper_doij(paper_base):
             print('Year to be corrected in ', self.doi)
 
     def get_journal(self):
-        self.Journal = self.paper_infos['journals']
+        self.Journal = self.paper_infos['journal']
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -46,19 +47,21 @@ class paper_doij(paper_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
     def get_numCitedBy(self):
-        self.numCitedBy = self.paper_infos['numCitedBy']
-        if np.isnan(self.numCitedBy):
-            self.numCitedBy = 0.5
+        path = path_open_citations + self.doi
+        soup = get_soup(path)
+        soup_list = literal_eval(soup.text)
+        if isinstance(soup_list, list):
+            self.numCitedBy = len(soup_list)
 
 
-class papers_doij(papers):
+class papers_hal(papers):
     def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
         print('Len data : ', len(self.data))
 
     def add_paper(self,idx_in_data):
-            new_paper = paper_doij(df=self.data,
+            new_paper = paper_hal(df=self.data,
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
             if not new_paper.is_in_database(self.naimai_dois):
