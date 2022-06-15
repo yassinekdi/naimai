@@ -1,6 +1,9 @@
 from tqdm.notebook import tqdm
 import pandas as pd
 import numpy as np
+from spacy_langdetect import LanguageDetector
+import spacy
+from naimai.constants.nlp import nlp_vocab
 
 from naimai.utils.regex import multiple_replace
 from naimai.papers.raw import papers, paper_base
@@ -47,10 +50,16 @@ class paper_egu(paper_base):
 
 
 class papers_egu(papers):
-    def __init__(self, papers_path):
+    def __init__(self, papers_path,nlp=None):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
         print('Len data : ', len(self.data))
+        if nlp:
+            self.nlp = nlp
+        else:
+            print('Loading nlp vocab..')
+            self.nlp = spacy.load(nlp_vocab)
+            self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
 
     def add_paper(self,idx_in_data):
             new_paper = paper_egu(df=self.data,
