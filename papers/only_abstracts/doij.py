@@ -1,15 +1,16 @@
 from tqdm.notebook import tqdm
 import pandas as pd
 import numpy as np
+from ast import literal_eval
 
 from naimai.utils.regex import multiple_replace
 from naimai.papers.raw import papers, paper_base
 from naimai.decorators import update_naimai_dois
 
-class paper_egu(paper_base):
+class paper_doij(paper_base):
     def __init__(self,df,idx_in_df):
         super().__init__()
-        self.database = 'egu'
+        self.database = 'doij'
         self.file_name = idx_in_df
         self.paper_infos = df.iloc[idx_in_df,:]
 
@@ -17,10 +18,10 @@ class paper_egu(paper_base):
         self.doi = self.paper_infos['doi']
 
     def get_fields(self):
-        self.fields = ['Environmental science',]
+        self.fields = literal_eval(self.paper_infos['fields'])
 
     def get_Abstract(self):
-        self.Abstract = self.paper_infos['abstract'].replace('Abstract. ', '').replace('-\n', '').replace('\n', ' ')
+        self.Abstract = self.paper_infos['abstract'].replace('-\n', '').replace('\n', ' ')
 
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
@@ -32,7 +33,7 @@ class paper_egu(paper_base):
         self.year = int(self.paper_infos['date'])
 
     def get_journal(self):
-        self.Journal =  ''
+        self.Journal = self.paper_infos['journals']
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -46,19 +47,19 @@ class paper_egu(paper_base):
             self.numCitedBy = 0.5
 
 
-class papers_egu(papers):
+class papers_doij(papers):
     def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
         print('Len data : ', len(self.data))
 
     def add_paper(self,idx_in_data):
-            new_paper = paper_egu(df=self.data,
+            new_paper = paper_doij(df=self.data,
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
             if not new_paper.is_in_database(self.naimai_dois):
                 new_paper.get_Abstract()
-                if len(new_paper.Abstract.split())>5:
+                if len(new_paper.Abstract.split()) > 5:
                     new_paper.get_fields()
                     new_paper.get_Title()
                     new_paper.get_journal()
@@ -71,7 +72,7 @@ class papers_egu(papers):
 
 
     @update_naimai_dois
-    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=True):
+    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False):
         if show_tqdm:
             range_ = tqdm(self.data.iterrows(),total=len(self.data))
         else:
