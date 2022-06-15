@@ -22,7 +22,11 @@ class paper_hal(paper_base):
         self.fields = self.paper_infos['fields'].split(',')
 
     def get_Abstract(self):
-        self.Abstract = self.paper_infos['abstract'].replace('-\n', '').replace('\n', ' ')
+        abstract = self.paper_infos['abstract']
+        if isinstance(abstract,str):
+            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ')
+        else:
+            self.Abstract = ''
 
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
