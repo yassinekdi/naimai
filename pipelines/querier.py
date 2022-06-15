@@ -48,9 +48,9 @@ class Querier:
     similar_papers_fnames = [self.papers[fnames[elt]] for elt in ids]
 
     # take years into account
-    root_fnames = [get_root_fname(fname) for fname in similar_papers_fnames]
+    root_fnames = [get_root_fname(fname) for fname in fnames]
     years = [self.papers[elt]['year'] for elt in root_fnames]
-    idxs_years_to_keep = [idx for idx, year in years if int(year) >= year_from and int(year) <= year_to]
+    idxs_years_to_keep = [idx for idx, year in enumerate(years) if int(year) >= year_from and int(year) <= year_to]
     results_papers = [similar_papers_fnames[idx] for idx in idxs_years_to_keep][:top_n]
     results_distances = [distances[idx] for idx in idxs_years_to_keep][:top_n]
 

@@ -158,10 +158,20 @@ class Production_Zone(Zone):
         super().__init__(zone_path=path_produced, zone_name='production')
         self.get_elements()
 
-    def clean_papers(self,field,fname):
+    def clean_papers(self,field: str,fname: str):
+        '''
+        clean already computed papers
+        :param field:
+        :param fname:
+        :return:
+        '''
+        print('>> Getting papers')
         papers = self.get_papers(field,fname)
+        print('>> Removing empty elements')
         new_papers = self.remove_empty_elts(papers)
+        print('>> Correcting years')
         new_papers = self.correct_years(new_papers)
+        print('>> Adding numCited')
         new_papers = self.add_numCitedBy(field,fname,new_papers)
         print('Pmc websites are not taken here!')
         return new_papers
@@ -207,13 +217,15 @@ class Production_Zone(Zone):
         :return:
         '''
         # get dispatched papers
-        dispatched_papers = self.get_papers(path_dispatched,field,papers_name)
+
+        disp_zone = Dispatched_Zone()
+        dispatched_papers = disp_zone.get_papers(field,papers_name)
 
         # add numCitedBy
         for key in tqdm(dispatched_papers):
             numCitedBy = dispatched_papers[key]['numCitedBy']
 
-            key_produced = key+'_objective'
+            key_produced = key+'_objectives'
             if key_produced in produced_papers:
                 produced_papers[key_produced]['numCitedBy'] = numCitedBy
 
@@ -227,7 +239,6 @@ class Production_Zone(Zone):
         '''
         for key in papers:
             if '_objectives' in key:
-                papers[key]['website'] = get_ref_url(papers)
+                doi = key.replace('_objectives','')
+                papers[key]['website'] = get_ref_url(papers[key],doi)
         return papers
-
-
