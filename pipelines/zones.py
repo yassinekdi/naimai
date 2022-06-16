@@ -6,6 +6,9 @@ from naimai.utils.regex import get_ref_url
 import shutil
 import matplotlib.pyplot as plt
 import re
+from spacy_langdetect import LanguageDetector
+import spacy
+from naimai.constants.nlp import nlp_vocab
 
 class Zone:
     def __init__(self, zone_path, zone_name):
@@ -169,6 +172,8 @@ class Production_Zone(Zone):
         papers = self.get_papers(field,fname)
         print('>> Removing empty elements')
         new_papers = self.remove_empty_elts(papers)
+        print('>> Removing nonenglish papers')
+        new_papers = self.remove_nonenglish_elts(new_papers)
         print('>> Correcting years')
         new_papers = self.correct_years(new_papers)
         print('>> Adding numCited')
@@ -176,7 +181,31 @@ class Production_Zone(Zone):
         print('Pmc websites are not taken here!')
         return new_papers
 
-    def remove_empty_elts(self,papers):
+    def remove_nonenglish_elts(self,papers: dict):
+        '''
+        remove non english papers from dictionary papers
+        :param papers:
+        :return:
+        '''
+        nlp = spacy.load(nlp_vocab)
+        nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
+        cleaned_paps = {}
+
+        for fname in tqdm(papers):
+            paper = papers[fname]
+            if paper['message']:
+                text = nlp(paper['message'][0])
+            else:
+                text = nlp(paper['title'])
+
+            language_score=text._.language
+            condition_english = (language_score['language'] == 'en') and (language_score['score'] > 0.7)
+            if condition_english:
+                cleaned_paps[fname] = paper
+
+        return cleaned_paps
+
+    def remove_empty_elts(self,papers: dict):
         '''
         remove empty dictionaries from all_papers dict
         :param papers:

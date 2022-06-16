@@ -45,10 +45,15 @@ def load_and_combine(path_papers):
         all_paps.update(paps2)
     return all_paps
 
-def get_root_fname(fname):
+def get_root_fname(fname,fnames):
   if '_objectives' in fname:
     return fname
-  return '_'.join(fname.split('_')[:-1])+'_objectives'
+  root_fname= '_'.join(fname.split('_')[:-1])+'_objectives'
+
+  if root_fname in fnames:
+      return root_fname
+  else:
+      return ''
 
 def get_soup(path):
     header = {}
