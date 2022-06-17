@@ -1,7 +1,7 @@
 from naimai.constants.paths import path_produced
 from naimai.utils.general import get_root_fname
 from sentence_transformers import SentenceTransformer
-from data_sqlite import SQLiteManager
+from naimai.data_sqlite import SQLiteManager
 import faiss
 import os
 
