@@ -22,6 +22,20 @@ def save_gzip(path,obj):
         optimized_pickle = pickletools.optimize(pickled)
         f.write(optimized_pickle)
 
+def to_sql(papers,conn):
+  print('start..')
+  paps_df = pd.DataFrame(papers).T
+  print('indexing??')
+  paps_df['fname'] = paps_df.index
+  paps_df = paps_df.reset_index(drop=True)
+  print('filling na..')
+  paps_df=paps_df.fillna('')
+  paps_df = paps_df.astype(str)
+  print('saving..')
+  paps_df.to_sql(name='all_papers',con=conn)
+  print('done!')
+
+
 def load_gzip_and_update(paths_fnames):
   zips=[]
   if len(paths_fnames)>1:

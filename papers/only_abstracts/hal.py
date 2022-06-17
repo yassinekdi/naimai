@@ -22,7 +22,11 @@ class paper_hal(paper_base):
         self.doi = self.paper_infos['doi']
 
     def get_fields(self):
-        self.fields = self.paper_infos['fields'].split(',')
+        fields = self.paper_infos['fields']
+        if isinstance(fields, str):
+            self.fields = fields.split(',')
+        else:
+            self.fields = []
 
     def get_Abstract(self):
         abstract = self.paper_infos['abstract']
