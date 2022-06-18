@@ -6,11 +6,10 @@ import faiss
 import os
 
 class Querier:
-  def __init__(self,field,encoder=None,field_index=None,path_sqlite=''):
+  def __init__(self,field,encoder=None,field_index=None):
     self.encoder=encoder
     self.field = field
     self.field_index=field_index
-    self.path_sqlite = path_sqlite
     if not encoder:
       print('>> Loading encoder..')
       self.load_encoder()
@@ -39,12 +38,12 @@ class Querier:
     :param year_to:
     :return:
     '''
-    default_top=150
+    default_top=100
     encoded_query = self.encoder.encode([query])
     top_n_results = self.field_index.search(encoded_query, default_top)
     ids = top_n_results[1].tolist()[0]
-
-    sql = SQLiteManager(self.path_sqlite)
+    path_sqlite = os.path.join(path_produced,self.field,'all_papers_sqlite')
+    sql = SQLiteManager(path_sqlite)
     similar_papers = sql.get_by_multiple_ids(ids)
 
     # get fnames

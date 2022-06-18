@@ -11,6 +11,11 @@ from naimai.papers.raw import papers, paper_base
 from naimai.decorators import update_naimai_dois
 from naimai.constants.paths import path_open_citations
 
+from spacy.language import Language
+
+def create_lang_detector(nlp, name):
+    return LanguageDetector()
+
 class paper_hal(paper_base):
     def __init__(self,df,idx_in_df):
         super().__init__()
@@ -75,7 +80,8 @@ class papers_hal(papers):
         else:
             print('Loading nlp vocab..')
             self.nlp = spacy.load(nlp_vocab)
-            self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
+            Language.factory("language_detector", func=create_lang_detector)
+            self.nlp.add_pipe('language_detector', last=True)
 
     def add_paper(self,idx_in_data):
             new_paper = paper_hal(df=self.data,
