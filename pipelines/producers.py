@@ -404,13 +404,13 @@ class Field_Producer:
             all_paps.update(paps2)
         return all_paps
 
-    def load_combine_dispatched_allpapers(self):
+    def load_combine_dispatched_allpapers(self,size_data):
         '''
-        load & combine dispatched papers in same dictionary
+        load same nb from all dispatched papers in same field & combine them
         :return:
         '''
         disp_zone = Dispatched_Zone()
-        all_allpapers=disp_zone.get_field(field=self.field, verbose=False)
+        all_allpapers=disp_zone.get_field(field=self.field, verbose=False,size_data=size_data)
         paps = all_allpapers[0]
         for pap in all_allpapers[1:]:
             paps.update(pap)
@@ -425,7 +425,7 @@ class Field_Producer:
         :param n_epochs:
         :return:
         '''
-        combined_papers = self.load_combine_dispatched_allpapers()
+        combined_papers = self.load_combine_dispatched_allpapers(size_data)
         print('Len everything : ', len(combined_papers))
         self.smodel = Search_Model(field=self.field, papers=combined_papers, batch_size=batch_size, n_epochs=n_epochs)
         if self.encoder:

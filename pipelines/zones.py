@@ -5,10 +5,12 @@ from naimai.utils.general import load_gzip
 from naimai.utils.regex import get_ref_url
 import shutil
 import matplotlib.pyplot as plt
+import random
 import re
 from spacy_langdetect import LanguageDetector
 import spacy
 from naimai.constants.nlp import nlp_vocab
+random.seed(10)
 
 class Zone:
     def __init__(self, zone_path, zone_name):
@@ -91,18 +93,31 @@ class Dispatched_Zone(Zone):
         super().__init__(zone_path=path_dispatched, zone_name='dispatched')
         self.get_elements()
 
-    def get_field(self,field,verbose=True):
+    def get_field(self,field,size_data=None,verbose=True):
         '''
-        load database
+        load database, if nb samples given, load nb samples of the database
         :param database:
         :return:
         '''
+        size_each_all_papers = 0
         path_field = os.path.join(self.zone_path,field)
         all_papers = os.listdir(path_field)
+
+        if size_data:
+            size_each_all_papers = int(size_data/len(all_papers))+1
+            print('>> Each all_papers size : ', size_each_all_papers)
         paths_papers = [os.path.join(path_field,pap) for pap in all_papers]
         data_list=[]
+        
         for path_db,paper in zip(paths_papers, all_papers):
             data=load_gzip(path_db)
+            if size_each_all_papers:
+                keys = list(data.keys())
+                if len(data)>size_each_all_papers:
+                    keys_selected= random.sample(keys,size_each_all_papers)
+                else:
+                    keys_selected = keys
+                data = {key: data[key] for key in keys_selected}
             data_list.append(data)
             if verbose:
                 print(f'paper {paper} - Len data: {len(data)}')
@@ -204,6 +219,7 @@ class Production_Zone(Zone):
                 cleaned_paps[fname] = paper
 
         return cleaned_paps
+
     def get_omr_dicts(self,fname: str,papers: dict) -> dict:
         '''
         for an fname, get obj, methods & results dict
@@ -230,12 +246,12 @@ class Production_Zone(Zone):
             paper = papers[fname]
             if paper['messages']:
                 cleaned_paps[fname] = papers[fname]
-                break
+                continue
             if '_objectives' in fname:
                 paper_elts = self.get_omr_dicts(fname,papers)
                 is_empty= all([paper_elts[elt]['messages']==[] for elt in paper_elts])
                 if not is_empty:
-                    cleaned_paps[fname] = papers[fname]     
+                    cleaned_paps[fname] = papers[fname]
         return cleaned_paps
 
     def correct_years(self,papers):
