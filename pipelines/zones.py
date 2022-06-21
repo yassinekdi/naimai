@@ -204,20 +204,38 @@ class Production_Zone(Zone):
                 cleaned_paps[fname] = paper
 
         return cleaned_paps
+    def get_omr_dicts(self,fname: str,papers: dict) -> dict:
+        '''
+        for an fname, get obj, methods & results dict
+        :param fname:
+        :return:
+        '''
+        paper_name = '_'.join(fname.split('_')[:-1])
+        omr_fnames = [paper_name + '_objectives', paper_name + '_methods', paper_name + '_results']
+
+        result = {}
+        for fname in omr_fnames:
+            if fname in papers:
+                result[fname] = papers[fname]
+        return result
 
     def remove_empty_elts(self,papers: dict):
         '''
-        remove empty dictionaries from all_papers dict
+        remove empty dictionaries from all_papers dict & obj papers that has no messages and no methods nor results elements.
         :param papers:
         :return:
         '''
         cleaned_paps = {}
         for fname in papers:
             paper = papers[fname]
-            for key in paper:
-                if paper[key]:
-                    cleaned_paps[fname] = papers[fname]
-                    break
+            if paper['messages']:
+                cleaned_paps[fname] = papers[fname]
+                break
+            if '_objectives' in fname:
+                paper_elts = self.get_omr_dicts(fname,papers)
+                is_empty= all([paper_elts[elt]['messages']==[] for elt in paper_elts])
+                if not is_empty:
+                    cleaned_paps[fname] = papers[fname]     
         return cleaned_paps
 
     def correct_years(self,papers):
@@ -240,7 +258,7 @@ class Production_Zone(Zone):
 
     def add_numCitedBy(self,field,papers_name: str, produced_papers):
         '''
-        add numCitedBy parameter in produced papers
+        add numCitedBy parameter in produced papers when forgotten
         :param field:
         :param papers:
         :return:
@@ -252,11 +270,12 @@ class Production_Zone(Zone):
 
         # add numCitedBy
         for key in tqdm(dispatched_papers):
-            numCitedBy = dispatched_papers[key]['numCitedBy']
-
             key_produced = key+'_objectives'
-            if key_produced in produced_papers:
-                produced_papers[key_produced]['numCitedBy'] = numCitedBy
+
+            if 'numCitedBy' not in produced_papers[key_produced]:
+                numCitedBy = dispatched_papers[key]['numCitedBy']            
+                if key_produced in produced_papers:
+                    produced_papers[key_produced]['numCitedBy'] = numCitedBy
 
         return produced_papers
 

@@ -65,6 +65,12 @@ def get_root_fname(fname):
   root_fname= '_'.join(fname.split('_')[:-1])+'_objectives'
   return root_fname
 
+def clean_lst(seq):
+    ''' remove duplicates '''
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
 def get_soup(path):
     header = {}
     header[
