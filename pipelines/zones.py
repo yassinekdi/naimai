@@ -8,9 +8,13 @@ import matplotlib.pyplot as plt
 import random
 import re
 from spacy_langdetect import LanguageDetector
+from spacy.language import Language
 import spacy
 from naimai.constants.nlp import nlp_vocab
 random.seed(10)
+
+def create_lang_detector(nlp, name):
+    return LanguageDetector()
 
 class Zone:
     def __init__(self, zone_path, zone_name):
@@ -203,13 +207,14 @@ class Production_Zone(Zone):
         :return:
         '''
         nlp = spacy.load(nlp_vocab)
-        nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
+        Language.factory("language_detector", func=create_lang_detector)
+        nlp.add_pipe('language_detector', last=True)
         cleaned_paps = {}
 
         for fname in tqdm(papers):
             paper = papers[fname]
-            if paper['message']:
-                text = nlp(paper['message'][0])
+            if paper['messages']:
+                text = nlp(paper['messages'][0])
             else:
                 text = nlp(paper['title'])
 
