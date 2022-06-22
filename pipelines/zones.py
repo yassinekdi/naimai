@@ -292,11 +292,11 @@ class Production_Zone(Zone):
         # add numCitedBy
         for key in tqdm(dispatched_papers):
             key_produced = key+'_objectives'
-
-            if 'numCitedBy' not in produced_papers[key_produced]:
-                numCitedBy = dispatched_papers[key]['numCitedBy']            
-                if key_produced in produced_papers:
-                    produced_papers[key_produced]['numCitedBy'] = numCitedBy
+            if key in produced_papers:
+                if 'numCitedBy' not in produced_papers[key_produced]:
+                    numCitedBy = dispatched_papers[key]['numCitedBy']
+                    if key_produced in produced_papers:
+                        produced_papers[key_produced]['numCitedBy'] = numCitedBy
 
         return produced_papers
 
