@@ -34,8 +34,8 @@ class Search_Model:
       print('Len data : ', len(self.papers))
 
 
-  def prepare_data(self, size):
-    keys = random.sample(self.papers.keys(),k=size)
+  def prepare_data(self):
+    keys = list(self.papers.keys())
     training_data_papers = [self.papers[key] for key in keys]
 
     qgen = QueryGeneration(training_paper_dict=training_data_papers[0], nlp=self.nlp)
@@ -75,9 +75,9 @@ class Search_Model:
     warmup_steps = int(len(self.processed_data) * self.n_epochs * 0.1)
     self.model.fit(train_objectives=[(self.processed_data, train_loss)], epochs=self.n_epochs,
                     warmup_steps=warmup_steps, show_progress_bar=True)
-  def fine_tune(self,size_data,model_path_saving=''):
+  def fine_tune(self,model_path_saving=''):
     print('>> Preparing data..')
-    self.prepare_data(size=size_data)
+    self.prepare_data()
     self.process_data()
 
     print('>> Modelling..')

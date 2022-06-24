@@ -430,7 +430,7 @@ class Field_Producer:
         self.smodel = Search_Model(field=self.field, papers=combined_papers, batch_size=batch_size, n_epochs=n_epochs)
         if self.encoder:
             self.smodel.model = self.encoder
-        self.smodel.fine_tune(size_data=size_data)
+        self.smodel.fine_tune()
         self.encoder = self.smodel.model
         if save_model:
           self.save_model()
