@@ -293,7 +293,7 @@ class Field_Producer:
         '''
         omr = {}
         if not self.papers_ref_fields:
-            self.get_papers_ref_fields(self.ref_fields)
+            self.get_papers_ref_fields()
 
         if self.paper_in_refs(dispatched_paper_name):
             for fname in self.papers_ref_fields:
