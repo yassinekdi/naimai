@@ -91,7 +91,8 @@ class gcloud_data:
         path_index = os.path.join(self.prefix, field, 'encodings.index') # same path in gcloud and locally
         blobs = self.bucket.list_blobs(prefix=path_index)
 
-        if not os.path.exists(path_index): #if already downloaded locally..
+        if not os.path.exists(path_index): #if not already downloaded locally..
+            os.mkdir(path_index)
             for blob in blobs:
                 blob.download_to_filename(path_index)
 
@@ -104,7 +105,8 @@ class gcloud_data:
         path_papers = os.path.join(self.prefix, field, 'all_papers_sqlite') # same path in gcloud and locally
         blobs = self.bucket.list_blobs(prefix=path_papers)
 
-        if not os.path.exists(path_papers): #if already downloaded locally..
+        if not os.path.exists(path_papers): #if not already downloaded locally..
+            os.mkdir(path_papers)
             for blob in blobs:
                 blob.download_to_filename(path_papers)
 
@@ -117,6 +119,7 @@ class gcloud_data:
         path_smodel = os.path.join(self.prefix, field, 'search_model') # same path in gcloud and locally
         blobs = self.bucket.list_blobs(prefix=path_smodel)
 
-        if not os.path.exists(path_smodel): #if already downloaded locally..
+        if not os.path.exists(path_smodel): #if not already downloaded locally..
+            os.mkdir(path_smodel)
             for blob in blobs:
                 blob.download_to_filename(path_smodel)
