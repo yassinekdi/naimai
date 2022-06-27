@@ -181,7 +181,7 @@ class Field_Producer:
         self.nlp = None
         self.encoder = None
         self.smodel = None
-        self.ref_fields = []
+        self.ref_fields = ref_fields
         self.papers_ref_fields = {} # fields used to check if same paper is already produced
 
         self.produced_field_papers = {}
