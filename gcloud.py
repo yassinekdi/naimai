@@ -78,9 +78,13 @@ class gcloud_data:
         upload field from drive to bucket
         '''
         path_drive_field = os.path.join(path_produced, field)
+        print('>> Uploading papers..')
         self.upload_papers(field, path_drive_field)
+        print('>> Uploading index..')
         self.upload_index(field, path_drive_field)
+        print('>> Uploading search model..')
         self.upload_search_model(field, path_drive_field)
+        print('>> Done !')
 
     def get_search_model(self):
         dir0 = os.path.join(self.local_dir_search_model, '1_Pooling')
