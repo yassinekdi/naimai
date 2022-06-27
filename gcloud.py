@@ -127,3 +127,13 @@ class gcloud_data:
             os.mkdir(path_pooling)
             for blob in blobs:
                 blob.download_to_filename(blob.name)
+
+    def get_files(self,field: str):
+        '''
+        get papers, index and search model
+        :param field:
+        :return:
+        '''
+        self.get_papers(field)
+        self.get_index(field)
+        self.get_search_model(field)
