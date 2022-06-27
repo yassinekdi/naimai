@@ -5,16 +5,11 @@ from naimai.constants.paths import path_produced
 
 class gcloud_data:
     def __init__(self, bucket_name="naima_bucket2", path_service_key_gcloud='service_key_gcloud.json',
-                 prefix_search_model='main_pipelines_dir/search_model',
-                 local_dir_search_model='search_model', prefix='data_fields/',
-                 local_dir_faiss='data_fields'):
+                 prefix='data_fields/'):
         self.bucket_name = bucket_name
         self.storage_client = None
         self.bucket = None
         self.prefix = prefix
-        self.prefix_search_model = prefix_search_model
-        self.local_dir_search_model = local_dir_search_model
-        self.local_dir_faiss = local_dir_faiss
 
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = path_service_key_gcloud
         try:
@@ -47,10 +42,11 @@ class gcloud_data:
         path_drive_pooling = ''
         # upload files
         for f in files:
-            path = os.path.join(path_drive, f)
+            path = os.path.join(path_drive2, f)
             if os.path.isfile(path):
-                self.upload(path_drive2, path_gcloud)
-            else:
+                path_file_gcloud = os.path.join(path_gcloud,f)
+                self.upload(path, path_file_gcloud)
+            elif os.path.isdir(path):
                 path_drive_pooling = os.path.join(path, 'config.json')
 
         # upload pooling folder
