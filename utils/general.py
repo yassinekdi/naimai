@@ -25,7 +25,7 @@ def save_gzip(path,obj):
 def to_sql(papers,conn):
   print('start..')
   paps_df = pd.DataFrame(papers).T
-  print('indexing??')
+  print('indexing..')
   paps_df['fname'] = paps_df.index
   paps_df = paps_df.reset_index(drop=True)
   print('filling na..')

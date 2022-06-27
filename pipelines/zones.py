@@ -198,6 +198,7 @@ class Production_Zone(Zone):
         print('>> Adding numCited')
         new_papers = self.add_numCitedBy(field,fname,new_papers)
         print('Pmc websites are not taken here!')
+        print('>> New length : ', len(new_papers))
         return new_papers
 
     def remove_nonenglish_elts(self,papers: dict):

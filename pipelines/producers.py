@@ -172,7 +172,7 @@ class Field_Producer:
     2 Can finetune search model to get the field encoder
     3 Compute field Faiss index
     '''
-    def __init__(self, field, all_papers='', obj_classifier=None, bomr_classifier=None, nlp=None, encoder=None, field_papers=None, idx_start=0, idx_finish=-1, load_dispatched_field_papers=True, load_obj_classifier=True,
+    def __init__(self, field, all_papers='', ref_fields= [], obj_classifier=None, bomr_classifier=None, nlp=None, encoder=None, field_papers=None, idx_start=0, idx_finish=-1, load_dispatched_field_papers=True, load_obj_classifier=True,
                  load_bomr_classifier=True, load_nlp=True, load_field_encoder=True):
         self.field = field
         self.dispatched_field_papers = {}
@@ -181,6 +181,8 @@ class Field_Producer:
         self.nlp = None
         self.encoder = None
         self.smodel = None
+        self.ref_fields = []
+        self.papers_ref_fields = {} # fields used to check if same paper is already produced
 
         self.produced_field_papers = {}
         self.field_index = None
@@ -257,6 +259,51 @@ class Field_Producer:
         self.dispatched_field_papers = {elt: self.dispatched_field_papers[elt] for elt in keys}
         print(' >> Len papers: ', len(self.dispatched_field_papers))
 
+
+    def get_papers_ref_fields(self):
+        '''
+        get papers of reference fields
+        :param fields:
+        :return:
+        '''
+        for field in self.ref_fields:
+            path_papers = os.path.join(path_produced,field,self.all_papers)
+            papers_field = load_gzip(path_papers)
+            self.papers_ref_fields.update(papers_field)
+
+        self.papers_ref_fields['fnames'] = [fname for fname in self.papers_ref_fields]
+
+
+    def paper_in_refs(self,dispatched_paper_name: str) -> bool:
+        '''
+        check if paper exists in refs
+        :param dispatched_paper_name:
+        :return:
+        '''
+        for fname in self.papers_ref_fields:
+            if dispatched_paper_name in fname:
+                return True
+        return False
+
+
+    def get_in_refs_papers(self,dispatched_paper_name: str) -> dict:
+        '''
+        check if the same paper was produced in other fields, and return dictionary with omr if the paper exists
+        :return:
+        '''
+        omr = {}
+        if not self.papers_ref_fields:
+            self.get_papers_ref_fields(self.ref_fields)
+
+        if self.paper_in_refs(dispatched_paper_name):
+            for fname in self.papers_ref_fields:
+                if dispatched_paper_name in fname:
+                    omr[fname] = self.papers_ref_fields[fname]
+        return omr
+
+
+
+
     def produce_paper(self, paper: dict, paper_name: str) -> dict:
         '''
         produce paper using Paper_Producer : turns paper 'fname' to 'fname_objectives',
@@ -265,17 +312,22 @@ class Field_Producer:
         :param paper_name:
         :return:
         '''
-        pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,
-                              obj_classifier=self.obj_classifier,
-                              bomr_classifier=self.bomr_classifier,
-                              nlp=self.nlp)
-
-        pap_producer.produce_paper()
-        prod = pap_producer.production_paper
+        prod = self.get_in_refs_papers(paper_name)
         if prod:
-          self.produced_field_papers[paper_name+'_objectives'] = prod['objectives']
-          self.produced_field_papers[paper_name+'_methods'] = prod['methods']
-          self.produced_field_papers[paper_name+'_results'] = prod['results']
+            self.produced_field_papers.update(prod)
+        else:
+            pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,
+                                  obj_classifier=self.obj_classifier,
+                                  bomr_classifier=self.bomr_classifier,
+                                  nlp=self.nlp)
+
+            pap_producer.produce_paper()
+            prod = pap_producer.production_paper
+
+            if prod:
+              self.produced_field_papers[paper_name+'_objectives'] = prod['objectives']
+              self.produced_field_papers[paper_name+'_methods'] = prod['methods']
+              self.produced_field_papers[paper_name+'_results'] = prod['results']
 
     def txt_to_encode(self,fname: str,papers_dict=None)-> str:
       '''
