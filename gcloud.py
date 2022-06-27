@@ -82,26 +82,41 @@ class gcloud_data:
         self.upload_search_model(field, path_drive_field)
         print('>> Done !')
 
-    def get_search_model(self):
-        dir0 = os.path.join(self.local_dir_search_model, '1_Pooling')
-        if os.listdir(dir0) == ['a.txt']:
-            blobs = self.bucket.list_blobs(prefix=self.prefix_search_model)
-            for blob in blobs:
-                split = blob.name.split('/')
-                head, fname = split[-2], split[-1]
-                if head == '1_Pooling':
-                    new_path = os.path.join(self.local_dir_search_model, head, fname)
-                else:
-                    new_path = os.path.join(self.local_dir_search_model, fname)
-                blob.download_to_filename(new_path)
+    def get_index(self, field: str):
+        '''
+        get index from gcloud
+        :param field:
+        :return:
+        '''
+        path_index = os.path.join(self.prefix, field, 'encodings.index') # same path in gcloud and locally
+        blobs = self.bucket.list_blobs(prefix=path_index)
 
-    def get_faiss_index(self, field: str):
-        local_dir = os.path.join(self.local_dir_faiss, field)
-        prefix = self.prefix + field
-        blobs = self.bucket.list_blobs(prefix=prefix)
-        if len(os.listdir(local_dir)) == 1:
+        if os.path.exists(path_index): #if already downloaded locally..
             for blob in blobs:
-                fname = blob.name.split('/')[-1]
-                if fname:
-                    new_path = os.path.join(local_dir, fname)
-                    blob.download_to_filename(new_path)
+                blob.download_to_filename(path_index)
+
+    def get_papers(self, field: str):
+        '''
+        get papers sqlite from gcloud
+        :param field:
+        :return:
+        '''
+        path_papers = os.path.join(self.prefix, field, 'all_papers_sqlite') # same path in gcloud and locally
+        blobs = self.bucket.list_blobs(prefix=path_papers)
+
+        if os.path.exists(path_papers): #if already downloaded locally..
+            for blob in blobs:
+                blob.download_to_filename(path_papers)
+
+    def get_search_model(self, field: str):
+        '''
+        get search model from gcloud
+        :param field:
+        :return:
+        '''
+        path_smodel = os.path.join(self.prefix, field, 'search_model') # same path in gcloud and locally
+        blobs = self.bucket.list_blobs(prefix=path_smodel)
+
+        if os.path.exists(path_smodel): #if already downloaded locally..
+            for blob in blobs:
+                blob.download_to_filename(path_smodel)
