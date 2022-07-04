@@ -6,7 +6,7 @@ import requests
 import time
 
 class Scholar_Crawler:
-    def __init__(self, person,field, path,t_min=2,t_max=5):
+    def __init__(self, person,field, path,t_min=3,t_max=5):
         self.field = field
         self.person = person
         self.path = path
@@ -85,12 +85,19 @@ class Scholar_Crawler:
         websites,titles = self.docs['website'], self.docs['title']
         idx=0
         for website,title in tqdm(zip(websites,titles),total=len(websites)):
-            path_file= self.get_article_page(website,file_dir,title,idx_start,idx)
-            soup_article = self.get_local_soup(path_file)
-            meta_data = self.get_article_metadata(soup_article)
-            self.docs['authors'].append(meta_data[0].text)
-            self.docs['journal'].append(meta_data[2].text)
-            self.docs['abstract'].append(self.get_abstract(soup_article))
+            try:
+                path_file= self.get_article_page(website,file_dir,title,idx_start,idx)
+                soup_article = self.get_local_soup(path_file)
+                meta_data = self.get_article_metadata(soup_article)
+                self.docs['authors'].append(meta_data[0].text)
+                self.docs['journal'].append(meta_data[2].text)
+                self.docs['abstract'].append(self.get_abstract(soup_article))
+            except:
+                print('problem in title', title)
+                self.docs['authors'].append('')
+                self.docs['journal'].append('')
+                self.docs['abstract'].append('')
+
             idx+=1
         self.docs['field']= [self.field]*len(websites)
         print('>> Done !')
