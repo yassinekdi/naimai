@@ -65,7 +65,7 @@ class Scholar_Crawler:
         print('>> Local data..')
         titles_elts= self.get_titles_elts()
         self.docs['website'] = self.get_articles_pages(titles_elts)
-        self.docs['title'] = self.get_titles()
+        self.docs['title'] = self.get_titles(titles_elts)
         self.docs['numCitedBy'] = self.get_numCitedBy()
         self.docs['date'] = self.get_years()
 
