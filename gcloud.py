@@ -93,7 +93,7 @@ class gcloud_data:
 
         if not os.path.exists(path_index): #if not already downloaded locally..
             path = os.path.join(self.prefix, field)
-            os.makedirs(path)
+            os.makedirs(path,exist_ok=True)
             for blob in blobs:
                 blob.download_to_filename(path_index)
 
@@ -108,7 +108,7 @@ class gcloud_data:
 
         if not os.path.exists(path_papers): #if not already downloaded locally..
             path = os.path.join(self.prefix, field)
-            os.makedirs(path)
+            os.makedirs(path,exist_ok=True)
             for blob in blobs:
                 blob.download_to_filename(path_papers)
 
@@ -122,7 +122,7 @@ class gcloud_data:
         blobs = self.bucket.list_blobs(prefix=path_smodel)
 
         if not os.path.exists(path_smodel): #if not already downloaded locally..
-            os.makedirs(path_smodel)
+            os.makedirs(path_smodel,exist_ok=True)
             path_pooling = os.path.join(path_smodel,'1_Pooling')
             os.mkdir(path_pooling)
             for blob in blobs:
@@ -134,6 +134,10 @@ class gcloud_data:
         :param field:
         :return:
         '''
+        print('>> Getting papers..')
         self.get_papers(field)
+        print('>> Getting index..')
         self.get_index(field)
+        print('>> Getting search model..')
         self.get_search_model(field)
+        print('>> Done downloading!')
