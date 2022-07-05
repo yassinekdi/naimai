@@ -1,6 +1,7 @@
 from naimai.constants.paths import path_produced
 from naimai.utils.general import get_root_fname
 from sentence_transformers import SentenceTransformer
+from naimai.models.papers_classification.tfidf import tfidf_model
 from naimai.data_sqlite import SQLiteManager
 import faiss
 import os
@@ -69,16 +70,16 @@ class Querier:
 
     return len_words
 
-  def rank_by_query_words(self, query: str, papers: dict, top_n) -> dict:
-    track_list = []
-    for fname in papers:
-      messages = papers[fname]['messages']
-      nb_words_in_query = self.get_nb_words_in_messages(query, messages)
-      track_list.append((fname, nb_words_in_query))
-
-    track_list.sort(key=lambda x: x[1], reverse=True)
-    sorted_papers = {elt[0]: papers[elt[0]] for elt in track_list[:top_n]}
-    return sorted_papers
+  # def rank_by_query_words(self, query: str, papers: dict, top_n) -> dict:
+  #   track_list = []
+  #   for fname in papers:
+  #     messages = papers[fname]['messages']
+  #     nb_words_in_query = self.get_nb_words_in_messages(query, messages)
+  #     track_list.append((fname, nb_words_in_query))
+  #
+  #   track_list.sort(key=lambda x: x[1], reverse=True)
+  #   sorted_papers = {elt[0]: papers[elt[0]] for elt in track_list[:top_n]}
+  #   return sorted_papers
 
   def rank_papers_with_numCitedBy(self, papers: dict) -> list:
     '''
@@ -100,7 +101,7 @@ class Querier:
     1. Get all similar papers and their fnames
     2. Get all_papers, papers in range of selected years with root fnames
     3. Find corresponding papers to root fnames ranked
-    4. rank by nb of query words in messages (remove stop words?of and etc)
+    4. Reclassify using tf idf model
     5. Rank first papers by numCitedBy using all_papers
     :param query:
     :param top_n:
@@ -124,9 +125,11 @@ class Querier:
     corresponding_papers_fnames = self.get_corresponding_papers(similar_papers_fnames, papers_in_year_range_fnames)
     corresponding_papers = {fname: similar_papers[fname] for fname in corresponding_papers_fnames}
 
-    # 4. rank by nb of query words in messages
-    ranked_papers = self.rank_by_query_words(query, corresponding_papers, top_n)
-    ranked_papers_fnames = list(ranked_papers.keys())
+    # 4. Reclassify using tf idf model
+    tf = tfidf_model(query=query, papers=corresponding_papers)
+    ranked_papers_fnames = tf.get_similar_fnames(top_n=top_n)
+    # ranked_papers = self.rank_by_query_words(query,corresponding_papers,top_n)
+    # ranked_papers_fnames = list(ranked_papers.keys())
 
     # 5. Rerank root papers by numCited By
     ranked_root_fnames = [get_root_fname(fname) for fname in ranked_papers_fnames]
