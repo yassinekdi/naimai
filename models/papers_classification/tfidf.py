@@ -42,20 +42,20 @@ class tfidf_model:
         df = encodings_df.T[(encodings_df.T > 0).any(1)]
         self.encodings = df.T
 
-    def most_similar(self, topn=5) -> list:
+    def most_similar(self, top_n=5) -> list:
         '''
         get fnames of similar papers using encodings
         '''
         cosine_scores = linear_kernel(self.encodings, self.encodings)
         cos_score = np.array(cosine_scores[0])
-        most_sims = np.argsort(cos_score)[::-1][1:(topn + 1)]
+        most_sims = np.argsort(cos_score)[::-1][1:(top_n + 1)]
         similar_fnames = [self.papers_fnames[idx] for idx in most_sims]
         # result = [(message, cos_score[i]) for message, i in zip(similar_messages, most_sims) if cos_score[i]>0]
         return similar_fnames
 
-    def get_similar_fnames(self, topn=20) -> list:
+    def get_similar_fnames(self, top_n=20) -> list:
         ''' get similar fnames '''
         self.build_corpus()
         self.get_tf_encodings()
-        fnames = self.most_similar(topn=topn)
+        fnames = self.most_similar(top_n=top_n)
         return fnames
