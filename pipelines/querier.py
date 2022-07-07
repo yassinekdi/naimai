@@ -33,6 +33,19 @@ class Querier:
       path = os.path.join(path_produced, self.field, 'search_model')
       self.encoder = SentenceTransformer(path)
 
+  def get_exact_match_papers(self, query: str) -> tuple:
+    '''
+    get only papers that has exact match of the query
+    '''
+    queries = re.findall('"(.*?)"', query)
+    similar_papers = {}
+    for one_query in queries:
+      papers = self.sql_manager.get_by_query(one_query)
+      similar_papers.update(papers)
+
+    similar_papers_fnames = [similar_papers[elt]['fname'] for elt in similar_papers if similar_papers[elt]['messages']]
+    return (similar_papers,similar_papers_fnames)
+
   def get_all_similar_papers(self, query: str) -> tuple:
     '''
     Get all similar papers & their fnames using a query
@@ -111,7 +124,11 @@ class Querier:
     '''
 
     # 1. Get all similar papers and their fnames
-    similar_papers, similar_papers_fnames = self.get_all_similar_papers(query)
+    exact_match=re.findall('"(.*?)"', query)
+    if exact_match:
+      similar_papers, similar_papers_fnames = self.get_exact_match_papers(query)
+    else:
+      similar_papers, similar_papers_fnames = self.get_all_similar_papers(query)
 
     # 2.Get papers in range of selected years using their root fnames
     root_fnames = [get_root_fname(fname) for fname in similar_papers_fnames]

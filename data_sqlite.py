@@ -17,6 +17,20 @@ class SQLiteManager:
     dict_result = {elt[10]: self.to_dict(elt) for elt in results}
     return dict_result
 
+  def get_by_query(self, query: str) -> dict:
+    '''
+    get papers that contains query in title or message
+    :param query:
+    :return:
+    '''
+    query_command = '%' + query + '%'
+    qry = (query_command,query_command)
+    self.cursor.execute("SELECT * FROM all_papers WHERE title LIKE ? OR messages LIKE ? ",qry)
+    result = self.cursor.fetchall()
+    papers_list = clean_lst(result)
+    dict_result = {elt[10]: self.to_dict(elt) for elt in papers_list}
+    return dict_result
+
   def get_by_fname(self,fname: str)-> dict:
     '''
       fine fname
