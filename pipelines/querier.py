@@ -101,6 +101,9 @@ class Querier:
     :return:
     '''
     nb_papers_ranked_CitedBy = 3
+    for fname in papers:
+      if 'numCitedBy' not in papers[fname]:
+        papers[fname]['numCitedBy']=.5
     keys = list(papers.keys())
     papers_to_rank = [papers[fname] for fname in keys[:nb_papers_ranked_CitedBy]]
     papers_to_rank.sort(key=lambda x: float(x['numCitedBy']), reverse=True)
