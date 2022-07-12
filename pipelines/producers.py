@@ -461,7 +461,7 @@ class Field_Producer:
         for p in paths:
             data = load_gzip(p)
             if size_each_all_papers:
-                keys = list(all_paps.keys())
+                keys = list(data.keys())
                 if len(data)>size_each_all_papers:
                     keys_selected= random.sample(keys,size_each_all_papers)
                 else:
