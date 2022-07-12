@@ -36,13 +36,13 @@ class Search_Model:
             if queries:
                 for qry in queries:
                     training_data_dict['sentences'].append(sentence)
-                    training_data_dict['Queries'].append(qry)
+                    training_data_dict['queries'].append(qry)
 
     self.training_data_df = pd.DataFrame(training_data_dict)
 
   def process_data(self):
-    query, abstracts = self.training_data_df['Queries'].to_list(), self.training_data_df['Abstract'].to_list()
-    train_examples = [InputExample(texts=[qry, parag]) for qry, parag in zip(query, abstracts)]
+    query, sentences = self.training_data_df['queries'].to_list(), self.training_data_df['sentences'].to_list()
+    train_examples = [InputExample(texts=[qry, parag]) for qry, parag in zip(query, sentences)]
     random.shuffle(train_examples)
     self.processed_data = datasets.NoDuplicatesDataLoader(train_examples, batch_size=self.batch_size)
 

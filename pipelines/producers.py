@@ -457,10 +457,9 @@ class Field_Producer:
             size_each_all_papers = int(size_data/len(paths))+1
             print('>> Each all_papers size : ', size_each_all_papers)
 
-        all_paps = load_gzip(paths[0])
-        for p in paths[1:]:
+        all_paps = {}
+        for p in paths:
             data = load_gzip(p)
-
             if size_each_all_papers:
                 keys = list(all_paps.keys())
                 if len(data)>size_each_all_papers:
