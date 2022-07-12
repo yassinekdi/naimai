@@ -1,7 +1,6 @@
 from tqdm.notebook import tqdm
 from naimai.constants.paths import path_dispatched
-from naimai.constants.nlp import nlp_vocab
-from naimai.utils.general import load_gzip
+from naimai.pipelines.zones import Production_Zone
 from naimai.models.text_generation.query_generation import QueryGeneration
 import torch
 
@@ -13,40 +12,30 @@ from sentence_transformers import SentenceTransformer, InputExample, losses, mod
 
 
 class Search_Model:
-  def __init__(self, field,papers,batch_size=16,n_epochs=10,checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
+  def __init__(self, field: str,papers: dict,batch_size=16,n_epochs=10,checkpoint='sentence-transformers/msmarco-distilbert-base-dot-prod-v3'):
     self.field = field
-    self.papers = {}
     self.batch_size = batch_size
     self.n_epochs = n_epochs
     self.checkpoint = checkpoint
-    self.nlp = spacy.load(nlp_vocab)
     self.training_data_df = None
     self.model = None
-    self.load_papers(papers)
-
-  def load_papers(self, papers):
-    if papers:
-      self.papers = papers
-    else:
-      print('>> Loading papers..')
-      path = os.path.join(path_dispatched,self.field,"all_papers")
-      self.papers = load_gzip(path)
-      print('Len data : ', len(self.papers))
-
+    self.papers = papers
 
   def prepare_data(self):
     keys = list(self.papers.keys())
-    training_data_papers = [self.papers[key] for key in keys]
+    messages = [self.papers[fname]['messages'] for fname in keys] 
+    messages = [elt for elt2 in messages for elt in elt2]
+    titles = [self.papers[fname]['title'] for fname in keys if 'title' in self.papers[fname]]
 
-    qgen = QueryGeneration(training_paper_dict=training_data_papers[0], nlp=self.nlp)
-    training_data_dict={'Abstract': [], 'Queries': []}
-    for pap in tqdm(training_data_papers):
-        if len(pap['Abstract'].split())>10:
-            qgen.paper = pap
-            qgen.generate()
-            if qgen.queries:
-                for qry in qgen.queries:
-                    training_data_dict['Abstract'].append(pap['Abstract'])
+    sentences = messages+titles
+    qgen = QueryGeneration(nb_queries=2)
+    training_data_dict={'sentences': [], 'queries': []}
+    for sentence in tqdm(sentences):
+        if len(sentence.split())>5:
+            queries = qgen.from_message(sentence)
+            if queries:
+                for qry in queries:
+                    training_data_dict['sentences'].append(sentence)
                     training_data_dict['Queries'].append(qry)
 
     self.training_data_df = pd.DataFrame(training_data_dict)

@@ -12,6 +12,7 @@ from naimai.models.papers_classification.semantic_search import Search_Model
 import os
 import re
 import spacy
+import random
 from tqdm.notebook import tqdm
 from sentence_transformers import SentenceTransformer
 import faiss
@@ -439,9 +440,10 @@ class Field_Producer:
           path = os.path.join(path_produced,self.field,'encodings.index')
           self.field_index = faiss.read_index(path)
 
-    def load_combine_produced_allpapers(self):
+    def load_combine_produced_allpapers(self, size_data=0):
         '''
-        load & combine production papers in same dictionary
+        load & combine production papers in same dictionary. If size_data, take percentage of each all_papers db.
+        (same code as in Dispatched_Zone, get_field in naimai.pipelines.zones)
         :return:
         '''
         print('>> Loading production papers')
@@ -450,23 +452,37 @@ class Field_Producer:
         paths = [os.path.join(path_produced_papers,fl) for fl in all_files]
         paths = [elt for elt in paths if os.path.isfile(elt) and 'encoding' not in elt] # keep only files
 
+        size_each_all_papers = 0
+        if size_data:
+            size_each_all_papers = int(size_data/len(paths))+1
+            print('>> Each all_papers size : ', size_each_all_papers)
+
         all_paps = load_gzip(paths[0])
         for p in paths[1:]:
-            paps2 = load_gzip(p)
-            all_paps.update(paps2)
+            data = load_gzip(p)
+
+            if size_each_all_papers:
+                keys = list(all_paps.keys())
+                if len(data)>size_each_all_papers:
+                    keys_selected= random.sample(keys,size_each_all_papers)
+                else:
+                    keys_selected = keys
+                data = {key: data[key] for key in keys_selected}
+            all_paps.update(data)     
+        
         return all_paps
 
-    def load_combine_dispatched_allpapers(self,size_data):
-        '''
-        load same nb from all dispatched papers in same field & combine them
-        :return:
-        '''
-        disp_zone = Dispatched_Zone()
-        all_allpapers=disp_zone.get_field(field=self.field, verbose=False,size_data=size_data)
-        paps = all_allpapers[0]
-        for pap in all_allpapers[1:]:
-            paps.update(pap)
-        return paps
+    # def load_combine_dispatched_allpapers(self,size_data):
+    #     '''
+    #     load same nb from all dispatched papers in same field & combine them
+    #     :return:
+    #     '''
+    #     disp_zone = Dispatched_Zone()
+    #     all_allpapers=disp_zone.get_field(field=self.field, verbose=False,size_data=size_data)
+    #     paps = all_allpapers[0]
+    #     for pap in all_allpapers[1:]:
+    #         paps.update(pap)
+    #     return paps
 
     def fine_tune_field_encoder(self, size_data: int,save_model: bool,batch_size=16,n_epochs=10):
         '''
@@ -477,7 +493,8 @@ class Field_Producer:
         :param n_epochs:
         :return:
         '''
-        combined_papers = self.load_combine_dispatched_allpapers(size_data)
+        # combined_papers = self.load_combine_dispatched_allpapers(size_data)
+        combined_papers = self.load_combine_produced_allpapers(size_data=size_data)
         print('Len everything : ', len(combined_papers))
         self.smodel = Search_Model(field=self.field, papers=combined_papers, batch_size=batch_size, n_epochs=n_epochs)
         if self.encoder:
