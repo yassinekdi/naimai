@@ -398,7 +398,7 @@ class Field_Producer:
         if self.produced_field_papers:
             fnames = list(self.produced_field_papers.keys())
         else:
-            self.produced_field_papers = self.load_combine_produced_allpapers()
+            self.produced_field_papers,_ = self.load_combine_produced_allpapers()
             fnames = list(self.produced_field_papers.keys())
 
         print('>> Encoding ..')
@@ -458,30 +458,23 @@ class Field_Producer:
             print('>> Each all_papers size : ', size_each_all_papers)
 
         all_paps = {}
+        eval_all_paps= {}
         for p in paths:
             data = load_gzip(p)
             if size_each_all_papers:
                 keys = list(data.keys())
                 if len(data)>size_each_all_papers:
                     keys_selected= random.sample(keys,size_each_all_papers)
+                    keys_eval_selected = random.sample(keys,5000)
                 else:
                     keys_selected = keys
+                    keys_eval_selected = keys[:500]
+                eval_data = {key: data[key] for key in keys_eval_selected}
                 data = {key: data[key] for key in keys_selected}
-            all_paps.update(data)     
-        
-        return all_paps
 
-    # def load_combine_dispatched_allpapers(self,size_data):
-    #     '''
-    #     load same nb from all dispatched papers in same field & combine them
-    #     :return:
-    #     '''
-    #     disp_zone = Dispatched_Zone()
-    #     all_allpapers=disp_zone.get_field(field=self.field, verbose=False,size_data=size_data)
-    #     paps = all_allpapers[0]
-    #     for pap in all_allpapers[1:]:
-    #         paps.update(pap)
-    #     return paps
+            all_paps.update(data)
+            eval_all_paps.update(eval_data)
+        return all_paps,eval_all_paps
 
     def fine_tune_field_encoder(self, size_data: int,save_model: bool,batch_size=16,n_epochs=10):
         '''
@@ -493,9 +486,10 @@ class Field_Producer:
         :return:
         '''
         # combined_papers = self.load_combine_dispatched_allpapers(size_data)
-        combined_papers = self.load_combine_produced_allpapers(size_data=size_data)
+        combined_papers,combined_eval_papers = self.load_combine_produced_allpapers(size_data=size_data)
         print('Len everything : ', len(combined_papers))
-        self.smodel = Search_Model(field=self.field, papers=combined_papers, batch_size=batch_size, n_epochs=n_epochs)
+        self.smodel = Search_Model(field=self.field, papers=combined_papers,eval_papers=combined_eval_papers,
+                                   batch_size=batch_size, n_epochs=n_epochs)
         if self.encoder:
             self.smodel.model = self.encoder
         self.smodel.fine_tune()
