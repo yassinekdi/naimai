@@ -467,7 +467,10 @@ class Field_Producer:
                 if len(data)>size_each_all_papers:
                     keys_selected= random.sample(keys,size_each_all_papers)
                     rest_keys = [elt for elt in keys if elt not in keys_selected]
-                    keys_eval_selected = random.sample(rest_keys,int(size_each_all_papers/2))
+                    try:
+                        keys_eval_selected = random.sample(rest_keys,int(size_each_all_papers/2))
+                    except:
+                        keys_eval_selected = rest_keys
                 else:
                     keys_selected = keys
                     keys_eval_selected = keys[:500]
