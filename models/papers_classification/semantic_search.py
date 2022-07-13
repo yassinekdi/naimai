@@ -2,6 +2,7 @@ from tqdm.notebook import tqdm
 from naimai.models.text_generation.query_generation import QueryGeneration
 import torch
 import pandas as pd
+import numpy as np
 import random
 from sentence_transformers import SentenceTransformer, InputExample, losses, models, datasets, evaluation
 
@@ -56,7 +57,7 @@ class Search_Model:
   def train(self):
     sentences = self.eval_data_df['sentences']
     queries = self.eval_data_df['queries']
-    scores= [1]*len(queries)
+    scores= [np.random.uniform(low=0.8, high=1.0) for _ in range(len(queries))]
     evaluator = evaluation.EmbeddingSimilarityEvaluator(sentences, queries, scores)
     train_loss = losses.MultipleNegativesRankingLoss(self.model)
     warmup_steps = int(len(self.processed_data) * self.n_epochs * 0.1)
@@ -64,8 +65,9 @@ class Search_Model:
                     warmup_steps=warmup_steps, show_progress_bar=True,evaluator=evaluator, evaluation_steps=10)
 
   def fine_tune(self,model_path_saving=''):
-    print('>> Preparing data..')
+    print('>> Preparing training data..')
     self.training_data_df = self.prepare_data(self.papers)
+    print('>> Preparing eval data..')
     self.eval_data_df = self.prepare_data(self.eval_papers)
     self.process_data()
 

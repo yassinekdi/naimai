@@ -22,6 +22,7 @@ D = 768
 vecs = faiss.IndexFlatIP(D)
 ncentroids = 256
 code_size = 32
+random.seed(42)
 
 class Paper_Producer:
     '''
@@ -465,7 +466,8 @@ class Field_Producer:
                 keys = list(data.keys())
                 if len(data)>size_each_all_papers:
                     keys_selected= random.sample(keys,size_each_all_papers)
-                    keys_eval_selected = random.sample(keys,5000)
+                    rest_keys = [elt for elt in keys if elt not in keys_selected]
+                    keys_eval_selected = random.sample(rest_keys,int(size_each_all_papers/2))
                 else:
                     keys_selected = keys
                     keys_eval_selected = keys[:500]
