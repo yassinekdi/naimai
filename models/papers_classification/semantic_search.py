@@ -55,20 +55,20 @@ class Search_Model:
       self.model = SentenceTransformer(modules=[word_emb, pooling])
 
   def train(self):
-    sentences = self.eval_data_df['sentences']
-    queries = self.eval_data_df['queries']
-    scores= [np.random.uniform(low=0.8, high=1.0) for _ in range(len(queries))]
-    evaluator = evaluation.EmbeddingSimilarityEvaluator(sentences, queries, scores)
+    # sentences = self.eval_data_df['sentences']
+    # queries = self.eval_data_df['queries']
+    # scores= [np.random.uniform(low=0.8, high=1.0) for _ in range(len(queries))]
+    # evaluator = evaluation.EmbeddingSimilarityEvaluator(sentences, queries, scores)
     train_loss = losses.MultipleNegativesRankingLoss(self.model)
     warmup_steps = int(len(self.processed_data) * self.n_epochs * 0.1)
     self.model.fit(train_objectives=[(self.processed_data, train_loss)], epochs=self.n_epochs,
-                    warmup_steps=warmup_steps, show_progress_bar=True,evaluator=evaluator, evaluation_steps=10)
+                    warmup_steps=warmup_steps, show_progress_bar=True)
 
   def fine_tune(self,model_path_saving=''):
     print('>> Preparing training data..')
     self.training_data_df = self.prepare_data(self.papers)
-    print('>> Preparing eval data..')
-    self.eval_data_df = self.prepare_data(self.eval_papers)
+    # print('>> Preparing eval data..')
+    # self.eval_data_df = self.prepare_data(self.eval_papers)
     self.process_data()
 
     print('>> Modelling..')
