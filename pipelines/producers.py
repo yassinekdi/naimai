@@ -22,7 +22,7 @@ D = 768
 vecs = faiss.IndexFlatIP(D)
 ncentroids = 256
 code_size = 32
-random.seed(42)
+
 
 class Paper_Producer:
     '''
