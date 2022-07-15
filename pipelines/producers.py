@@ -466,19 +466,19 @@ class Field_Producer:
                 keys = list(data.keys())
                 if len(data)>size_each_all_papers:
                     keys_selected= random.sample(keys,size_each_all_papers)
-                    rest_keys = [elt for elt in keys if elt not in keys_selected]
-                    try:
-                        keys_eval_selected = random.sample(rest_keys,int(size_each_all_papers/2))
-                    except:
-                        keys_eval_selected = rest_keys
+                    # rest_keys = [elt for elt in keys if elt not in keys_selected]
+                    # try:
+                    #     keys_eval_selected = random.sample(rest_keys,int(size_each_all_papers/2))
+                    # except:
+                    #     keys_eval_selected = rest_keys
                 else:
                     keys_selected = keys
-                    keys_eval_selected = keys[:500]
-                eval_data = {key: data[key] for key in keys_eval_selected}
+                    # keys_eval_selected = keys[:500]
+                # eval_data = {key: data[key] for key in keys_eval_selected}
                 data = {key: data[key] for key in keys_selected}
 
             all_paps.update(data)
-            eval_all_paps.update(eval_data)
+            # eval_all_paps.update(eval_data)
         return all_paps,eval_all_paps
 
     def fine_tune_field_encoder(self, size_data: int,save_model: bool,batch_size=16,n_epochs=10):
