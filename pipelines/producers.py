@@ -403,7 +403,7 @@ class Field_Producer:
             fnames = list(self.produced_field_papers.keys())
 
         print('>> Encoding ..')
-        to_encode = [self.txt_to_encode(fn) for fn in fnames]
+        to_encode = [self.txt_to_encode(fn) for fn in tqdm(fnames)]
         encoded_fields = self.encoder.encode(to_encode)
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
 
