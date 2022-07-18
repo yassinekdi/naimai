@@ -264,12 +264,10 @@ class GrobidClient(ApiClient):
             the_data["segmentSentences"] = "1"
 
         try:
-            print('url : ', the_url)
             
             res, status = self.post(
                 url=the_url, files=files, data=the_data, headers={"Accept": "text/plain"}, timeout=self.config['timeout']
             )
-            print('B')
 
             if status == 503:
                 time.sleep(self.config["sleep_time"])
