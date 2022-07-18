@@ -117,6 +117,22 @@ class paper_full_base(paper_base):
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
 
+    def is_paper_english(self,nlp) -> bool:
+        '''
+        Detect language if paper language is english based on its title.
+        :return:
+        '''
+        if self.Title:
+            title_nlp = nlp(self.Title)
+            language_score=title_nlp._.language
+            condition_english = (language_score['language']=='en') and (language_score['score']>0.7)
+            if condition_english:
+                return True
+        lang = language_score['language']
+        score = language_score['score']
+        print(f'Langage {lang} - Score {score}')
+        return False
+
     def save_dict(self):
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords','unclassified_section', 'Title','numCitedBy','numCiting', 'Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
@@ -151,19 +167,19 @@ class papers:
         return papers_list
 
     # @paper_reading_error_log_decorator
-    def add_paper(self,portion=1/6,use_ocr=False):
-            new_paper = paper()
-            new_paper.read_pdf(use_ocr)
-            if new_paper.converted_text:
-                new_paper.get_Introduction(portion=portion)
-                new_paper.get_Abstract()
-                # new_paper.get_authors()
-                new_paper.get_Conclusion()
-                new_paper.get_year()
-                new_paper.get_kwords()
-                self.elements[new_paper.file_name] = new_paper.save_dict()
-            else:
-                self.elements[new_paper.file_name] = "USE OCR"
+    # def add_paper(self,portion=1/6,use_ocr=False):
+    #         new_paper = paper()
+    #         new_paper.read_pdf(use_ocr)
+    #         if new_paper.converted_text:
+    #             new_paper.get_Introduction(portion=portion)
+    #             new_paper.get_Abstract()
+    #             # new_paper.get_authors()
+    #             new_paper.get_Conclusion()
+    #             new_paper.get_year()
+    #             new_paper.get_kwords()
+    #             self.elements[new_paper.file_name] = new_paper.save_dict()
+    #         else:
+    #             self.elements[new_paper.file_name] = "USE OCR"
 
 
     def get_papers(self,portion=1/6,list_files=[],path_chunks='',use_ocr=False):

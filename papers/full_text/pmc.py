@@ -5,6 +5,7 @@ from tqdm.notebook import tqdm
 from spacy_langdetect import LanguageDetector
 import spacy
 
+from naimai.decorators import update_naimai_dois
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.paths import path_open_citations
 from naimai.constants.regex import regex_spaced_chars,regex_keywords
@@ -294,23 +295,23 @@ class papers_pmc(papers):
             new_paper = paper_pmc(df=self.data,
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
-            # if not new_paper.is_in_database(self.naimai_dois):
-            # self.naimai_dois.append(new_paper.doi)
-            new_paper.get_Title()
-            if new_paper.is_paper_english(self.nlp):
-                new_paper.get_Authors()
-                new_paper.get_journal()
-                new_paper.get_year()
-                new_paper.get_content(stacked_abstract=self.stacked_abstract,
-                                      abstract_dict_format=self.abstract_dict_format)
-                new_paper.replace_abbreviations()
-                new_paper.get_numCitedBy()
-                self.elements[new_paper.doi] = new_paper.save_dict()
-            else:
-                print(f'in Title : {new_paper.Title} - index in data {idx_in_data} is not english..')
+            if not new_paper.is_in_database(self.naimai_dois):
+                self.naimai_dois.append(new_paper.doi)
+                new_paper.get_Title()
+                if new_paper.is_paper_english(self.nlp):
+                    new_paper.get_Authors()
+                    new_paper.get_journal()
+                    new_paper.get_year()
+                    new_paper.get_content(stacked_abstract=self.stacked_abstract,
+                                          abstract_dict_format=self.abstract_dict_format)
+                    new_paper.replace_abbreviations()
+                    new_paper.get_numCitedBy()
+                    self.elements[new_paper.doi] = new_paper.save_dict()
+                else:
+                    print(f'in Title : {new_paper.Title} - index in data {idx_in_data} is not english..')
 
 
-    # @update_naimai_dois
+    @update_naimai_dois
     def get_papers(self):
         for idx,_ in tqdm(self.data.iterrows(),total=len(self.data)):
             self.add_paper(idx_in_data=idx)
