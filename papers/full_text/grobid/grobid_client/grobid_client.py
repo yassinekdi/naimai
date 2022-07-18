@@ -23,6 +23,7 @@ import concurrent.futures
 import ntpath
 import requests
 import pathlib
+from tqdm.notebook import tqdm
 
 from .client import ApiClient
 
@@ -107,10 +108,11 @@ class GrobidClient(ApiClient):
         verbose=False,
     ):
         batch_size_pdf = self.config["batch_size"]
+        print('>> Batch size : ', batch_size_pdf)
         input_files = []
 
         for (dirpath, dirnames, filenames) in os.walk(input_path):
-            for filename in filenames:
+            for filename in tqdm(filenames):
                 if filename.endswith(".pdf") or filename.endswith(".PDF") or \
                     (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
                     if verbose:
