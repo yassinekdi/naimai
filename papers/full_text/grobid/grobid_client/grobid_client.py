@@ -37,7 +37,7 @@ class GrobidClient(ApiClient):
                  batch_size=5,
                  coordinates=["persName", "figure", "ref", "biblStruct", "formula", "s" ], 
                  sleep_time=5,
-                 timeout=120,
+                 timeout=180,
                  config_path=None, 
                  check_server=True):
         self.config = {
