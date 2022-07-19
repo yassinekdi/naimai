@@ -112,7 +112,7 @@ class GrobidClient(ApiClient):
         print('>> Batch size : ', batch_size_pdf)
         input_files = []
 
-        filenames = os.listdir(input_path)[idx_start:idx_finish]
+        filenames = sorted(os.listdir(input_path))[idx_start:idx_finish]
         for filename in tqdm(filenames):
             if filename.endswith(".pdf") or filename.endswith(".PDF") or \
                 (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
