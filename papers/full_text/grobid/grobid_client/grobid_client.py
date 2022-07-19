@@ -34,7 +34,7 @@ class ServerUnavailableException(Exception):
 class GrobidClient(ApiClient):
 
     def __init__(self, ngrok_url,
-                 batch_size=20,
+                 batch_size=10,
                  coordinates=["persName", "figure", "ref", "biblStruct", "formula", "s" ], 
                  sleep_time=5,
                  timeout=120,
@@ -185,7 +185,7 @@ class GrobidClient(ApiClient):
         with concurrent.futures.ThreadPoolExecutor(max_workers=n) as executor:
             #with concurrent.futures.ProcessPoolExecutor(max_workers=n) as executor:
             results = []
-            for input_file in tqdm(input_files):
+            for input_file in input_files:
                 # check if TEI file is already produced
                 filename = self._output_file_name(input_file, input_path, output)
                 if not force and os.path.isfile(filename):
