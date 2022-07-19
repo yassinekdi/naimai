@@ -34,7 +34,7 @@ class ServerUnavailableException(Exception):
 class GrobidClient(ApiClient):
 
     def __init__(self, ngrok_url,
-                 batch_size=10,
+                 batch_size=5,
                  coordinates=["persName", "figure", "ref", "biblStruct", "formula", "s" ], 
                  sleep_time=5,
                  timeout=120,
