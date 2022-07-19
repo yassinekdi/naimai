@@ -184,6 +184,7 @@ class GrobidClient(ApiClient):
         # we use ThreadPoolExecutor and not ProcessPoolExecutor because it is an I/O intensive process
         with concurrent.futures.ThreadPoolExecutor(max_workers=n) as executor:
             #with concurrent.futures.ProcessPoolExecutor(max_workers=n) as executor:
+            print(' ')
             results = []
             for input_file in input_files:
                 # check if TEI file is already produced
