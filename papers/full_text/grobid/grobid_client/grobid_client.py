@@ -51,7 +51,6 @@ class GrobidClient(ApiClient):
             self._load_config(config_path)
         if check_server:
             self._test_server_connection()
-
     def _load_config(self, path="./config.json"):
         """
         Load the json configuration
@@ -106,41 +105,43 @@ class GrobidClient(ApiClient):
         segment_sentences=False,
         force=True,
         verbose=False,
+        idx_start=0,
+        idx_finish=-1,
     ):
         batch_size_pdf = self.config["batch_size"]
         print('>> Batch size : ', batch_size_pdf)
         input_files = []
 
-        for (dirpath, dirnames, filenames) in os.walk(input_path):
-            for filename in tqdm(filenames):
-                if filename.endswith(".pdf") or filename.endswith(".PDF") or \
-                    (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
-                    if verbose:
-                        try:
-                            print(filename)
-                        except Exception:
-                            # may happen on linux see https://stackoverflow.com/questions/27366479/python-3-os-walk-file-paths-unicodeencodeerror-utf-8-codec-cant-encode-s
-                            pass
-                    input_files.append(os.sep.join([dirpath, filename]))
+        filenames = os.listdir(input_path)[idx_start:idx_finish]
+        for filename in tqdm(filenames):
+            if filename.endswith(".pdf") or filename.endswith(".PDF") or \
+                (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
+                if verbose:
+                    try:
+                        print(filename)
+                    except Exception:
+                        # may happen on linux see https://stackoverflow.com/questions/27366479/python-3-os-walk-file-paths-unicodeencodeerror-utf-8-codec-cant-encode-s
+                        pass
+                input_files.append(os.sep.join([input_path, filename]))
 
-                    if len(input_files) == batch_size_pdf:
-                        self.process_batch(
-                            service,
-                            input_files,
-                            input_path,
-                            output,
-                            n,
-                            generateIDs,
-                            consolidate_header,
-                            consolidate_citations,
-                            include_raw_citations,
-                            include_raw_affiliations,
-                            tei_coordinates,
-                            segment_sentences,
-                            force,
-                            verbose,
-                        )
-                        input_files = []
+                if len(input_files) == batch_size_pdf:
+                    self.process_batch(
+                        service,
+                        input_files,
+                        input_path,
+                        output,
+                        n,
+                        generateIDs,
+                        consolidate_header,
+                        consolidate_citations,
+                        include_raw_citations,
+                        include_raw_affiliations,
+                        tei_coordinates,
+                        segment_sentences,
+                        force,
+                        verbose,
+                    )
+                    input_files = []
 
         # last batch
         if len(input_files) > 0:
@@ -184,7 +185,6 @@ class GrobidClient(ApiClient):
         # we use ThreadPoolExecutor and not ProcessPoolExecutor because it is an I/O intensive process
         with concurrent.futures.ThreadPoolExecutor(max_workers=n) as executor:
             #with concurrent.futures.ProcessPoolExecutor(max_workers=n) as executor:
-            print(' ')
             results = []
             for input_file in input_files:
                 # check if TEI file is already produced
