@@ -20,7 +20,10 @@ class ISSN_crawler:
             self.docs["doi"].append(elt["DOI"])
           except:
             pass
-        self.docs["doi"] = self.docs["doi"][idx_start:idx_finish]
+        if idx_finish==-1:
+            self.docs["doi"] = self.docs["doi"][idx_start:]
+        else:
+            self.docs["doi"] = self.docs["doi"][idx_start:idx_finish]
         print('Len dois : ', len(self.docs['doi']))
 
     def get_authors(self, authors_list):
