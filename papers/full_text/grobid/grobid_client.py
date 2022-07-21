@@ -63,7 +63,6 @@ class GrobidClient(ApiClient):
             tei_coordinates=False,
             segment_sentences=False,
             verbose=False,
-            export_xml=False,
             path_export='',
     ):
         input_files = []
@@ -95,7 +94,7 @@ class GrobidClient(ApiClient):
                 )
                 input_files = []
 
-        if export_xml:
+        if path_export:
             print('Files exported in :', path_export)
             for fname in result:
                 text = result[fname]

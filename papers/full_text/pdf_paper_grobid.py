@@ -13,15 +13,30 @@ import os
 from bs4 import BeautifulSoup
 import re
 
+from spacy.language import Language
+
+def create_lang_detector(nlp, name):
+    return LanguageDetector()
+
+
 class paper_grobid(paper_full_base):
-    def __init__(self,paper_path):
+    def __init__(self,paper_path='',paper_xml=''):
         super().__init__()
         self.database = 'pdf'
-        self.xml_filename = paper_path
+        self.xml_data = paper_xml
         self.xml_soup = None
 
-    def read_file(self):
-        xml_file = open(self.xml_filename, 'r')
+
+        if paper_path:
+            self.read_file(paper_path,is_path=True)
+        else:
+            self.read_file(paper_xml, is_path=False)
+
+    def read_file(self,xml,is_path):
+        if is_path:
+            xml_file = open(xml, 'r')
+        else:
+            xml_file = xml
         self.xml_soup = BeautifulSoup(xml_file, "lxml")
 
     def get_data(self,name,attrs={},findall=False,is_text=True):
@@ -34,7 +49,8 @@ class paper_grobid(paper_full_base):
         '''
         if findall:
             text = self.xml_soup.find_all(name=name, attrs=attrs)
-            return text
+            if text:
+              return text[0]
         else:
             text = self.xml_soup.find(name=name, attrs=attrs)
             if text and is_text:
@@ -54,9 +70,10 @@ class paper_grobid(paper_full_base):
     def get_Keywords(self):
         name = 'keywords'
         kwords= self.get_data(name=name)
-        kwords = re.sub('^\n','',kwords)
-        kwords = re.sub('\n$','',kwords)
-        self.Keywords = kwords.replace('\n',', ').strip()
+        if kwords:
+            kwords = re.sub('^\n','',kwords)
+            kwords = re.sub('\n$','',kwords)
+            self.Keywords = kwords.replace('\n',', ').strip()
 
     def get_Title(self):
         name='title'
@@ -68,7 +85,18 @@ class paper_grobid(paper_full_base):
         first = self.get_data(name=name, is_text=False)
         name = 'author'
         authors = first.find_all(name=name)
-        self.Authors = ', '.join([elt.find(name="forename").text + ' ' + elt.find(name="surname").text for elt in authors])
+        result = []
+        for elt in authors:
+            try:
+                fname = elt.find(name="forename").text
+                lname = elt.find(name="surname").text
+                result.append(fname + ' ' + lname)
+            except:
+                pass
+        if result:
+            self.Authors = ', '.join(result)
+        else:
+            self.Authors = ''
 
     def get_year(self):
         name = 'date'
@@ -100,37 +128,58 @@ class paper_grobid(paper_full_base):
 
 
 class papers_grobid(papers):
-    def __init__(self, papers_path,nlp=None):
+    def __init__(self, papers_path='',papers_dict={},nlp=None):
         super().__init__() # loading self.naimai_dois & other attributes
         self.naimai_dois = []
         self.papers_path = papers_path
-        self.list_files = [elt for elt in os.listdir(papers_path) if '.pdf' in elt]
+        self.papers_dict = {}
+        if papers_path:
+            self.list_files = [elt for elt in os.listdir(papers_path) if '.pdf' in elt]
+        else:
+            self.list_files = list(papers_dict)
+            self.papers_dict = papers_dict
         print('Len data : ', len(self.list_files))
         if nlp:
             self.nlp = nlp
         else:
             print('Loading nlp vocab..')
             self.nlp = spacy.load(nlp_vocab)
-            self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
+            Language.factory("language_detector", func=create_lang_detector)
+            self.nlp.add_pipe('language_detector', last=True)
 
-    def add_paper(self,paper_path):
-            new_paper = paper_grobid(paper_path=paper_path)
+    def add_paper(self,paper_path='',paper_xml=''):
+            if paper_path:
+                new_paper = paper_grobid(paper_path=paper_path)
+            else:
+                new_paper = paper_grobid(paper_xml=paper_xml)
             new_paper.get_doi()
-            if not new_paper.is_in_database(self.naimai_dois):
-                self.naimai_dois.append(new_paper.doi)
-                new_paper.get_Title()
-                if new_paper.is_paper_english(self.nlp):
-                    new_paper.get_Authors()
+            # if not new_paper.is_in_database(self.naimai_dois):
+            new_paper.get_Title()
+            if new_paper.is_paper_english(self.nlp):
+                new_paper.get_Abstract()
+                if len(new_paper.Abstract.split()) > 5:
                     new_paper.get_Journal()
+                    new_paper.get_Authors()
                     new_paper.get_year()
+                    new_paper.get_Keywords()
                     new_paper.replace_abbreviations()
                     new_paper.get_numCitedBy()
-                    self.elements[new_paper.doi] = new_paper.save_dict()
+                    if new_paper.doi:
+                        self.elements[new_paper.doi] = new_paper.save_dict()
+                        self.naimai_dois.append(new_paper.doi)
+                    else:
+                        self.elements[new_paper.Title] = new_paper.save_dict()
+
 
 
 
     # @update_naimai_dois
     def get_papers(self):
         for pdf in tqdm(self.list_files):
-            path = os.path.join(self.papers_path,pdf)
-            self.add_paper(paper_path = path)
+            if self.papers_path:
+                path = os.path.join(self.papers_path,pdf)
+                self.add_paper(paper_path=path)
+            else:
+                paper_xml = self.papers_dict[pdf]
+                self.add_paper(paper_xml=paper_xml)
+

@@ -134,7 +134,7 @@ class paper_full_base(paper_base):
         return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Introduction','Methods','Results','Keywords','unclassified_section', 'Title','numCitedBy','numCiting', 'Journal']
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords','Title','numCitedBy','numCiting', 'Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
