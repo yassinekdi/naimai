@@ -64,10 +64,12 @@ class GrobidClient(ApiClient):
             segment_sentences=False,
             verbose=False,
             path_export='',
+            idx_start=0,
+            idx_finish=-1
     ):
         input_files = []
         result = {}
-        filenames = sorted(os.listdir(input_path))
+        filenames = sorted(os.listdir(input_path))[idx_start:idx_finish]
         for filename in tqdm(filenames):
             if filename.endswith(".pdf") or filename.endswith(".PDF") or \
                     (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
