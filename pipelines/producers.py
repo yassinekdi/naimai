@@ -7,7 +7,7 @@ from naimai.utils.regex import get_ref_url
 from naimai.constants.paths import path_produced, path_dispatched, path_bomr_classifier
 from naimai.utils.general import save_gzip, load_gzip, load_gzip_and_update
 from naimai.models.text_generation.paper2reported import Paper2Reported
-from naimai.pipelines.zones import Dispatched_Zone, Production_Zone
+from naimai.pipelines.zones import Production_Zone
 from naimai.models.papers_classification.semantic_search import Search_Model
 import os
 import re
@@ -549,3 +549,120 @@ class Field_Producer:
             file_name = self.all_papers
         path = os.path.join(path_produced, self.field, file_name)
         save_gzip(path, self.produced_field_papers)
+
+
+class Custom_Producer:
+    '''
+    1 Takes formatted custom papers in dictionary all_papers and transform them into a produced all_paper using Paper Producer obj
+    2 Use distiled bert to Compute field Faiss index
+    '''
+    def __init__(self, all_papers,field):
+        self.field = field
+        self.obj_classifier = None
+        self.bomr_classifier = None
+        self.encoder = None
+        self.nlp = None
+        self.smodel = None
+        self.papers_ref_fields = {} # fields used to check if same paper is already produced
+
+        self.all_papers = all_papers
+
+        self.produced_custom_papers = {}
+        self.custom_index = None
+        self.produce_only_fnames=False
+
+        self.load_obj_classifier()
+        self.load_bomr_classifier()
+        self.load_encoder()
+        self.load_nlp()
+
+    def load_obj_classifier(self):
+        print('>> Loading obj classifier..')
+        self.obj_classifier = Objective_classifier()
+
+    def load_bomr_classifier(self):
+        print('>> Loading bomr classifier..')
+        self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
+                                                       predict_mode=True)
+    def load_nlp(self):
+        print('>> Loading nlp..')
+        self.nlp = spacy.load(nlp_vocab)
+
+    def load_encoder(self):
+        path = os.path.join(path_produced, self.field, 'search_model')
+        print('>> Loading field encoder..')
+        self.encoder = SentenceTransformer(path)
+
+    def produce_paper(self, paper: dict, paper_name: str) -> dict:
+        '''
+        produce paper using Paper_Producer : turns paper 'fname' to 'fname_objectives',
+        'fname_methods' and 'fname_results'
+        :param paper:
+        :param paper_name:
+        :return:
+        '''
+        pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,
+                              obj_classifier=self.obj_classifier,
+                              bomr_classifier=self.bomr_classifier,
+                              nlp=self.nlp)
+
+        pap_producer.produce_paper()
+        prod = pap_producer.production_paper
+
+        if prod:
+          self.produced_custom_papers[paper_name+'_objectives'] = prod['objectives']
+          self.produced_custom_papers[paper_name+'_methods'] = prod['methods']
+          self.produced_custom_papers[paper_name+'_results'] = prod['results']
+
+    def txt_to_encode(self,fname: str,papers_dict=None)-> str:
+      '''
+      get what text to encode from papers_dict (element of self.produced_custom_papers)
+      :param fname:
+      :return:
+      '''
+      if not papers_dict:
+          papers_dict = self.produced_custom_papers
+
+      messages = ' '.join(papers_dict[fname]['messages'])
+      if '_objectives' in fname:
+        return papers_dict[fname]['title']+ ' ' + messages
+      else:
+        return messages
+
+    def get_custom_index(self):
+        '''
+        get field faiss index by computing the IVFPQ index
+        :return:
+        '''
+
+        fnames = list(self.produced_custom_papers.keys())
+
+        print('>> Encoding ..')
+        to_encode = [self.txt_to_encode(fn) for fn in fnames]
+        encoded_fields = self.encoder.encode(to_encode)
+        encoded_fields = np.asarray(encoded_fields.astype('float32'))
+
+        print('>> Getting ids ..')
+        self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
+        self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
+
+    def produce_custom_papers(self):
+      print('>> Producing custom papers..')
+      for fname in tqdm(self.all_papers):
+          pap = self.all_papers[fname]
+          if pap['Abstract']:
+              # try:
+              self.produce_paper(paper=pap, paper_name=fname)
+              # except:
+              #     pass
+      print(' ')
+
+    def produce(self):
+        # produce field papers
+        self.produce_custom_papers()
+
+        #compute Faiss index
+        self.get_custom_index()
+
+        print('>> Done!')
+
