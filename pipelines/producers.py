@@ -99,6 +99,7 @@ class Paper_Producer:
                                             summarize=True,
                                             check_bg=True,
                                             visualize_=False,
+                                            nlp = self.nlp,
                                             )
         for stc_idx in segments:
             label = segments[stc_idx]

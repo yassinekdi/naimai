@@ -9,7 +9,7 @@ import re
 import spacy
 
 
-def segment(text, obj_clf=None, bomr_clf=None, path_bomr_clf=path_bomr_classifier, summarize=True, check_bg=False, visualize_=True):
+def segment(text, obj_clf=None, bomr_clf=None, path_bomr_clf=path_bomr_classifier, summarize=True, check_bg=False, visualize_=True,nlp=None):
     '''
     segment a text using OMR_Text_Segmentor.
     :param text:
@@ -32,7 +32,7 @@ def segment(text, obj_clf=None, bomr_clf=None, path_bomr_clf=path_bomr_classifie
         stcs = [segmentor.sentences[idx] for idx in segmented if segmented[idx] != 'background']
         summarized = ' '.join(stcs)
         segmentor = OMR_Text_Segmentor(text=summarized, objective_classifier=segmentor.objective_classifier,
-                                      bomr_classifier=segmentor.bomr_classifier, summarize=False)
+                                      bomr_classifier=segmentor.bomr_classifier, summarize=False,nlp=nlp)
         if visualize_:
             print('')
             print('visualization of summarized : ')
