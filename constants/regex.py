@@ -20,9 +20,9 @@ regex_arxiv_filename = '\d{4}\.\d+\.pdf'
 arxiv_pdfs_url = 'https://arxiv.org/pdf/'
 regex_words_in_brackets = '\((\w.+?)\)'
 regex_in_brackets='\((.*?)\)'
-regex_and_operators = ' AND |&|+'
+regex_and_operators = ' AND |&|\+'
 regex_or_operators = '\||OR'
-regex_exact_match="(.*?)"
+regex_exact_match='"(.*?)"'
 
 study_terms = 'paper|study|investigation|work|research'
 verbs_terms =  'hypothesize|aim(?:ed)?|proposed?|remedy|discuss(?:ed)?|evaluated?|used?|explored?|describes?|developed?|introduced?|present(?:ed)?|investigated?|examined?|show(?:ed)?'

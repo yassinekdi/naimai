@@ -4,10 +4,8 @@ from naimai.models.papers_classification.tfidf import tfidf_model
 import re
 
 class CustomQuerier:
-  def __init__(self,produced_papers,encoder,custom_index):
-    self.encoder=encoder
+  def __init__(self,produced_papers):
     self.produced_papers = produced_papers
-    self.custom_index=custom_index
 
   def get_corresponding_fnames(self, wanted_papers_fnames: list, root_papers_fnames: list) -> list:
     '''
@@ -179,7 +177,7 @@ class CustomQuerier:
     return filtered_fnames
 
 
-  def search(self, query: str, year_from=0, year_to=3000) -> list:
+  def search(self, query: str, year_from=0, year_to=3000, verbose=True) -> list:
     '''
     1. Get query type : AND op (0), OR op (1), exact match (2),semantic (3)
     2. Get all similar papers and their fnames 
@@ -195,24 +193,36 @@ class CustomQuerier:
     :return:
     '''
 
-    # 1. Get query type : AND op (0), OR op (1), exact match (2),semantic (3)
+    # 1. Get query type : AND op (0), OR op (1), exact match (2),semantic (3)   
     query_type = self.get_query_type(query)
+    if verbose:
+      print('Query type : ', query_type)
 
     # 2. Get all similar papers and their fnames using tf idf
-    selected_papers_fnames = self.get_all_similar_papers(query, query_type)
+    if verbose:
+      print('All similar papers selection..')
+    selected_papers_fnames = self.get_all_similar_papers(query, query_type)    
 
     # 3. Apply filters : need root fname:
+    if verbose:
+      print('Applying filters..')
     root_fnames = [get_root_fname(fname) for fname in selected_papers_fnames]
 
-      # 3.1 Apply years range filter 
+      # 3.1 Apply years range filter
+    if verbose:
+      print('years filter..')
     root_fnames_year_filtered = self.filter_by_year(root_fnames, year_from=year_from,year_to=year_to)
 
       # 3.2 Apply OMR filter
 
       # 3.3 Apply numCitedBy filter
+    if verbose:
+      print('numCitedBy filter..')
     root_fnames_numCitedBy_filtered = self.filter_by_numCitedBy(root_fnames_year_filtered)
 
     #4. Find corresponding papers to root fnames ranked 
+    if verbose:
+      print('Corresponfing names..')
     corresponding_fnames = self.get_corresponding_fnames(selected_papers_fnames, root_fnames_numCitedBy_filtered)
 
     return corresponding_fnames

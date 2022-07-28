@@ -69,7 +69,10 @@ class GrobidClient(ApiClient):
     ):
         input_files = []
         result = {}
-        filenames = sorted(os.listdir(input_path))[idx_start:idx_finish]
+        if idx_finish==-1:
+            filenames = sorted(os.listdir(input_path))[idx_start:]
+        else:
+            filenames = sorted(os.listdir(input_path))[idx_start:idx_finish]
         for filename in tqdm(filenames):
             if filename.endswith(".pdf") or filename.endswith(".PDF") or \
                     (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
