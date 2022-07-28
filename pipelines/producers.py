@@ -557,8 +557,7 @@ class Custom_Producer:
     1 Takes formatted custom papers in dictionary all_papers and transform them into a produced all_paper using Paper Producer obj
     2 no need of field index
     '''
-    def __init__(self, all_papers,field):
-        self.field = field
+    def __init__(self, all_papers):
         self.obj_classifier = None
         self.bomr_classifier = None
         self.nlp = None

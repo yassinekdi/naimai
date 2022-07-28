@@ -1,5 +1,5 @@
 from naimai.constants.regex import regex_and_operators,regex_or_operators,regex_exact_match
-from naimai.utils.general import get_root_fname
+from naimai.utils.general import get_root_fname, clean_lst
 from naimai.models.papers_classification.tfidf import tfidf_model
 import re
 
@@ -19,6 +19,7 @@ class CustomQuerier:
         if elt in pap:
           results_papers_fnames.append(wanted_papers_fnames[idx])
 
+    results_papers_fnames = [fname for fname in results_papers_fnames if self.produced_papers[fname]['messages']]
     return results_papers_fnames
 
 
@@ -31,6 +32,7 @@ class CustomQuerier:
     nb_papers_ranked_CitedBy = 3
     for fname in fnames:
       paper = self.produced_papers[fname]
+      paper['fname']= fname
       if 'numCitedBy' not in paper:
         paper['numCitedBy']=.5
 
@@ -67,9 +69,9 @@ class CustomQuerier:
     fname = list(paper.keys())[0]
 
     if '_objectives' in fname:
-      info = self.produced_papers[fname]['messages'] + ' '+ self.produced_papers[fname]['title']
+      info = '. '.join(self.produced_papers[fname]['messages']) + ' '+ self.produced_papers[fname]['title']
     else:
-      info = self.produced_papers[fname]['messages'] 
+      info = '. '.join(self.produced_papers[fname]['messages'])
 
     if operator==0: #AND operator 
       pattern = ''.join([f'(?:.*{kw})'for kw in keywords])
@@ -77,7 +79,7 @@ class CustomQuerier:
         return True
 
     elif operator==1: #OR operator
-      pattern = re.compile('|'.join(keywords))
+      pattern = '|'.join(keywords)
       if re.findall(pattern,info,flags=re.I):
         return True
 
@@ -97,7 +99,7 @@ class CustomQuerier:
     selected_papers_fnames = []
 
     for fname in self.produced_papers:
-      paper = self.produced_papers[fname]
+      paper = {fname : self.produced_papers[fname]}
       if self.keywords_in_paper(keywords=keywords,operator=2,paper=paper):
         selected_papers_fnames.append(fname)
     return selected_papers_fnames
@@ -111,7 +113,7 @@ class CustomQuerier:
     selected_papers_fnames = []
 
     for fname in self.produced_papers:
-      paper = self.produced_papers[fname]
+      paper = {fname : self.produced_papers[fname]}
       if self.keywords_in_paper(keywords=keywords,operator=1,paper=paper):
         selected_papers_fnames.append(fname)
     return selected_papers_fnames
@@ -126,7 +128,7 @@ class CustomQuerier:
     selected_papers_fnames = []
 
     for fname in self.produced_papers:
-      paper = self.produced_papers[fname]
+      paper = {fname : self.produced_papers[fname]}
       if self.keywords_in_paper(keywords=keywords,operator=0,paper=paper):
         selected_papers_fnames.append(fname)
     return selected_papers_fnames
@@ -225,4 +227,4 @@ class CustomQuerier:
       print('Corresponfing names..')
     corresponding_fnames = self.get_corresponding_fnames(selected_papers_fnames, root_fnames_numCitedBy_filtered)
 
-    return corresponding_fnames
+    return clean_lst(corresponding_fnames)
