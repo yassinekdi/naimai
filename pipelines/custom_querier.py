@@ -1,10 +1,6 @@
-from naimai.constants.paths import path_produced
+from naimai.constants.regex import regex_and_operators,regex_or_operators,regex_exact_match
 from naimai.utils.general import get_root_fname
-from sentence_transformers import SentenceTransformer
 from naimai.models.papers_classification.tfidf import tfidf_model
-from naimai.data_sqlite import SQLiteManager
-import faiss
-import os
 import re
 
 class CustomQuerier:
@@ -13,7 +9,7 @@ class CustomQuerier:
     self.produced_papers = produced_papers
     self.custom_index=custom_index
 
-  def get_corresponding_papers(self, wanted_papers_fnames: list, root_papers_fnames: list) -> list:
+  def get_corresponding_fnames(self, wanted_papers_fnames: list, root_papers_fnames: list) -> list:
     '''
     find original fnames based on root fnames
     '''
@@ -99,7 +95,7 @@ class CustomQuerier:
     '''
     find papers for a query with exact match
     '''
-    keywords = re.findall('"(.*?)"', query)
+    keywords = re.findall(regex_exact_match, query)
     selected_papers_fnames = []
 
     for fname in self.produced_papers:
@@ -148,12 +144,13 @@ class CustomQuerier:
     return selected_papers_fnames
    
 
-  def get_all_similar_papers(self, query: str, query_type: int) -> tuple:
+  def get_all_similar_papers(self, query: str, query_type: int) -> list:
     '''
     Get all similar papers & their fnames based on the query and query type
     :param query:
     :return:
     '''
+    selected_papers_fnames = []
     if query_type==0: #AND operator
       selected_papers_fnames= self.get_papers_with_AND_operator(query)
 
@@ -167,15 +164,6 @@ class CustomQuerier:
       selected_papers_fnames= self.get_papers_with_semantics(query)
 
     return selected_papers_fnames
-
-    default_top = 50
-    encoded_query = self.encoder.encode([query])
-    top_n_results = self.custom_index.search(encoded_query, default_top)
-    ids = top_n_results[1].tolist()[0]
-    similar_papers = self.sql_manager.get_by_multiple_ids(ids)
-    similar_papers_fnames = [similar_papers[elt]['fname'] for elt in similar_papers if similar_papers[elt]['messages']]
-    return (similar_papers, similar_papers_fnames)
-
 
   def filter_by_year(self,fnames: list, year_from=0,year_to=3000) -> list:
     '''
@@ -191,7 +179,7 @@ class CustomQuerier:
     return filtered_fnames
 
 
-  def search(self, query: str, top_n=5, year_from=0, year_to=3000) -> list:
+  def search(self, query: str, year_from=0, year_to=3000) -> list:
     '''
     1. Get query type : AND op (0), OR op (1), exact match (2),semantic (3)
     2. Get all similar papers and their fnames 
@@ -217,7 +205,7 @@ class CustomQuerier:
     root_fnames = [get_root_fname(fname) for fname in selected_papers_fnames]
 
       # 3.1 Apply years range filter 
-    root_fnames_year_filtered = self.filter_by_year(root_fnames)
+    root_fnames_year_filtered = self.filter_by_year(root_fnames, year_from=year_from,year_to=year_to)
 
       # 3.2 Apply OMR filter
 
