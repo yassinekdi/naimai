@@ -555,7 +555,7 @@ class Field_Producer:
 class Custom_Producer:
     '''
     1 Takes formatted custom papers in dictionary all_papers and transform them into a produced all_paper using Paper Producer obj
-    2 Use distiled bert to Compute field Faiss index
+    2 no need of field index
     '''
     def __init__(self, all_papers,field):
         self.field = field
@@ -569,7 +569,7 @@ class Custom_Producer:
         self.all_papers = all_papers
 
         self.produced_custom_papers = {}
-        self.custom_index = None
+        # self.custom_index = None
         self.produce_only_fnames=False
 
         self.load_obj_classifier()
@@ -630,22 +630,22 @@ class Custom_Producer:
       else:
         return messages
 
-    def get_custom_index(self):
-        '''
-        get field faiss index by computing the IVFPQ index
-        :return:
-        '''
-
-        fnames = list(self.produced_custom_papers.keys())
-
-        print('>> Encoding ..')
-        to_encode = [self.txt_to_encode(fn) for fn in fnames]
-        encoded_fields = self.encoder.encode(to_encode)
-        encoded_fields = np.asarray(encoded_fields.astype('float32'))
-
-        print('>> Getting ids ..')
-        self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
-        self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
+    # def get_custom_index(self):
+    #     '''
+    #     get field faiss index by computing the IVFPQ index
+    #     :return:
+    #     '''
+    #
+    #     fnames = list(self.produced_custom_papers.keys())
+    #
+    #     print('>> Encoding ..')
+    #     to_encode = [self.txt_to_encode(fn) for fn in fnames]
+    #     encoded_fields = self.encoder.encode(to_encode)
+    #     encoded_fields = np.asarray(encoded_fields.astype('float32'))
+    #
+    #     print('>> Getting ids ..')
+    #     self.field_index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
+    #     self.field_index.add_with_ids(encoded_fields, np.array(range(len(to_encode))))
 
     def produce_custom_papers(self):
       print('>> Producing custom papers..')
@@ -658,12 +658,12 @@ class Custom_Producer:
               #     pass
       print(' ')
 
-    def produce(self):
-        # produce field papers
-        self.produce_custom_papers()
-
-        #compute Faiss index
-        self.get_custom_index()
-
-        print('>> Done!')
+    # def produce(self):
+    #     # produce field papers
+    #     self.produce_custom_papers()
+    #
+    #     #compute Faiss index
+    #     self.get_custom_index()
+    #
+    #     print('>> Done!')
 
