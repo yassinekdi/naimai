@@ -31,13 +31,16 @@ class SQLiteManager:
     dict_result = {elt[10]: self.to_dict(elt) for elt in papers_list}
     return dict_result
 
-  def get_by_fname(self,fname: str)-> dict:
+  def get_by_fname(self,fname: str, year_from=0,year_to=3000)-> dict:
     '''
-      fine fname
+      find paper by fname
     '''
     self.cursor.execute("SELECT * FROM all_papers WHERE fname = ?", (fname,))
     result = self.cursor.fetchone()
-    return self.to_dict(result)
+    dict_result = self.to_dict(result)
+    if 'year' in dict_result :
+      if (int(dict_result['year'])>=year_from) and (int(dict_result['year'])<=year_to):
+        return dict_result 
 
   def get_omr_dics(self,fname: str) -> dict:
     '''
@@ -60,7 +63,7 @@ class SQLiteManager:
     fnames = clean_lst(fnames)
     results = {}
     for fname in fnames:
-      paper = self.get_by_fname(fname)
+      paper = self.get_by_fname(fname,int(year_from),int(year_to))
       results[fname]= paper
     return results
 
