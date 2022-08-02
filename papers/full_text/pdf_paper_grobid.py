@@ -173,11 +173,13 @@ class papers_grobid(papers):
                         self.elements[new_paper.Title] = new_paper.save_dict()
 
 
+    def get_papers(self,idx_start=0,idx_finish=-1):
+        if idx_finish==-1:
+            list_files = self.list_files[idx_start:]
+        else:
+            list_files = self.list_files[idx_start:idx_finish]
 
-
-    # @update_naimai_dois
-    def get_papers(self):
-        for pdf in tqdm(self.list_files):
+        for pdf in tqdm(list_files):
             if self.papers_path:
                 path = os.path.join(self.papers_path,pdf)
                 self.add_paper(paper_path=path)
