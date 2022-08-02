@@ -141,3 +141,5 @@ def ssrn_len_docs(path_csvs,idx_start=0,idx_finish=-1):
   dfs = [pd.read_csv(elt) for elt in paths]
   csvs_dict = {field: len(df) for field, df in zip(csvs,dfs)}
   return csvs_dict
+
+
