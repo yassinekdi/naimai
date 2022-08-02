@@ -62,6 +62,8 @@ class paper_grobid(paper_full_base):
         name = 'idno'
         attrs = {'type': 'DOI'}
         self.doi= self.get_data(name=name,attrs=attrs)
+        if not self.doi:
+            self.database = 'mine'
 
     def get_Abstract(self):
         name = 'abstract'

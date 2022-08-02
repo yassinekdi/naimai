@@ -1,7 +1,7 @@
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import re
 from tqdm.notebook import tqdm
-import os 
+import os
 
 class PDFSpliter:
     def __init__(self):
