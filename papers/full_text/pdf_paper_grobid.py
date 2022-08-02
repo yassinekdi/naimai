@@ -104,9 +104,12 @@ class paper_grobid(paper_full_base):
         name = 'date'
         attrs = {'type': "published"}
         date = self.get_data(name=name, attrs=attrs)
-        year = re.findall(regex_paper_year, date)
-        if year:
-            self.year = year[0]
+        if date:
+            year = re.findall(regex_paper_year, date)
+            if year:
+                self.year = year[0]
+        else:
+            self.year = ''
 
     def get_Journal(self):
         name='title'
@@ -136,7 +139,7 @@ class papers_grobid(papers):
         self.papers_path = papers_path
         self.papers_dict = {}
         if papers_path:
-            self.list_files = [elt for elt in os.listdir(papers_path) if '.pdf' in elt]
+            self.list_files = [elt for elt in os.listdir(papers_path) if '.xml' in elt]
         else:
             self.list_files = list(papers_dict)
             self.papers_dict = papers_dict
@@ -180,10 +183,13 @@ class papers_grobid(papers):
             list_files = self.list_files[idx_start:idx_finish]
 
         for pdf in tqdm(list_files):
-            if self.papers_path:
-                path = os.path.join(self.papers_path,pdf)
-                self.add_paper(paper_path=path)
-            else:
-                paper_xml = self.papers_dict[pdf]
-                self.add_paper(paper_xml=paper_xml)
+            try:
+                if self.papers_path:
+                    path = os.path.join(self.papers_path,pdf)
+                    self.add_paper(paper_path=path)
+                else:
+                    paper_xml = self.papers_dict[pdf]
+                    self.add_paper(paper_xml=paper_xml)
+            except:
+                print('problem in pdf: ', pdf)
 

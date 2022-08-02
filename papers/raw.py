@@ -128,9 +128,6 @@ class paper_full_base(paper_base):
             condition_english = (language_score['language']=='en') and (language_score['score']>0.7)
             if condition_english:
                 return True
-        lang = language_score['language']
-        score = language_score['score']
-        print(f'Langage {lang} - Score {score}')
         return False
 
     def save_dict(self):
