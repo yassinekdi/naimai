@@ -104,67 +104,39 @@ class Querier:
     papers_ranked = fnames_ranked + rest_of_papers_fnames
     return papers_ranked
 
-  def get_papers_with_exact_match(self,query: str, papers: dict) -> tuple:
+  def get_papers_with_exact_match(self,query: str) -> tuple:
     '''
     find papers for a query with exact match
     '''
-
-    keywords = re.findall(regex_exact_match, query)
-    selected_papers_fnames = []
-    selected_papers = {}
-
-    for fname in papers:
-      paper = {fname : papers[fname]}
-      if self.keywords_in_paper(keywords=keywords,operator=2,paper=paper, papers=papers):
-        selected_papers_fnames.append(fname)
-        selected_papers.update(paper)
-
-    # selected_papers = self.sql_manager.search_with_exact_match(query)
-    # selected_papers_fnames = list(selected_papers)
+    selected_papers = self.sql_manager.search_with_exact_match(query)
+    selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
 
-  def get_papers_with_OR_operator(self,query: str, papers: dict) -> tuple:
+  def get_papers_with_OR_operator(self,query: str) -> tuple:
     '''
     find papers for a query with or operator
     '''
 
-    keywords = [elt.strip() for elt in re.split(regex_or_operators,query)]
-    selected_papers_fnames = []
-    selected_papers = {}
-
-    for fname in papers:
-      paper = {fname : papers[fname]}
-      if self.keywords_in_paper(keywords=keywords,operator=1,paper=paper):
-        selected_papers_fnames.append(fname)
-        selected_papers.update(paper)
-
-    # selected_papers = self.sql_manager.search_with_OR_operator(query)
-    # selected_papers_fnames = list(selected_papers)
+    selected_papers = self.sql_manager.search_with_OR_operator(query)
+    selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
 
-  def get_papers_with_AND_operator(self,query: str, papers: dict) -> tuple:
+  def get_papers_with_AND_operator(self,query: str) -> tuple:
     '''
     find papers for a query with and operator
     '''
-    keywords = [elt.strip() for elt in re.split(regex_and_operators,query)]
-    selected_papers_fnames = []
-    selected_papers = {}
 
-    for fname in papers:
-      paper = {fname : papers[fname]}
-      if self.keywords_in_paper(keywords=keywords,operator=0,paper=paper):
-        selected_papers_fnames.append(fname)
-        selected_papers.update(paper)
-
+    selected_papers = self.sql_manager.search_with_AND_operator(query)
+    selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
   def get_papers_with_semantics(self, query: str) -> tuple:
     '''
     find papers using encoder & field faiss index.
     '''
-    default_top = 150
+    default_top = 100
     encoded_query = self.encoder.encode([query])
     top_n_results = self.field_index.search(encoded_query, default_top)
     ids = top_n_results[1].tolist()[0]
@@ -183,7 +155,7 @@ class Querier:
     :return:
     '''
 
-    selected_papers, selected_papers_fnames = self.get_papers_with_semantics(query)
+    selected_papers, selected_papers_fnames= [],[]
     if query_type == 0:  # AND operator
       selected_papers, selected_papers_fnames = self.get_papers_with_AND_operator(query)
 
@@ -192,6 +164,9 @@ class Querier:
 
     elif query_type == 2:  # exact match
       selected_papers, selected_papers_fnames = self.get_papers_with_exact_match(query)
+
+    elif query_type == 3:  # semantics
+      selected_papers, selected_papers_fnames = self.get_papers_with_semantics(query)
 
     return selected_papers, selected_papers_fnames
 
