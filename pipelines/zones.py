@@ -197,6 +197,8 @@ class Production_Zone(Zone):
         new_papers = self.correct_years(new_papers)
         print('>> Adding numCited')
         new_papers = self.add_numCitedBy(field,fname,new_papers)
+        print('>> Adding authors')
+        new_papers = self.add_allauthors(field,fname,new_papers)
         print('Pmc websites are not taken here!')
         print('>> New length : ', len(new_papers))
         return new_papers
@@ -278,7 +280,7 @@ class Production_Zone(Zone):
                     new_papers[fname]['reported'] = re.sub('(\d)\.\d', r'\g<1>', new_papers[fname]['reported'])
         return new_papers
 
-    def add_numCitedBy(self,field,papers_name: str, produced_papers):
+    def add_numCitedBy(self,field,papers_name: str, produced_papers) -> dict:
         '''
         add numCitedBy parameter in produced papers when forgotten
         :param field:
@@ -300,6 +302,31 @@ class Production_Zone(Zone):
                         produced_papers[key_produced]['numCitedBy'] = numCitedBy
 
         return produced_papers
+
+    def add_allauthors(self,field: str, papers_name: str,produced_papers={}) -> dict:
+        '''
+        add all authors in produced papers
+        :param field:
+        :param papers_name:
+        :param produced_papers:
+        :return:
+        '''
+
+        print('>> Getting papers')
+        disp_zone = Dispatched_Zone()
+        dispatched_papers = disp_zone.get_papers(field, papers_name)
+        if not produced_papers:
+            produced_papers = self.get_papers(field, papers_name)
+
+        print('>> Getting authors')
+        for key in tqdm(dispatched_papers):
+            key_produced = key+'_objectives'
+            if key_produced in produced_papers:
+                produced_papers[key_produced]['allauthors'] = dispatched_papers[key]['Authors']
+
+        return produced_papers
+
+
 
     def correct_pmc_websites(self,papers):
         '''
