@@ -1,4 +1,6 @@
 import sqlite3
+import re
+from naimai.constants.regex import regex_and_operators,regex_or_operators,regex_exact_match
 from ast import literal_eval
 from naimai.utils.general import clean_lst
 
@@ -16,6 +18,59 @@ class SQLiteManager:
     results = self.cursor.fetchall()
     dict_result = {elt[10]: self.to_dict(elt) for elt in results}
     return dict_result
+
+  def search_with_exact_match(self, query: str) -> dict:
+    '''
+    find papers for a query with exact match
+    '''
+    keywords = re.findall(regex_exact_match, query)
+    similar_papers = {}
+
+    for word in keywords:
+      papers = self.get_by_query(word)
+      similar_papers.update(papers)
+
+    return similar_papers
+
+  def search_with_OR_operator(self, query: str) -> dict:
+    '''
+    find papers that contains at least one of the query keywords. Similar to many exact match..
+    '''
+    keywords = [elt.strip() for elt in re.split(regex_or_operators, query)]
+    similar_papers = {}
+
+    for word in keywords:
+      papers = self.get_by_query(word)
+      similar_papers.update(papers)
+
+    return similar_papers
+
+  def search_with_AND_operator(self, query: str) -> dict:
+    '''
+    find papers that contains all the query keywords : start by using or operator for first
+    key word, then filter papers with all key words
+    '''
+    keywords = [elt.strip() for elt in re.split(regex_and_operators, query)]
+    similar_papers = {}
+
+    kword1 = keywords[0]
+    # get papers with only kword1
+    papers_with_kword1 = self.get_by_query(kword1)
+
+    # filter the papers having other keywords as well
+    pattern = ''.join([f'(?:.*{kw})' for kw in keywords[1:]])
+    for fname in papers_with_kword1:
+      # get text of paper
+      if '_objectives' in fname:
+        info = '. '.join(papers_with_kword1[fname]['messages']) + ' ' + papers_with_kword1[fname]['title']
+      else:
+        info = '. '.join(papers_with_kword1[fname]['messages'])
+
+      # check if contains all keywords
+      if re.findall(pattern, info, flags=re.I):
+        similar_papers.update({fname: papers_with_kword1[fname]})
+
+    return similar_papers
 
   def get_by_query(self, query: str) -> dict:
     '''
