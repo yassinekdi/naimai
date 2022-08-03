@@ -14,9 +14,9 @@ class SQLiteManager:
       get papers using list of ids
     '''
     tuple_ids = tuple([elt+1 for elt in list_ids])
-    self.cursor.execute("SELECT * FROM all_papers WHERE rowid IN {}".format(tuple_ids))
+    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname FROM all_papers WHERE rowid IN {}".format(tuple_ids))
     results = self.cursor.fetchall()
-    dict_result = {elt[10]: self.to_dict(elt) for elt in results}
+    dict_result = {elt[9]: self.to_dict(elt) for elt in results}
     return dict_result
 
   def search_with_exact_match(self, query: str) -> dict:
@@ -80,22 +80,27 @@ class SQLiteManager:
     '''
     query_command = '%' + query + '%'
     qry = (query_command,query_command)
-    self.cursor.execute("SELECT * FROM all_papers WHERE title LIKE ? OR messages LIKE ? ",qry)
+    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname FROM all_papers WHERE title LIKE ? OR messages LIKE ? ",qry)
     result = self.cursor.fetchall()
     papers_list = clean_lst(result)
-    dict_result = {elt[10]: self.to_dict(elt) for elt in papers_list}
+    dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
     return dict_result
 
-  def get_by_fname(self,fname: str, year_from=0,year_to=3000)-> dict:
+  def get_by_fname(self, fname: str, year_from=0, year_to=3000) -> dict:
     '''
       find paper by fname
     '''
-    self.cursor.execute("SELECT * FROM all_papers WHERE fname = ?", (fname,))
+    self.cursor.execute(
+      "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname FROM all_papers WHERE fname = ?",
+      (fname,))
     result = self.cursor.fetchone()
     dict_result = self.to_dict(result)
-    if 'year' in dict_result :
-      if (int(dict_result['year'])>=year_from) and (int(dict_result['year'])<=year_to):
-        return dict_result 
+    if fname.endswith('_objectives'):
+      if 'year' in dict_result:
+        if (int(dict_result['year']) >= year_from) and (int(dict_result['year']) <= year_to):
+          return dict_result
+      return {}
+    return dict_result
 
   def get_omr_dics(self,fname: str) -> dict:
     '''
@@ -131,7 +136,7 @@ class SQLiteManager:
 
     dict_result = {}
     if sql_result:
-      for col,val in zip(cols,sql_result[1:]):
+      for col,val in zip(cols,sql_result):
         if val:
           if val[0]=='[':
             val = literal_eval(val)
