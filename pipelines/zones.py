@@ -40,7 +40,7 @@ class Zone:
             for elt in elements:
                 path_elt = os.path.join(self.zone_path, elt)
                 if os.path.isdir(path_elt):
-                    self.elements[elt] = os.listdir(path_elt)
+                    self.elements[elt] = [elt for elt in os.listdir(path_elt) if os.path.isfile(os.path.join(path_elt,elt)) and 'encoding' not in elt and 'sqlite' not in elt]
                 else:
                     self.elements[elt] = ''
 
