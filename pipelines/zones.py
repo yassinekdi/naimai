@@ -198,7 +198,7 @@ class Production_Zone(Zone):
         print('>> Adding numCited')
         new_papers = self.add_numCitedBy(field,fname,new_papers)
         print('>> Adding authors')
-        new_papers = self.add_allauthors(field,fname,new_papers)
+        new_papers = self.add_allauthors(field,fname,new_papers,verbose=False)
         print('Pmc websites are not taken here!')
         print('>> New length : ', len(new_papers))
         return new_papers
@@ -303,7 +303,7 @@ class Production_Zone(Zone):
 
         return produced_papers
 
-    def add_allauthors(self,field: str, papers_name: str,produced_papers={}) -> dict:
+    def add_allauthors(self,field: str, papers_name: str,produced_papers={},verbose=True) -> dict:
         '''
         add all authors in produced papers
         :param field:
@@ -312,13 +312,15 @@ class Production_Zone(Zone):
         :return:
         '''
 
-        print('>> Getting papers')
+        if verbose:
+            print('>> Getting papers')
         disp_zone = Dispatched_Zone()
         dispatched_papers = disp_zone.get_papers(field, papers_name)
         if not produced_papers:
             produced_papers = self.get_papers(field, papers_name)
 
-        print('>> Getting authors')
+        if verbose:
+            print('>> Getting authors')
         for key in tqdm(dispatched_papers):
             key_produced = key+'_objectives'
             if key_produced in produced_papers:
