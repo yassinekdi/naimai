@@ -14,7 +14,7 @@ class SQLiteManager:
       get papers using list of ids
     '''
     tuple_ids = tuple([elt+1 for elt in list_ids])
-    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname FROM all_papers WHERE rowid IN {}".format(tuple_ids))
+    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE rowid IN {}".format(tuple_ids))
     results = self.cursor.fetchall()
     dict_result = {elt[9]: self.to_dict(elt) for elt in results}
     return dict_result
@@ -80,7 +80,7 @@ class SQLiteManager:
     '''
     query_command = '%' + query + '%'
     qry = (query_command,query_command)
-    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname FROM all_papers WHERE title LIKE ? OR messages LIKE ? ",qry)
+    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE title LIKE ? OR messages LIKE ? ",qry)
     result = self.cursor.fetchall()
     papers_list = clean_lst(result)
     dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
@@ -91,7 +91,7 @@ class SQLiteManager:
       find paper by fname
     '''
     self.cursor.execute(
-      "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname FROM all_papers WHERE fname = ?",
+      "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE fname = ?",
       (fname,))
     result = self.cursor.fetchone()
     dict_result = self.to_dict(result)
@@ -132,7 +132,7 @@ class SQLiteManager:
       transform sql results (in tuple format) to dictionary format
     '''
     cols = ['website','year', 'database', 'messages', 'reported', 'title', 'journal',
-    'authors', 'numCitedBy', 'fname']
+    'authors', 'numCitedBy', 'fname','allauthors']
 
     dict_result = {}
     if sql_result:
