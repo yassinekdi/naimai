@@ -348,17 +348,26 @@ class Field_Producer:
       else:
         return messages
 
-    def gather_production_papers(self,save=True):
+    def gather_production_papers(self,papers_name='',save=True):
         '''
         load all_papers chunks (produced between 2 indices for same database) and gather them in the same dictionary
         :return: dictionary
         '''
-        disp_zone_path = os.path.join(path_dispatched, self.field)
-        disp_zone_fnames = os.listdir(disp_zone_path)
         path_produced_papers = os.path.join(path_produced, self.field)
         all_files = os.listdir(path_produced_papers)
 
-        new_fnames = {fname: [elt for elt in all_files if re.findall(fname + '_\d+', elt)] for fname in disp_zone_fnames}
+        if papers_name:
+            new_fnames = {papers_name: [elt for elt in all_files if papers_name in elt]}
+            disp_zone_fnames = [papers_name,]
+
+        else:
+            disp_zone_path = os.path.join(path_dispatched, self.field)
+            disp_zone_fnames = os.listdir(disp_zone_path)
+
+            all_files = os.listdir(path_produced_papers)
+
+            new_fnames = {fname: [elt for elt in all_files if re.findall(fname + '_\d+', elt)] for fname in disp_zone_fnames}
+
         for fname in disp_zone_fnames:
             if not new_fnames[fname]:
                 new_fnames[fname] = [fname]
