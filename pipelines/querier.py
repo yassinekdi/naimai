@@ -1,5 +1,5 @@
 from naimai.constants.paths import path_produced
-from naimai.utils.general import get_root_fname
+from naimai.utils.general import get_root_fname, clean_lst
 from naimai.constants.regex import regex_and_operators,regex_or_operators,regex_exact_match
 from sentence_transformers import SentenceTransformer
 from naimai.models.papers_classification.tfidf import tfidf_model
@@ -104,6 +104,24 @@ class Querier:
     papers_ranked = fnames_ranked + rest_of_papers_fnames
     return papers_ranked
 
+  def remove_duplicated_fnames(self,list_fnames):
+    '''
+    remove duplicated fnames in list of results to keep only one paper per result
+    :param list_fnames:
+    :return:
+    '''
+    pattern = '_objectives|_methods|_results'
+    only_fnames = [re.sub(pattern, '', elt) for elt in list_fnames]
+    filtered_fnames = clean_lst(only_fnames)
+
+    idxs_to_keep = []
+    for fname in filtered_fnames:
+      idxs_to_keep.append([idx for idx, elt in enumerate(list_fnames) if fname in elt][0])
+
+    non_duplicated_fnames = [list_fnames[idx] for idx in idxs_to_keep]
+    return non_duplicated_fnames
+
+
   def get_papers_with_exact_match(self,query: str) -> tuple:
     '''
     find papers for a query with exact match
@@ -143,7 +161,10 @@ class Querier:
     selected_papers = self.sql_manager.get_by_multiple_ids(ids)
     selected_papers_fnames = [selected_papers[elt]['fname'] for elt in selected_papers if
                               selected_papers[elt]['messages']]
-    return selected_papers, selected_papers_fnames
+
+    selected_papers_fnames2 = self.remove_duplicated_fnames(selected_papers_fnames)
+    selected_papers2 = {elt: selected_papers[elt] for elt in selected_papers_fnames2}
+    return selected_papers2, selected_papers_fnames2
 
   def get_all_similar_papers(self, query: str, query_type: int) -> tuple:
     '''

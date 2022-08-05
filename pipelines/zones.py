@@ -323,7 +323,7 @@ class Production_Zone(Zone):
             print('>> Getting authors')
         for key in tqdm(dispatched_papers):
             key_produced = key+'_objectives'
-            if key_produced in produced_papers:
+            if key_produced in produced_papers and 'allauthors' not in produced_papers[key_produced]:
                 produced_papers[key_produced]['allauthors'] = dispatched_papers[key]['Authors']
 
         return produced_papers

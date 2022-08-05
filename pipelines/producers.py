@@ -156,7 +156,8 @@ class Paper_Producer:
                       "title": self.paper['Title'],
                       'numCitedBy': self.paper['numCitedBy'],
                       "journal": journal,
-                      "authors": self.authors}
+                      "authors": self.authors,
+                      'allauthors': self.paper['allauthors']}
         methods = {"messages": self.omr['methods']}
         results = {"messages": self.omr['results']}
         self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
