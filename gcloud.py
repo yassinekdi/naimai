@@ -1,6 +1,6 @@
 import os
 from google.cloud import storage
-from naimai.constants.paths import path_produced
+from naimai.constants.paths import path_produced, path_bomr_classifier, path_objective_classifier
 
 
 class gcloud_data:
@@ -53,6 +53,37 @@ class gcloud_data:
         path_gcloud_pooling = os.path.join(path_gcloud, '1_Pooling', 'config.json')
         self.upload(path_drive_pooling, path_gcloud_pooling)
 
+    def upload_folder(self,path_folder: str,dir_gcloud=''):
+        '''
+        upload folder containing files from drive to bucket
+        :param path_folder:
+        :return:
+        '''
+        files_ = os.listdir(path_folder)
+        path_files = [os.path.join(path_folder,fil) for fil in files_]
+        for path,f in zip(path_files,files_):
+            path_gcloud = os.path.join(dir_gcloud,f)
+            self.upload(path,path_gcloud)
+
+    def upload_classifiers(self):
+        '''
+        upload obj classifier and bomr classifier for custom queries
+        :return:
+        '''
+        obj_clf_folder = path_objective_classifier.split('/')[-1]
+        bomr_clf_folder = path_bomr_classifier.split('/')[-1]
+        dir_gcloud = 'models/'
+
+        dir_gcloud_obj = os.path.join(dir_gcloud,obj_clf_folder)
+        dir_gcloud_bomr = os.path.join(dir_gcloud, bomr_clf_folder)
+
+        print('>> Uploading obj classifier..')
+        self.upload_folder(path_objective_classifier,dir_gcloud_obj)
+        print('>> Uploading bomr classifier..')
+        self.upload_folder(path_bomr_classifier,dir_gcloud_bomr)
+        print('>> Done!')
+
+
     def upload_papers(self, field: str, path_drive: str):
         '''
         upload papers sqlite data from drive to bucket
@@ -81,6 +112,36 @@ class gcloud_data:
         print('>> Uploading search model..')
         self.upload_search_model(field, path_drive_field)
         print('>> Done !')
+
+    def get_folder(self,dir_gcloud,dir_local):
+        '''
+        get folder from gcloud
+        :return:
+        '''
+        blobs = self.bucket.list_blobs(prefix=dir_gcloud)
+
+        if not os.path.exists(dir_local):
+            os.makedirs(dir_local,exist_ok=True)
+            for blob in blobs:
+                blob.download_to_filename(blob.name)
+
+    def get_classifiers(self):
+        '''
+        get obj classifier and bomr classifier for custom queries
+        :return:
+        '''
+        obj_clf_folder = 'distil_bert_obj_classifier'
+        bomr_clf_folder = 'bigbird_roberta16'
+        dir_gcloud = 'models/'
+
+        dir_obj = os.path.join(dir_gcloud, obj_clf_folder)
+        dir_bomr = os.path.join(dir_gcloud, bomr_clf_folder)
+
+        print('>> Getting obj classifier..')
+        self.get_folder(dir_obj,dir_obj)
+        print('>> Getting bomr classifier..')
+        self.get_folder(dir_bomr,dir_bomr)
+        print('>> Done!')
 
     def get_index(self, field: str):
         '''
