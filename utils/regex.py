@@ -261,7 +261,7 @@ def get_ref_url(paper,doi=''):
         title = paper['Title']
         fname=''
         if title:
-          fname = title.replace('/','_char_')[:100]
+          fname = title.replace('/','_char_')[:100].replace("'",'_')+'.pdf'
         url = os.path.join(aws_root_pdfs, 'Geophysics', transform_field_name(fname))
         return url
     if database == "arxiv":
