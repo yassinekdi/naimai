@@ -258,7 +258,7 @@ def remove_between_brackets(text,nb_words=5):
 def get_ref_url(paper,doi=''):
     database = paper['database']
     if database == "mine":
-        url = os.path.join(aws_root_pdfs, 'Geophysics', transform_field_name(paper['filename']))
+        url = os.path.join(aws_root_pdfs, 'Geophysics', transform_field_name(paper['Title']))
         return url
     if database == "arxiv":
         url = arxiv_pdfs_url + paper['doi']
