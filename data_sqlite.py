@@ -121,10 +121,16 @@ class SQLiteManager:
       get papers between range of years using list of filenames
     '''
     fnames = clean_lst(fnames)
+    ln = len(fnames)
+    conditions = ' OR '.join(["fname = ?"] * ln)
+    command = "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE " + conditions
+    self.cursor.execute(command, fnames)
+    list_papers = self.cursor.fetchall()
+
     results = {}
-    for fname in fnames:
-      paper = self.get_by_fname(fname,int(year_from),int(year_to))
-      results[fname]= paper
+    for paper in list_papers:
+      if (int(paper[1])>=year_from) and (int(paper[1])<=year_to):
+        results[paper[9]]= self.to_dict(paper)
     return results
 
   def to_dict(self,sql_result: tuple) -> dict:

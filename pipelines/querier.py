@@ -154,7 +154,7 @@ class Querier:
     '''
     find papers using encoder & field faiss index.
     '''
-    default_top = 100
+    default_top = 60
     encoded_query = self.encoder.encode([query])
     top_n_results = self.field_index.search(encoded_query, default_top)
     ids = top_n_results[1].tolist()[0]
