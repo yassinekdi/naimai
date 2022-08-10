@@ -224,13 +224,13 @@ class Querier:
 
     # 2. Get all similar papers and their fnames using encoder & field faiss index
     if verbose:
-      print('All similar papers selection..')
+      print('>> All similar papers selection.. [querier.py]')
     selected_papers, selected_papers_fnames = self.get_all_similar_papers(query, query_type)
 
     if selected_papers:
       #  3. Apply year range filter :
       if verbose:
-        print('Applying year range filter..')
+        print('>> Applying year range filter.. [querier.py]')
       root_fnames = [get_root_fname(fname) for fname in selected_papers_fnames]
       root_papers_year_filtered = self.sql_manager.get_by_multiple_fnames(fnames=root_fnames,
                                                                           year_from=year_from,
@@ -238,6 +238,8 @@ class Querier:
 
       root_fnames_year_filtered = list(root_papers_year_filtered)
       # 4. Reclassify using tf idf model (need corresponding fname)
+      if verbose:
+        print('>> Reclassify using tf idf.. [querier.py]')
       corresponding_papers_fnames = self.get_corresponding_papers(selected_papers_fnames, root_fnames_year_filtered)
       corresponding_papers = {fname: selected_papers[fname] for fname in corresponding_papers_fnames}
 
@@ -245,12 +247,16 @@ class Querier:
       tf_ranked_papers_fnames = tf.get_similar_fnames(top_n=top_n)
 
       # 5. Rank first papers by numCitedBy using all_papers (need root fname)
+      if verbose:
+        print('>> numCitedBy Ranking.. [querier.py]')
       ranked_root_fnames = [get_root_fname(fname) for fname in tf_ranked_papers_fnames]
       ranked_root_papers = {fname: root_papers_year_filtered[fname] for fname in ranked_root_fnames}
       ranked_root_fnames2 = self.rank_papers_with_numCitedBy(ranked_root_papers)
 
       # 6. Get corresponding names
       corresponding_papers_fnames2 = self.get_corresponding_papers(selected_papers_fnames, ranked_root_fnames2)
+      if verbose:
+        print(' ')
       return corresponding_papers_fnames2
     return []
 
