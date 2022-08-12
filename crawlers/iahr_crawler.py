@@ -6,8 +6,7 @@ import requests
 import time
 
 class IAHR_Crawler:
-    def __init__(self, field, path,t_min=1,t_max=3):
-        self.field = field
+    def __init__(self, path,t_min=1,t_max=3):
         self.path = path
         self.papers_paths = []
         self.total_pages = 999
@@ -30,7 +29,7 @@ class IAHR_Crawler:
         return abstract
 
     def get_paths_in_page(self, nb_page):
-        webpage = self.path +'&page='+nb_page
+        webpage = self.path +'&page='+str(nb_page)
         soup = self.get_soup(webpage)
         paper_list = soup.find_all(name='tbody')[0]
         papers = paper_list.find_all(name='tr')
@@ -41,7 +40,7 @@ class IAHR_Crawler:
     def get_papers_pages(self,first_page,last_page):
         for page in tqdm(range(first_page,last_page+1)):
             paths_in_page = self.get_paths_in_page(page)
-            self.papers_paths.append(paths_in_page)
+            self.papers_paths +=paths_in_page
 
     def get_paper_path_content(self,paper_path):
         soup = self.get_soup(paper_path)
