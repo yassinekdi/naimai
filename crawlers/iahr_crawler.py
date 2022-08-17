@@ -75,7 +75,7 @@ class IAHR_Crawler:
         #Get articles pages
         print('>> Getting pages..')
         self.get_papers_pages(first_page=first_page,last_page=last_page)
-        self.docs = {'title': [], 'abstract': [], 'authors': [], 'date': [], 'field': [], "keywords": [], "webpage": []}
+        # self.docs = {'title': [], 'abstract': [], 'authors': [], 'date': [], 'field': [], "keywords": [], "webpage": []}
 
         print('>> Getting papers..')
         #crawl papers
