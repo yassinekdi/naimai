@@ -10,7 +10,7 @@ years_dir = "issue/browse-by-year"
 root_dir ="https://iwaponline.com"
 
 class IWA_Crawler:
-    def __init__(self, journal_path,t_min=2,t_max=4):
+    def __init__(self, journal_path,t_min=3,t_max=5):
         self.journal_path = journal_path
         self.docs = {'title': [], 'abstract': [], 'authors': [], 'date': [], 'field': [], "keywords":[],"doi":[],"numCitedBy":[]}
         self.t_min=t_min
@@ -69,7 +69,10 @@ class IWA_Crawler:
         return main_content.find(name='div', attrs={'class': 'citation-doi'}).text.replace('\n', '').strip()
 
     def get_abstract(self,main_content):
-        return main_content.find(name='section',attrs={'class':'abstract'}).text
+        abstract= main_content.find(name='section',attrs={'class':'abstract'})
+        if abstract:
+            return abstract.text
+        return ''
 
     def get_keywords(self,main_content):
         keywords_divs = main_content.find_all(name='a', attrs={'class': 'kwd-part kwd-main'})
