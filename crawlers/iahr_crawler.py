@@ -9,7 +9,6 @@ class IAHR_Crawler:
     def __init__(self, path,t_min=1,t_max=3):
         self.path = path
         self.papers_paths = []
-        self.total_pages = 999
         self.docs = {'title': [], 'abstract': [], 'authors': [], 'date': [], 'field': [], "keywords":[],"webpage":[]}
         self.t_min=t_min
         self.t_max=t_max
