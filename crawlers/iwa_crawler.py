@@ -20,7 +20,7 @@ class IWA_Crawler:
         header = {}
         header[
             'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-        soup = BeautifulSoup(requests.get(path, headers=header, timeout=15).content, 'html.parser')
+        soup = BeautifulSoup(requests.get(path, headers=header, timeout=30).content, 'html.parser')
         slp=random.randint(self.t_min,self.t_max)
         time.sleep(slp)
         return soup
@@ -93,25 +93,28 @@ class IWA_Crawler:
 
     def get_docs_from_volume(self,volume_dir):
         articles_soups = self.get_articles_soups_in_volume(volume_dir=volume_dir)
-        for soup in articles_soups:
+        for idx,soup in enumerate(articles_soups):
             main_content = self.get_main_content_article(soup)
-            abstract = self.get_abstract(main_content)
-            if abstract:
-                title = self.get_title(main_content)
-                authors = self.get_authors(main_content)
-                date = self.get_date(main_content)
-                doi = self.get_doi(main_content)
-                keywords = self.get_keywords(main_content)
-                numCitedBy = self.get_numCitedBy(soup)
+            if main_content:
+                abstract = self.get_abstract(main_content)
+                if abstract:
+                    title = self.get_title(main_content)
+                    authors = self.get_authors(main_content)
+                    date = self.get_date(main_content)
+                    doi = self.get_doi(main_content)
+                    keywords = self.get_keywords(main_content)
+                    numCitedBy = self.get_numCitedBy(soup)
 
-                self.docs['title'].append(title)
-                self.docs['abstract'].append(abstract)
-                self.docs['authors'].append(authors)
-                self.docs['date'].append(date)
-                self.docs['field'].append('Environmental Science')
-                self.docs['keywords'].append(keywords)
-                self.docs['doi'].append(doi)
-                self.docs['numCitedBy'].append(numCitedBy)
+                    self.docs['title'].append(title)
+                    self.docs['abstract'].append(abstract)
+                    self.docs['authors'].append(authors)
+                    self.docs['date'].append(date)
+                    self.docs['field'].append('Environmental Science')
+                    self.docs['keywords'].append(keywords)
+                    self.docs['doi'].append(doi)
+                    self.docs['numCitedBy'].append(numCitedBy)
+            else:
+                print('no main content in idx : ', idx)
 
 
     def get_docs(self,year1,year2):
