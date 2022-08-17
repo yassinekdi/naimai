@@ -46,7 +46,6 @@ class IWA_Crawler:
         titles_divs = soup_issue_articles.find_all(name='div', attrs={'class': 'al-article-item-wrap al-normal'})
         articles_href = [elt.find(name='h5').find(name='a')['href'] for elt in titles_divs]
         articles_paths = [root_dir + elt for elt in articles_href]
-        print('>> Getting articles soups..')
         articles_soups = [self.get_soup(p) for p in articles_paths]
         return articles_soups
 
