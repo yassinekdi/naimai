@@ -26,7 +26,7 @@ class EGU_Crawler:
             'manuscriptTypes[]': type_,
         }
         path = 'https://editor.copernicus.org/ms_types.php?journalId=10'
-        for page in range(p1,p2+1):
+        for page in tqdm(range(p1,p2+1)):
             data['page']=page-1
             self.soups[page]= self.get_soup(path,data)
 
