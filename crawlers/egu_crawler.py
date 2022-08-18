@@ -138,9 +138,10 @@ class EGU_Crawler:
                     self.docs['field'].append(fields)
                 else:
                     paper = self.page_crawler.get_doc(doi)
-                    self.docs['title'].append(paper['title'])
-                    self.docs['date'].append(paper['date'])
-                    self.docs['abstract'].append(paper['abstract'])
-                    self.docs['doi'].append(doi)
-                    self.docs['authors'].append(paper['authors'])
-                    self.docs['field'].append(paper['field'])
+                    if paper['abstract']:
+                        self.docs['title'].append(paper['title'])
+                        self.docs['date'].append(paper['date'])
+                        self.docs['abstract'].append(paper['abstract'])
+                        self.docs['doi'].append(doi)
+                        self.docs['authors'].append(paper['authors'])
+                        self.docs['field'].append(paper['field'])
