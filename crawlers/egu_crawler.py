@@ -4,8 +4,8 @@ from tqdm.notebook import tqdm
 import time
 import random
 
-class EGU_crawler:
-    def __init__(self,t_min=1,t_max=3):
+class EGU_Crawler:
+    def __init__(self,t_min=2,t_max=4):
         self.docs = {'title': [], 'authors': [], 'date': [], "abstract": [], "doi": [],
                      "field": []}
         self.soups={}
@@ -19,16 +19,11 @@ class EGU_crawler:
         time.sleep(slp)
         return soup
 
-    def get_soups(self,p1,p2):
+    def get_soups(self,p1,p2,type):
         data = {
             'rangeMin': 0,
             'rangeMax': 7,
-            'manuscriptTypes[]': 22,
-            'manuscriptTypes[]': 23,
-            'manuscriptTypes[]': 218,
-            'manuscriptTypes[]': 235,
-            'manuscriptTypes[]': 199,
-            'manuscriptTypes[]': 251,
+            'manuscriptTypes[]': type,
         }
         path = 'https://editor.copernicus.org/ms_types.php?journalId=10'
         for page in range(p1,p2+1):
@@ -60,9 +55,11 @@ class EGU_crawler:
         abstracts = [elt.text.replace('\n', '').strip() for elt in abstracts_divs]
         return abstracts
 
-    def get_docs(self,p1=1, p2=10):
-        self.get_soups(p1=p1,p2=p2)
+    def get_docs(self,p1=1, p2=10,type=22):
+        print('>> Getting soups..')
+        self.get_soups(p1=p1,p2=p2,type=type)
 
+        print('>> Getting papges')
         for page in tqdm(self.soups):
             soup = self.soups[page]
             titles = self.get_titles(soup)
@@ -73,8 +70,8 @@ class EGU_crawler:
             fields = ['Environmental Science']*len(abstracts)
 
             self.docs['title']+=titles
-            self.docs['dates'] += dates
-            self.docs['abstracts'] += abstracts
-            self.docs['dois'] += dois
+            self.docs['date'] += dates
+            self.docs['abstract'] += abstracts
+            self.docs['doi'] += dois
             self.docs['authors'] += authors
-            self.docs['fields'] += fields
+            self.docs['field'] += fields
