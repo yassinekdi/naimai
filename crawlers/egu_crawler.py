@@ -1,9 +1,57 @@
 import requests
 from bs4 import BeautifulSoup
 from tqdm.notebook import tqdm
+from naimai.constants.regex import regex_not_converted2
+import re
 import time
 import random
-from semanticscholar import SemanticScholar
+
+class EGU_Crawler_Page:
+    def __init__(self,t_min=2,t_max=4):
+        self.docs = {'title': [], 'authors': [], 'date': [], "abstract": [], "doi": [],
+                     "field": []}
+        self.t_min = t_min
+        self.t_max = t_max
+
+    def get_soup(self, path):
+        header = {}
+        header[
+            'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+        soup = BeautifulSoup(requests.get(path, headers=header, timeout=15).content, 'html.parser')
+        slp=random.randint(self.t_min,self.t_max)
+        time.sleep(slp)
+        return soup
+
+    def get_abstract(self,soup):
+        abstract_div = soup.find_all(name='div', attrs={'class': 'abstract'})
+        abstract = abstract_div[1].text.replace('\nAbstract.', '')
+        abstract = re.sub(regex_not_converted2,' ',abstract).strip()
+        return abstract
+
+    def get_title(self,soup):
+        title_div = soup.find_all(name='h1')
+        title = title_div[1].text.replace('\n','').replace('\r',' ').strip()
+        return title
+
+    def get_authors(self,soup):
+        authors_div = soup.find(name='strong', attrs={'class': 'hide-on-mobile'})
+        authors_div2 = authors_div.find_all(name='nobr')
+        authors = [re.sub('\d,?', '', elt.text).replace(',', '') for elt in authors_div2]
+        return authors
+
+    def get_date(self,doi):
+        return doi.split('-')[-1]
+
+    def get_doc(self,doi):
+        doc = {}
+        soup = self.get_soup(doi)
+        doc['abstract'] = self.get_abstract(soup)
+        doc['title'] = self.get_title(soup)
+        doc['authors'] = self.get_authors(soup)
+        doc['date'] = self.get_date(doi)
+        doc['field'] = 'Environmental Science'
+        return doc
+
 
 class EGU_Crawler:
     def __init__(self,t_min=2,t_max=4):
@@ -12,6 +60,7 @@ class EGU_Crawler:
         self.soups={}
         self.t_min = t_min
         self.t_max = t_max
+        self.page_crawler = EGU_Crawler_Page(t_min=t_min,t_max=t_max)
 
     def get_soup(self, path,data):
         page = requests.post(path, data=data)
@@ -61,35 +110,11 @@ class EGU_Crawler:
         divs = soup.find_all(name='div', attrs={'class': 'grid-container paperlist-object in-range paperList-final'})
         return divs
 
-    def correct_result(self, result):
-        if result:
-            return result
-        else:
-            return ""
 
-    def get_paper_with_sscholar(self,sch,doi):
-        paper = sch.paper(doi)
-        slp = random.randint(self.t_min, self.t_max)
-        time.sleep(slp)
-        doc = {}
-        if paper:
-            abstract = self.correct_result(paper["abstract"])
-            if abstract:
-                doc['title']=self.correct_result(paper["title"])
-
-                authors = ', '.join([elt['name'] for elt in paper['authors']])
-                doc['authors']= self.correct_result(authors)
-
-                doc['date']= self.correct_result(paper["year"])
-                doc['field']='Environmental Science'
-
-                doc['abstract']= abstract
-        return doc
 
     def get_docs(self,p1=1, p2=10,type_=22):
         print('>> Getting soups..')
         self.get_soups(p1=p1,p2=p2,type_=type_)
-        sch = SemanticScholar(timeout=20)
 
         print('>> Getting articles..')
         for page in tqdm(self.soups):
@@ -112,17 +137,10 @@ class EGU_Crawler:
                     self.docs['authors'].append(authors)
                     self.docs['field'].append(fields)
                 else:
-                    paper = self.get_paper_with_sscholar(sch,doi)
-                    if paper:
-                        title = paper['title']
-                        date = paper['date']
-                        authors = paper['authors']
-                        fields = paper['field']
-                        abstract = paper['abstract']
-
-                        self.docs['title'].append(title)
-                        self.docs['date'].append(date)
-                        self.docs['abstract'].append(abstract)
-                        self.docs['doi'].append(doi)
-                        self.docs['authors'].append(authors)
-                        self.docs['field'].append(fields)
+                    paper = self.page_crawler.get_doc(doi)
+                    self.docs['title'].append(paper['title'])
+                    self.docs['date'].append(paper['date'])
+                    self.docs['abstract'].append(paper['abstract'])
+                    self.docs['doi'].append(doi)
+                    self.docs['authors'].append(paper['authors'])
+                    self.docs['field'].append(paper['field'])

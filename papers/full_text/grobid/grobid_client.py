@@ -4,6 +4,8 @@ import time
 import concurrent.futures
 import requests
 from tqdm.notebook import tqdm
+from bs4 import BeautifulSoup
+import shutil
 
 from .client import ApiClient
 
@@ -64,6 +66,7 @@ class GrobidClient(ApiClient):
             segment_sentences=False,
             verbose=False,
             path_export='',
+            path_export_new_fnames_pdfs='',
             idx_start=0,
             idx_finish=-1
     ):
@@ -103,12 +106,34 @@ class GrobidClient(ApiClient):
             print('Files exported in :', path_export)
             for fname in result:
                 text = result[fname]
-                output_fname = os.path.join(path_export,fname.replace('pdf','xml'))
+                title = self.get_paper_title(text)
+                if title:
+                    fle_name = title+'.xml'
+                    new_pdf_name = title+'.pdf'
+                    output_pdf_path = os.path.join(path_export_new_fnames_pdfs, new_pdf_name)
+                    intput_pdf_dir = os.path.join(input_path,fname)
+                    shutil.copyfile(intput_pdf_dir, output_pdf_path)
+                else:
+                    fle_name = fname.replace('pdf','xml')
+                output_fname = os.path.join(path_export,fle_name)
+
+
                 with open(output_fname,'w',encoding='utf8') as xml_file:
                     xml_file.write(text)
 
+
+
         return result
 
+    def get_paper_title(self,text):
+        name = 'title'
+        attrs = {'type': 'main'}
+
+        soup = BeautifulSoup(text, "lxml")
+        content = soup.find(name=name, attrs=attrs)
+        if content:
+            return content.text
+        return
     def process_batch(
             self,
             service,
