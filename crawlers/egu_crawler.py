@@ -57,7 +57,7 @@ class EGU_Crawler:
 
     def get_docs(self,p1=1, p2=10,type_=22):
         print('>> Getting soups..')
-        self.get_soups(p1=p1,p2=p2,type=type_)
+        self.get_soups(p1=p1,p2=p2,type_=type_)
 
         print('>> Getting papges')
         for page in tqdm(self.soups):
