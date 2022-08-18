@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from tqdm.notebook import tqdm
 import time
 import random
+from semanticscholar import SemanticScholar
 
 class EGU_Crawler:
     def __init__(self,t_min=2,t_max=4):
@@ -60,9 +61,35 @@ class EGU_Crawler:
         divs = soup.find_all(name='div', attrs={'class': 'grid-container paperlist-object in-range paperList-final'})
         return divs
 
+    def correct_result(self, result):
+        if result:
+            return result
+        else:
+            return ""
+
+    def get_paper_with_sscholar(self,sch,doi):
+        paper = sch.paper(doi)
+        slp = random.randint(self.t_min, self.t_max)
+        time.sleep(slp)
+        doc = {}
+        if paper:
+            abstract = self.correct_result(paper["abstract"])
+            if abstract:
+                doc['title']=self.correct_result(paper["title"])
+
+                authors = ', '.join([elt['name'] for elt in paper['authors']])
+                doc['authors']= self.correct_result(authors)
+
+                doc['date']= self.correct_result(paper["year"])
+                doc['field']='Environmental Science'
+
+                doc['abstract']= abstract
+        return doc
+
     def get_docs(self,p1=1, p2=10,type_=22):
         print('>> Getting soups..')
         self.get_soups(p1=p1,p2=p2,type_=type_)
+        sch = SemanticScholar(timeout=20)
 
         print('>> Getting articles..')
         for page in tqdm(self.soups):
@@ -71,10 +98,10 @@ class EGU_Crawler:
 
             for div in articles_divs:
                 abstract = self.get_abstract(div)
+                doi = self.get_doi(div)
                 if abstract:
                     title = self.get_title(div)
                     date = self.get_date(div)
-                    doi = self.get_doi(div)
                     authors = self.get_authors(div)
                     fields = 'Environmental Science'
 
@@ -84,3 +111,18 @@ class EGU_Crawler:
                     self.docs['doi'].append(doi)
                     self.docs['authors'].append(authors)
                     self.docs['field'].append(fields)
+                else:
+                    paper = self.get_paper_with_sscholar(sch,doi)
+                    if paper:
+                        title = paper['title']
+                        date = paper['date']
+                        authors = paper['authors']
+                        fields = paper['field']
+                        abstract = paper['abstract']
+
+                        self.docs['title'].append(title)
+                        self.docs['date'].append(date)
+                        self.docs['abstract'].append(abstract)
+                        self.docs['doi'].append(doi)
+                        self.docs['authors'].append(authors)
+                        self.docs['field'].append(fields)

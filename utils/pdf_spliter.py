@@ -13,7 +13,7 @@ class PDFSpliter:
     def read_pdf(self, pdf_path):
         self.pdf = PdfFileReader(open(pdf_path, "rb"))
 
-    def get_abstract_pages(self):
+    def get_abstract_pages(self,spliter_pattern):
         '''
         get page numbers having abstract
         '''
@@ -24,7 +24,7 @@ class PDFSpliter:
             page = output.pages[0]
             text = page.extract_text()
 
-            if re.findall('abstract:|abstract\n', text, re.I):
+            if re.findall(spliter_pattern, text, re.I):
                 self.abstract_pages.append(i + 1)
 
     def filter_abstract_pages(self):
@@ -65,13 +65,13 @@ class PDFSpliter:
         with open(output_path, "wb") as outputStream:
             output.write(outputStream)
 
-    def split(self, pdf_path, output_dir=''):
+    def split(self, pdf_path, output_dir='',spliter_pattern='abstract:|abstract\n'):
         '''
         split pdf_path
         '''
         self.read_pdf(pdf_path)
         print('>> Getting pdf pages..')
-        self.get_abstract_pages()
+        self.get_abstract_pages(spliter_pattern)
 
         print('>> Filtering..')
         self.filter_abstract_pages()
