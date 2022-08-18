@@ -30,48 +30,57 @@ class EGU_Crawler:
             data['page']=page-1
             self.soups[page]= self.get_soup(path,data)
 
-    def get_titles(self,soup):
-        titles_divs = soup.find_all(name='a', attrs={'class': 'article-title'})
-        titles = [elt.text for elt in titles_divs]
+    def get_title(self,div):
+        title_div = div.find(name='a', attrs={'class': 'article-title'})
+        titles = title_div.text
         return titles
 
-    def get_dates(self,soup):
-        dates_divs = soup.find_all(name='div', attrs={'class': 'published-date'})
-        dates = [elt.text.split()[-1] for elt in dates_divs]
-        return dates
+    def get_date(self,div):
+        date_div = div.find(name='div', attrs={'class': 'published-date'})
+        date = date_div.text.split()[-1]
+        return date
 
-    def get_authors(self,soup):
-        authors_divs = soup.find_all(name='div', attrs={'class': 'authors'})
-        authors = [elt.text for elt in authors_divs]
+    def get_authors(self,div):
+        authors_div = div.find(name='div', attrs={'class': 'authors'})
+        authors = authors_div.text
         return authors
 
-    def get_dois(self,soup):
-        dois_div = soup.find_all(name='div', attrs={'class': 'citation'})
-        dois = [elt.find(name='span').text.replace(',', '').strip() for elt in dois_div]
-        return dois
+    def get_doi(self,div):
+        doi_div = div.find(name='div', attrs={'class': 'citation'})
+        doi = doi_div.find(name='span').text.replace(',', '').strip()
+        return doi
 
-    def get_abstracts(self,soup):
-        abstracts_divs = soup.find_all(name='div', attrs={'class': 'content'})
-        abstracts = [elt.text.replace('\n', '').strip() for elt in abstracts_divs]
-        return abstracts
+    def get_abstract(self,div):
+        abstract_div = div.find(name='div', attrs={'class': 'content'})
+        if abstract_div:
+            return abstract_div.text.replace('\n', '').strip()
+        return ''
+
+    def get_divs(self,soup):
+        divs = soup.find_all(name='div', attrs={'class': 'grid-container paperlist-object in-range paperList-final'})
+        return divs
 
     def get_docs(self,p1=1, p2=10,type_=22):
         print('>> Getting soups..')
         self.get_soups(p1=p1,p2=p2,type_=type_)
 
-        print('>> Getting papges')
+        print('>> Getting articles..')
         for page in tqdm(self.soups):
             soup = self.soups[page]
-            titles = self.get_titles(soup)
-            dates = self.get_dates(soup)
-            abstracts = self.get_abstracts(soup)
-            dois = self.get_dois(soup)
-            authors = self.get_authors(soup)
-            fields = ['Environmental Science']*len(abstracts)
+            articles_divs=self.get_divs(soup)
 
-            self.docs['title']+=titles
-            self.docs['date'] += dates
-            self.docs['abstract'] += abstracts
-            self.docs['doi'] += dois
-            self.docs['authors'] += authors
-            self.docs['field'] += fields
+            for div in articles_divs:
+                abstract = self.get_abstract(div)
+                if abstract:
+                    title = self.get_title(div)
+                    date = self.get_date(div)
+                    doi = self.get_doi(div)
+                    authors = self.get_authors(div)
+                    fields = 'Environmental Science'
+
+                    self.docs['title'].append(title)
+                    self.docs['date'].append(date)
+                    self.docs['abstract'].append(abstract)
+                    self.docs['doi'].append(doi)
+                    self.docs['authors'].append(authors)
+                    self.docs['field'].append(fields)
