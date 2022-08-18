@@ -80,7 +80,7 @@ class PDFSpliter:
         self.get_ranges()
 
         print('>> Exporting..')
-        file_name = pdf_path.split('/')[-1]
+        file_name = pdf_path.split('/')[-1].replace('.pdf','')
 
         for range_pages in tqdm(self.list_ranges):
             self.output_range(range_pages, file_name, output_dir)
