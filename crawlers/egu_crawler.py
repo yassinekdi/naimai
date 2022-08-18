@@ -19,11 +19,11 @@ class EGU_Crawler:
         time.sleep(slp)
         return soup
 
-    def get_soups(self,p1,p2,type):
+    def get_soups(self,p1,p2,type_):
         data = {
             'rangeMin': 0,
             'rangeMax': 7,
-            'manuscriptTypes[]': type,
+            'manuscriptTypes[]': type_,
         }
         path = 'https://editor.copernicus.org/ms_types.php?journalId=10'
         for page in range(p1,p2+1):
@@ -55,9 +55,9 @@ class EGU_Crawler:
         abstracts = [elt.text.replace('\n', '').strip() for elt in abstracts_divs]
         return abstracts
 
-    def get_docs(self,p1=1, p2=10,type=22):
+    def get_docs(self,p1=1, p2=10,type_=22):
         print('>> Getting soups..')
-        self.get_soups(p1=p1,p2=p2,type=type)
+        self.get_soups(p1=p1,p2=p2,type=type_)
 
         print('>> Getting papges')
         for page in tqdm(self.soups):
