@@ -108,6 +108,7 @@ class GrobidClient(ApiClient):
                 text = result[fname]
                 title = self.get_paper_title(text)
                 if title:
+                    title = title.replace('/','_')
                     fle_name = title+'.xml'
                     new_pdf_name = title+'.pdf'
                     output_pdf_path = os.path.join(path_export_new_fnames_pdfs, new_pdf_name)
