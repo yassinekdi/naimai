@@ -24,8 +24,11 @@ class EGU_Crawler_Page:
 
     def get_abstract(self,soup):
         abstract_div = soup.find_all(name='div', attrs={'class': 'abstract'})
-        abstract = abstract_div[1].text.replace('\nAbstract.', '')
-        abstract = re.sub(regex_not_converted2,' ',abstract).strip()
+        try:
+            abstract = abstract_div[1].text.replace('\nAbstract.', '')
+            abstract = re.sub(regex_not_converted2,' ',abstract).strip()
+        except:
+            abstract = ''
         return abstract
 
     def get_title(self,soup):

@@ -1,9 +1,8 @@
 from tqdm.notebook import tqdm
 import pandas as pd
-import numpy as np
-from spacy_langdetect import LanguageDetector
-import spacy
-from naimai.constants.nlp import nlp_vocab
+from naimai.constants.paths import path_open_citations
+from naimai.utils.general import get_soup
+from ast import literal_eval
 
 from naimai.utils.regex import multiple_replace
 from naimai.papers.raw import papers, paper_base
@@ -20,7 +19,7 @@ class paper_egu(paper_base):
         self.doi = self.paper_infos['doi']
 
     def get_fields(self):
-        self.fields = ['Environmental science',]
+        self.fields = [self.paper_infos['field'],]
 
     def get_Abstract(self):
         self.Abstract = self.paper_infos['abstract'].replace('Abstract. ', '').replace('-\n', '').replace('\n', ' ')
@@ -32,10 +31,10 @@ class paper_egu(paper_base):
         self.Authors = self.paper_infos['authors']
 
     def get_year(self):
-        self.year = int(self.paper_infos['date'])
+        self.year = self.paper_infos['date']
 
     def get_journal(self):
-        self.Journal =  ''
+        self.Journal =  'Atmospheric Chemistry and Physics'
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -44,22 +43,18 @@ class paper_egu(paper_base):
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
     def get_numCitedBy(self):
-        self.numCitedBy = self.paper_infos['numCitedBy']
-        if np.isnan(self.numCitedBy):
-            self.numCitedBy = 0.5
+        path = path_open_citations + self.doi
+        soup = get_soup(path)
+        soup_list = literal_eval(soup.text)
+        if isinstance(soup_list, list):
+            self.numCitedBy = len(soup_list)
 
 
 class papers_egu(papers):
-    def __init__(self, papers_path,nlp=None):
+    def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
         print('Len data : ', len(self.data))
-        if nlp:
-            self.nlp = nlp
-        else:
-            print('Loading nlp vocab..')
-            self.nlp = spacy.load(nlp_vocab)
-            self.nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
 
     def add_paper(self,idx_in_data):
             new_paper = paper_egu(df=self.data,
@@ -67,17 +62,16 @@ class papers_egu(papers):
             new_paper.get_doi()
             new_paper.get_Title()
             if not new_paper.is_in_database(self.naimai_dois):
-                if new_paper.is_paper_english(self.nlp):
-                    new_paper.get_Abstract()
-                    if len(new_paper.Abstract.split())>5:
-                        new_paper.get_fields()
-                        new_paper.get_journal()
-                        new_paper.get_Authors()
-                        new_paper.get_year()
-                        new_paper.replace_abbreviations()
-                        new_paper.get_numCitedBy()
-                        self.elements[new_paper.doi] = new_paper.save_dict()
-                        self.naimai_dois.append(new_paper.doi)
+                new_paper.get_Abstract()
+                if len(new_paper.Abstract.split())>5:
+                    new_paper.get_fields()
+                    new_paper.get_journal()
+                    new_paper.get_Authors()
+                    new_paper.get_year()
+                    new_paper.replace_abbreviations()
+                    new_paper.get_numCitedBy()
+                    self.elements[new_paper.doi] = new_paper.save_dict()
+                    self.naimai_dois.append(new_paper.doi)
 
 
     @update_naimai_dois
