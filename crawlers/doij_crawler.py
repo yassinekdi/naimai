@@ -52,8 +52,12 @@ class doij_crawler:
           slp = random.randint(t_min, t_max)
           time.sleep(slp)
 
-  def get_docs(self, idx_start=0, idx_end=-1,i1=0,i2=-1,show_issn_tqdm=False):
-    for card in tqdm(self.cards[idx_start:idx_end]):
+  def get_docs(self, idx_start=0, idx_end=-1,i1=0,i2=-1,show_issn_tqdm=False,verbose_every=0):
+      for idx,card in tqdm(enumerate(self.cards[idx_start:idx_end]),total=len(self.cards[idx_start:idx_end])):
+        if verbose_every:
+            if idx%verbose_every==0:
+                len_abstracts = len(self.docs['abstract'])
+                print(f"  >> Len docs in {idx} : {len_abstracts}")
       issn = self.get_issn(card)
       issn_docs = self.get_data_with_issn(issn,show_issn_tqdm=show_issn_tqdm,i1=i1,i2=i2)
       if issn_docs:
