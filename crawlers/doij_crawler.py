@@ -54,21 +54,21 @@ class doij_crawler:
 
   def get_docs(self, idx_start=0, idx_end=-1,i1=0,i2=-1,show_issn_tqdm=False,verbose_every=0):
       for idx,card in tqdm(enumerate(self.cards[idx_start:idx_end]),total=len(self.cards[idx_start:idx_end])):
-        if verbose_every:
-            if idx%verbose_every==0:
-                len_abstracts = len(self.docs['abstract'])
-                print(f"  >> Len docs in {idx} : {len_abstracts}")
-      issn = self.get_issn(card)
-      issn_docs = self.get_data_with_issn(issn,show_issn_tqdm=show_issn_tqdm,i1=i1,i2=i2)
-      if issn_docs:
-        self.docs['abstract']+=issn_docs['abstract']
-        if self.docs['abstract']:
-          self.docs['title']+=issn_docs['title']
-          self.docs['authors']+= issn_docs['authors']
-          self.docs['date']+= issn_docs['date']
-          self.docs['doi']+=issn_docs['doi']
-          self.docs['numCitedBy']+=issn_docs['numCitedBy']
+          if verbose_every:
+                if idx%verbose_every==0:
+                    len_abstracts = len(self.docs['abstract'])
+                    print(f"  >> Len docs in {idx} : {len_abstracts}")
+          issn = self.get_issn(card)
+          issn_docs = self.get_data_with_issn(issn,show_issn_tqdm=show_issn_tqdm,i1=i1,i2=i2)
+          if issn_docs:
+            self.docs['abstract']+=issn_docs['abstract']
+            if self.docs['abstract']:
+              self.docs['title']+=issn_docs['title']
+              self.docs['authors']+= issn_docs['authors']
+              self.docs['date']+= issn_docs['date']
+              self.docs['doi']+=issn_docs['doi']
+              self.docs['numCitedBy']+=issn_docs['numCitedBy']
 
-          self.docs['journals']+=self.get_journal(card, len(issn_docs['doi']))
-          self.docs['fields']+=self.get_fields(card, len(issn_docs['doi']))
+              self.docs['journals']+=self.get_journal(card, len(issn_docs['doi']))
+              self.docs['fields']+=self.get_fields(card, len(issn_docs['doi']))
 
