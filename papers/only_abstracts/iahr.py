@@ -1,43 +1,36 @@
 from tqdm.notebook import tqdm
 import pandas as pd
-from naimai.constants.paths import path_open_citations
-from naimai.utils.general import get_soup
-from ast import literal_eval
-
 from naimai.utils.regex import multiple_replace
 from naimai.papers.raw import papers, paper_base
 from naimai.decorators import update_naimai_dois
 
-class paper_egu(paper_base):
+class paper_iahr(paper_base):
     def __init__(self,df,idx_in_df):
         super().__init__()
-        self.database = 'egu'
+        self.database = 'iahr'
         self.file_name = idx_in_df
         self.paper_infos = df.iloc[idx_in_df,:]
 
     def get_doi(self):
-        if str(self.paper_infos['doi'])=='nan':
-            self.doi=''
-        else:
-            self.doi = self.paper_infos['doi'].replace('https://doi.org/','')
+        self.doi=self.paper_infos['webpage']
 
     def get_fields(self):
         self.fields = [self.paper_infos['field'],]
 
     def get_Abstract(self):
-        self.Abstract = self.paper_infos['abstract'].replace('Abstract. ', '').replace('-\n', '').replace('\n', ' ')
+        self.Abstract = self.paper_infos['abstract']
 
     def get_Title(self):
-        self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
+        self.Title = self.paper_infos['title']
 
     def get_Authors(self):
-        self.Authors = ', '.join(literal_eval(self.paper_infos['authors']))
+        self.Authors = self.paper_infos['authors'].replace(';',',')
 
     def get_year(self):
         self.year = self.paper_infos['date']
 
     def get_journal(self):
-        self.Journal =  'Atmospheric Chemistry and Physics'
+        self.Journal =  'IAHR'
 
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
@@ -45,22 +38,14 @@ class paper_egu(paper_base):
             self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
             self.Title = multiple_replace(abbreviations_dict, self.Title)
 
-    def get_numCitedBy(self):
-        path = path_open_citations + self.doi
-        soup = get_soup(path)
-        soup_list = literal_eval(soup.text)
-        if isinstance(soup_list, list):
-            self.numCitedBy = len(soup_list)
-
-
-class papers_egu(papers):
+class papers_iahr(papers):
     def __init__(self, papers_path):
         super().__init__() # loading self.naimai_dois & other attributes
         self.data = pd.read_csv(papers_path)
         print('Len data : ', len(self.data))
 
     def add_paper(self,idx_in_data):
-            new_paper = paper_egu(df=self.data,
+            new_paper = paper_iahr(df=self.data,
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
             if new_paper.doi:
@@ -73,7 +58,6 @@ class papers_egu(papers):
                         new_paper.get_Authors()
                         new_paper.get_year()
                         new_paper.replace_abbreviations()
-                        new_paper.get_numCitedBy()
                         self.elements[new_paper.doi] = new_paper.save_dict()
                         self.naimai_dois.append(new_paper.doi)
 

@@ -269,6 +269,9 @@ def get_ref_url(paper,doi=''):
     if database == "arxiv":
         url = arxiv_pdfs_url + paper['doi']
         return url
+    if database =="iahr":
+        url =paper['doi']
+        return url
     else:
         if not doi:
             doi = paper['doi']

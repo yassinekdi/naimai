@@ -30,7 +30,10 @@ class paper_doij(paper_base):
         self.fields = literal_eval(self.paper_infos['fields'])
 
     def get_Abstract(self):
-        self.Abstract = self.paper_infos['abstract'].replace('-\n', '').replace('\n', ' ')
+        try:
+            self.Abstract = self.paper_infos['abstract'].replace('-\n', '').replace('\n', ' ')
+        except:
+            self.Abstract= ''
 
     def get_Title(self):
         self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
