@@ -44,6 +44,18 @@ class Zone:
                 else:
                     self.elements[elt] = ''
 
+    def merge_elements(self,databases_paths: list) -> dict:
+        '''
+        merge list of databases paths
+        :param elements:
+        :return:
+        '''
+        merged = {}
+        for path in tqdm(databases_paths):
+            papers = load_gzip(path)
+            merged.update(papers)
+        return merged
+
     def create_fields(self, fields_names):
         for field in fields_names:
             path = os.path.join(self.zone_path, field)
