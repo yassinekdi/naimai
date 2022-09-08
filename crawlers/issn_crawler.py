@@ -35,7 +35,7 @@ class ISSN_crawler:
         else:
             return ""
 
-    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=4,show_tqdm=True):
+    def get_docs(self,idx_start=0, idx_finish=-1,t_min=2, t_max=4,show_tqdm=True,verbose_every=0):
         if not self.docs['doi']:
             self.get_dois(idx_start, idx_finish)
         sch = SemanticScholar(timeout=20)
@@ -44,13 +44,19 @@ class ISSN_crawler:
             range_=tqdm(self.docs['doi'])
         else:
             range_ = self.docs['doi']
+        idx=-1
         for doi in range_:
+            idx+=1
             try:
                 paper = sch.paper(doi)
                 slp = random.randint(t_min, t_max)
                 time.sleep(slp)
 
                 if paper:
+                    if verbose_every:
+                        if idx % verbose_every == 0:
+                            len_abstracts = len(self.docs['abstract'])
+                            print(f"  >> Len docs in {idx} : {len_abstracts}")
                     abstract = self.correct_result(paper["abstract"])
                     if abstract:
                         self.docs['title'].append(self.correct_result(paper["title"]))

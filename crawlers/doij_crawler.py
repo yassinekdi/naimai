@@ -30,10 +30,10 @@ class doij_crawler:
     listing_lists = listing.find_all(name='ul')
     return [[elt.text for elt in listing_lists[1].find_all(name='li')]]*len_dois
 
-  def get_data_with_issn(self,issn, show_issn_tqdm=False,i1=0,i2=-1):
+  def get_data_with_issn(self,issn, show_issn_tqdm=False,i1=0,i2=-1,verbose_every=0):
     cw = ISSN_crawler(issn=issn,field_issn='')
     try:
-      cw.get_docs(idx_start=i1,idx_finish=i2,show_tqdm=show_issn_tqdm)
+      cw.get_docs(idx_start=i1,idx_finish=i2,show_tqdm=show_issn_tqdm,verbose_every=verbose_every)
       return cw.docs
     except:
       return
@@ -52,10 +52,10 @@ class doij_crawler:
           slp = random.randint(t_min, t_max)
           time.sleep(slp)
 
-  def get_docs(self, idx_start=0, idx_end=-1,i1=0,i2=-1,show_issn_tqdm=False):
+  def get_docs(self, idx_start=0, idx_end=-1,i1=0,i2=-1,show_issn_tqdm=False,verbose_every=0):
       for idx,card in tqdm(enumerate(self.cards[idx_start:idx_end]),total=len(self.cards[idx_start:idx_end])):
           issn = self.get_issn(card)
-          issn_docs = self.get_data_with_issn(issn,show_issn_tqdm=show_issn_tqdm,i1=i1,i2=i2)
+          issn_docs = self.get_data_with_issn(issn,show_issn_tqdm=show_issn_tqdm,i1=i1,i2=i2,verbose_every=verbose_every)
           if issn_docs:
             self.docs['abstract']+=issn_docs['abstract']
             if self.docs['abstract']:
