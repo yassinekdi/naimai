@@ -129,8 +129,12 @@ class SQLiteManager:
 
     results = {}
     for paper in list_papers:
-      if (int(paper[1])>=year_from) and (int(paper[1])<=year_to):
-        results[paper[9]]= self.to_dict(paper)
+      if paper[9].endswith('_objectives'):
+        if paper[1]:
+          if (int(paper[1])>=year_from) and (int(paper[1])<=year_to):
+            results[paper[9]]= self.to_dict(paper)
+        else:
+          results[paper[9]] = self.to_dict(paper)
     return results
 
   def to_dict(self,sql_result: tuple) -> dict:
