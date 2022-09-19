@@ -69,8 +69,8 @@ class ISSN_crawler:
                             field = ""
                         self.docs['field_paper'].append(field)
                         self.docs['abstract'].append(abstract)
-                        self.docs['numCitedBy'].append(self.correct_result(paper["numCitedBy"]))
-                        self.docs['numCiting'].append(self.correct_result(paper["numCiting"]))
+                        self.docs['numCitedBy'].append(self.correct_result(paper["citationCount"]))
+                        self.docs['numCiting'].append(self.correct_result(paper["referenceCount"]))
                         self.docs['field_issn'].append(self.correct_result(self.field_issn))
                     else:
                         dois_to_remove.append(doi)
