@@ -148,7 +148,7 @@ class SQLiteManager:
     if sql_result:
       for col,val in zip(cols,sql_result):
         if val:
-          if val[0]=='[':
+          if val[0]=='[' and val[-1]==']':
             val = literal_eval(val)
           dict_result[col]= val
       return dict_result
