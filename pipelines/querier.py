@@ -1,6 +1,7 @@
 from naimai.constants.paths import path_produced
 from naimai.utils.general import get_root_fname, clean_lst
 from naimai.constants.regex import regex_and_operators,regex_or_operators,regex_exact_match
+from naimai.constants.models import threshold_tf_similarity
 from sentence_transformers import SentenceTransformer
 from naimai.models.papers_classification.tfidf import tfidf_model
 from naimai.data_sqlite import SQLiteManager
@@ -244,7 +245,10 @@ class Querier:
       corresponding_papers = {fname: selected_papers[fname] for fname in corresponding_papers_fnames}
 
       tf = tfidf_model(query=query, papers=corresponding_papers)
-      tf_ranked_papers_fnames = tf.get_similar_fnames(top_n=top_n)
+      tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
+
+      if scores[0] < threshold_tf_similarity:
+        print('>> WARNING : These results may not be relevant!')
 
       # 5. Rank first papers by numCitedBy using all_papers (need root fname)
       if verbose:

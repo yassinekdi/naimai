@@ -50,8 +50,9 @@ class tfidf_model:
         cos_score = np.array(cosine_scores[0])
         most_sims = np.argsort(cos_score)[::-1][1:(top_n + 1)]
         similar_fnames = [self.papers_fnames[idx] for idx in most_sims]
+        cos_scores = [cos_score[i] for i in most_sims]
         # result = [(message, cos_score[i]) for message, i in zip(similar_messages, most_sims) if cos_score[i]>0]
-        return similar_fnames
+        return similar_fnames, cos_scores
 
     def get_similar_fnames(self, top_n=20) -> list:
         ''' get similar fnames '''
