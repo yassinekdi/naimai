@@ -19,7 +19,7 @@ class SQLiteManager:
     dict_result = {elt[9]: self.to_dict(elt) for elt in results}
     return dict_result
 
-  def search_with_exact_match(self, query: str) -> dict:
+  def search_with_exact_match(self, query: str, year_from=0, year_to=3000) -> dict:
     '''
     find papers for a query with exact match
     '''
@@ -27,12 +27,12 @@ class SQLiteManager:
     similar_papers = {}
 
     for word in keywords:
-      papers = self.get_by_query(word)
+      papers = self.get_by_query(word,year_from=year_from,year_to=year_to)
       similar_papers.update(papers)
 
     return similar_papers
 
-  def search_with_OR_operator(self, query: str) -> dict:
+  def search_with_OR_operator(self, query: str, year_from=0, year_to=3000) -> dict:
     '''
     find papers that contains at least one of the query keywords. Similar to many exact match..
     '''
@@ -40,12 +40,12 @@ class SQLiteManager:
     similar_papers = {}
 
     for word in keywords:
-      papers = self.get_by_query(word)
+      papers = self.get_by_query(word, year_from=year_from,year_to=year_to)
       similar_papers.update(papers)
 
     return similar_papers
 
-  def search_with_AND_operator(self, query: str) -> dict:
+  def search_with_AND_operator(self, query: str, year_from=0, year_to=3000) -> dict:
     '''
     find papers that contains all the query keywords : start by using or operator for first
     key word, then filter papers with all key words
@@ -55,7 +55,7 @@ class SQLiteManager:
 
     kword1 = keywords[0]
     # get papers with only kword1
-    papers_with_kword1 = self.get_by_query(kword1)
+    papers_with_kword1 = self.get_by_query(kword1,year_from=year_from,year_to=year_to)
 
     # filter the papers having other keywords as well
     pattern = ''.join([f'(?:.*{kw})' for kw in keywords[1:]])
@@ -72,19 +72,38 @@ class SQLiteManager:
 
     return similar_papers
 
-  def get_by_query(self, query: str) -> dict:
+  def filter_papers(self,query: str,papers: dict) -> dict:
+    '''
+    filter papers when the query is in the word
+    :param query:
+    :param papers:
+    :return:
+    '''
+    pattern = '[^a-zA-Z]' + query
+    new_papers = {}
+    for fname in papers:
+      messages = papers[fname]['messages']
+      for text in messages:
+        if re.findall(pattern,text,re.I):
+          new_papers[fname]=papers[fname]
+          break
+    return new_papers
+
+  def get_by_query(self, query: str, year_from=0, year_to=3000) -> dict:
     '''
     get papers that contains query in title or message
     :param query:
     :return:
     '''
     query_command = '%' + query + '%'
-    qry = (query_command,query_command)
-    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE title LIKE ? OR messages LIKE ? ",qry)
+    qry = (year_to,year_from,query_command,query_command)
+    self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND (title LIKE ? OR messages LIKE ?) ",qry)
     result = self.cursor.fetchall()
     papers_list = clean_lst(result)
     dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
-    return dict_result
+    filtered_dict_result = self.filter_papers(query,dict_result)
+
+    return filtered_dict_result
 
   def get_by_fname(self, fname: str, year_from=0, year_to=3000) -> dict:
     '''
@@ -116,26 +135,39 @@ class SQLiteManager:
     return result
 
 
-  def get_by_multiple_fnames(self,fnames: list,year_from=0,year_to=3000) -> dict:
-    '''
-      get papers between range of years using list of filenames
-    '''
-    fnames = clean_lst(fnames)
-    ln = len(fnames)
-    conditions = ' OR '.join(["fname = ?"] * ln)
-    command = "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE " + conditions
-    self.cursor.execute(command, fnames)
-    list_papers = self.cursor.fetchall()
+  # def get_by_multiple_fnames(self,fnames: list,year_from=0,year_to=3000) -> dict:
+  #   '''
+  #     get papers between range of years using list of filenames
+  #   '''
+  #   params = [year_to,year_from] + clean_lst(fnames)
+  #   ln = len(fnames)
+  #   conditions = '('+ ' OR '.join(["fname = ?"] * ln)  + ')'
+  #   command = "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND " + conditions
+  #   self.cursor.execute(command, params)
+  #   list_papers = self.cursor.fetchall()
+  #   dict_result = {elt[9]: self.to_dict(elt) for elt in list_papers}
+  #   return dict_result
 
-    results = {}
-    for paper in list_papers:
-      if paper[9].endswith('_objectives'):
-        if paper[1]:
-          if (int(paper[1])>=year_from) and (int(paper[1])<=year_to):
-            results[paper[9]]= self.to_dict(paper)
-        else:
-          results[paper[9]] = self.to_dict(paper)
-    return results
+  def get_by_query_for_tf_model(self,lemmatized_query: list,year_from=0,year_to=3000) -> dict:
+    '''
+    get all papers in range of years using a lemmatized query. The difference with get_by_query is that the query here is lemmatized +
+    range of years are taken into account to be used in tf idf process instead of bert + semantic process.
+    :return:
+    '''
+
+    params=[year_to,year_from]+['%'+w+'%' for w in lemmatized_query]
+    kwords_in_msg = '(' + ' AND '.join(['messages LIKE ?' for _ in lemmatized_query]) + ' )'
+    command= "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND "+kwords_in_msg
+
+    self.cursor.execute(command, params)
+    result = self.cursor.fetchall()
+    papers_list = clean_lst(result)
+    dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
+    if len(lemmatized_query)==1:
+      query = lemmatized_query[0]
+      filtered_dict_result = self.filter_papers(query,dict_result)
+      return filtered_dict_result
+    return dict_result
 
   def to_dict(self,sql_result: tuple) -> dict:
     '''
@@ -148,8 +180,11 @@ class SQLiteManager:
     if sql_result:
       for col,val in zip(cols,sql_result):
         if val:
-          if val[0]=='[' and val[-1]==']':
-            val = literal_eval(val)
-          dict_result[col]= val
+          try:
+            if val[0]=='[' and val[-1]==']':
+              val = literal_eval(val)
+            dict_result[col]= val
+          except:
+            pass
       return dict_result
     return {}

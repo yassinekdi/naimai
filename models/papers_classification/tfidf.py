@@ -38,11 +38,11 @@ class tfidf_model:
         get tf encodings by computing tfidf scores
         '''
         encodings = self.vectorizer.fit_transform(self.corpus).toarray()
-        encodings_df = pd.DataFrame(encodings, columns=self.vectorizer.get_feature_names(), index=self.papers_fnames)
+        encodings_df = pd.DataFrame(encodings, columns=self.vectorizer.get_feature_names_out(), index=self.papers_fnames)
         df = encodings_df.T[(encodings_df.T > 0).any(1)]
         self.encodings = df.T
 
-    def most_similar(self, top_n=5) -> list:
+    def most_similar(self, top_n=5) -> tuple:
         '''
         get fnames of similar papers using encodings
         '''
@@ -50,11 +50,11 @@ class tfidf_model:
         cos_score = np.array(cosine_scores[0])
         most_sims = np.argsort(cos_score)[::-1][1:(top_n + 1)]
         similar_fnames = [self.papers_fnames[idx] for idx in most_sims]
-        cos_scores = [cos_score[i] for i in most_sims]
+        cos_scores2 = [cos_score[i] for i in most_sims]
         # result = [(message, cos_score[i]) for message, i in zip(similar_messages, most_sims) if cos_score[i]>0]
-        return similar_fnames, cos_scores
+        return similar_fnames, cos_scores2
 
-    def get_similar_fnames(self, top_n=20) -> list:
+    def get_similar_fnames(self, top_n=20) -> tuple:
         ''' get similar fnames '''
         self.build_corpus()
         self.get_tf_encodings()

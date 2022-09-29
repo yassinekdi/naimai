@@ -5,6 +5,14 @@ from naimai.constants.paths import aws_root_pdfs,doi_url,arxiv_pdfs_url
 from collections import OrderedDict
 import os
 
+def lemmatize_query(nlp, query):
+  text_nlp = nlp(query)
+  lemmatized = []
+  for token in text_nlp:
+    if not token.is_stop:
+        lemmatized.append(token.lemma_)
+  return lemmatized
+
 def get_nb_words(text):
     split = text.split()
     return len(split)

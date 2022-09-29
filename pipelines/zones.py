@@ -342,7 +342,29 @@ class Production_Zone(Zone):
 
         return produced_papers
 
-
+    def dispatch_years(self,field: str, papers_name: str) -> dict:
+        '''
+        add years in all elements
+        :param field:
+        :param papers_name:
+        :return:
+        '''
+        produced_papers = self.get_papers(field, papers_name)
+        new_produced_papers = {}
+        pbs=0
+        pattern = '_objectives|_methods|_results'
+        for fname in tqdm(produced_papers):
+            new_produced_papers[fname] = produced_papers[fname]
+            if fname.endswith('_objectives'):
+                pass
+            else:
+                root_fname = re.sub(pattern,'',fname) + '_objectives'
+                try:
+                    new_produced_papers[fname]['year']=produced_papers[root_fname]['year']
+                except:
+                    pbs+=1
+        print('>> Pbs in : ', pbs)
+        return new_produced_papers
 
     def correct_pmc_websites(self,papers):
         '''
