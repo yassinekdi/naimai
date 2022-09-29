@@ -366,6 +366,30 @@ class Production_Zone(Zone):
         print('>> Pbs in : ', pbs)
         return new_produced_papers
 
+    def dispatch_numCitedBy(self,field: str, papers_name: str) -> dict:
+        '''
+        add numCitedBy in all elements
+        :param field:
+        :param papers_name:
+        :return:
+        '''
+        produced_papers = self.get_papers(field, papers_name)
+        new_produced_papers = {}
+        pbs=0
+        pattern = '_objectives|_methods|_results'
+        for fname in tqdm(produced_papers):
+            new_produced_papers[fname] = produced_papers[fname]
+            if fname.endswith('_objectives'):
+                pass
+            else:
+                root_fname = re.sub(pattern,'',fname) + '_objectives'
+                try:
+                    new_produced_papers[fname]['numCitedBy']=produced_papers[root_fname]['numCitedBy']
+                except:
+                    pbs+=1
+        print('>> Pbs in : ', pbs)
+        return new_produced_papers
+
     def correct_pmc_websites(self,papers):
         '''
         some pmc papers websites were not correctly considered..
