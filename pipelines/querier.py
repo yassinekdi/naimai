@@ -279,9 +279,11 @@ class Querier:
       # 5. Rank first papers by numCitedBy using all_papers (need root fname)
       if verbose:
         print('>> numCitedBy Ranking.. [querier.py]')
-      ranked_root_fnames = [get_root_fname(fname) for fname in tf_ranked_papers_fnames]
-      ranked_root_papers = {fname: selected_papers[fname] for fname in ranked_root_fnames}
-      ranked_root_fnames2 = self.rank_papers_with_numCitedBy(ranked_root_papers)
+      # ranked_root_fnames = [get_root_fname(fname) for fname in tf_ranked_papers_fnames]
+      # ranked_root_papers = {fname: selected_papers[fname] for fname in ranked_root_fnames}
+      # ranked_root_fnames2 = self.rank_papers_with_numCitedBy(ranked_root_papers)
+      tf_ranked_papers = {fname: selected_papers[fname] for fname in tf_ranked_papers_fnames}
+      ranked_root_fnames2 = self.rank_papers_with_numCitedBy(tf_ranked_papers)
 
       # 6. Get corresponding names
       corresponding_papers_fnames2 = self.get_corresponding_papers(selected_papers_fnames, ranked_root_fnames2)
