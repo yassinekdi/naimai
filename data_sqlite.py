@@ -19,7 +19,7 @@ class SQLiteManager:
     dict_result = {elt[9]: self.to_dict(elt) for elt in results}
     return dict_result
 
-  def search_with_exact_match(self, query: str, year_from=0, year_to=3000) -> dict:
+  def search_with_exact_match(self, query: str, year_from=0, year_to=3000,top_n=5) -> dict:
     '''
     find papers for a query with exact match
     '''
@@ -27,12 +27,12 @@ class SQLiteManager:
     similar_papers = {}
 
     for word in keywords:
-      papers = self.get_by_query(word,year_from=year_from,year_to=year_to)
+      papers = self.get_by_query(word,year_from=year_from,year_to=year_to,top_n=top_n)
       similar_papers.update(papers)
 
     return similar_papers
 
-  def search_with_OR_operator(self, query: str, year_from=0, year_to=3000) -> dict:
+  def search_with_OR_operator(self, query: str, year_from=0, year_to=3000,top_n=5) -> dict:
     '''
     find papers that contains at least one of the query keywords. Similar to many exact match..
     '''
@@ -40,12 +40,12 @@ class SQLiteManager:
     similar_papers = {}
 
     for word in keywords:
-      papers = self.get_by_query(word, year_from=year_from,year_to=year_to)
+      papers = self.get_by_query(word, year_from=year_from,year_to=year_to,top_n=top_n)
       similar_papers.update(papers)
 
     return similar_papers
 
-  def search_with_AND_operator(self, query: str, year_from=0, year_to=3000) -> dict:
+  def search_with_AND_operator(self, query: str, year_from=0, year_to=3000,top_n=5) -> dict:
     '''
     find papers that contains all the query keywords : start by using or operator for first
     key word, then filter papers with all key words
@@ -55,7 +55,7 @@ class SQLiteManager:
 
     kword1 = keywords[0]
     # get papers with only kword1
-    papers_with_kword1 = self.get_by_query(kword1,year_from=year_from,year_to=year_to)
+    papers_with_kword1 = self.get_by_query(kword1,year_from=year_from,year_to=year_to,top_n=top_n)
 
     # filter the papers having other keywords as well
     pattern = ''.join([f'(?:.*{kw})' for kw in keywords[1:]])
@@ -71,6 +71,27 @@ class SQLiteManager:
         similar_papers.update({fname: papers_with_kword1[fname]})
 
     return similar_papers
+
+  def get_by_query_for_tf_model(self,lemmatized_query: list,year_from=0,year_to=3000,top_n=5) -> dict:
+    '''
+    get all papers in range of years using a lemmatized query. The difference with get_by_query is that the query here is lemmatized +
+    range of years are taken into account to be used in tf idf process instead of bert + semantic process.
+    :return:
+    '''
+
+    params=[year_to,year_from]+['%'+w+'%' for w in lemmatized_query]
+    kwords_in_msg = '(' + ' AND '.join(['messages LIKE ?' for _ in lemmatized_query]) + ' )'
+    command= "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND "+kwords_in_msg
+
+    self.cursor.execute(command, params)
+    result = self.cursor.fetchmany(top_n)
+    papers_list = clean_lst(result)
+    dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
+    if len(lemmatized_query)==1:
+      query = lemmatized_query[0]
+      filtered_dict_result = self.filter_papers(query,dict_result)
+      return filtered_dict_result
+    return dict_result
 
   def filter_papers(self,query: str,papers: dict) -> dict:
     '''
@@ -89,7 +110,7 @@ class SQLiteManager:
           break
     return new_papers
 
-  def get_by_query(self, query: str, year_from=0, year_to=3000) -> dict:
+  def get_by_query(self, query: str, year_from=0, year_to=3000,top_n=5) -> dict:
     '''
     get papers that contains query in title or message
     :param query:
@@ -98,7 +119,8 @@ class SQLiteManager:
     query_command = '%' + query + '%'
     qry = (year_to,year_from,query_command,query_command)
     self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND (title LIKE ? OR messages LIKE ?) ",qry)
-    result = self.cursor.fetchall()
+    # result = self.cursor.fetchall()
+    result = self.cursor.fetchmany(top_n)
     papers_list = clean_lst(result)
     dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
     filtered_dict_result = self.filter_papers(query,dict_result)
@@ -148,26 +170,6 @@ class SQLiteManager:
   #   dict_result = {elt[9]: self.to_dict(elt) for elt in list_papers}
   #   return dict_result
 
-  def get_by_query_for_tf_model(self,lemmatized_query: list,year_from=0,year_to=3000) -> dict:
-    '''
-    get all papers in range of years using a lemmatized query. The difference with get_by_query is that the query here is lemmatized +
-    range of years are taken into account to be used in tf idf process instead of bert + semantic process.
-    :return:
-    '''
-
-    params=[year_to,year_from]+['%'+w+'%' for w in lemmatized_query]
-    kwords_in_msg = '(' + ' AND '.join(['messages LIKE ?' for _ in lemmatized_query]) + ' )'
-    command= "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND "+kwords_in_msg
-
-    self.cursor.execute(command, params)
-    result = self.cursor.fetchall()
-    papers_list = clean_lst(result)
-    dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
-    if len(lemmatized_query)==1:
-      query = lemmatized_query[0]
-      filtered_dict_result = self.filter_papers(query,dict_result)
-      return filtered_dict_result
-    return dict_result
 
   def to_dict(self,sql_result: tuple) -> dict:
     '''

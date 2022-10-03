@@ -134,35 +134,35 @@ class Querier:
     return non_duplicated_fnames
 
 
-  def get_papers_with_exact_match(self,query: str, year_from=0, year_to=3000) -> tuple:
+  def get_papers_with_exact_match(self,query: str, year_from=0, year_to=3000,top_n=5) -> tuple:
     '''
     find papers for a query with exact match
     '''
-    selected_papers = self.sql_manager.search_with_exact_match(query,year_from=year_from,year_to=year_to)
+    selected_papers = self.sql_manager.search_with_exact_match(query,year_from=year_from,year_to=year_to,top_n=top_n)
     selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
 
-  def get_papers_with_OR_operator(self,query: str, year_from=0, year_to=3000) -> tuple:
+  def get_papers_with_OR_operator(self,query: str, year_from=0, year_to=3000,top_n=5) -> tuple:
     '''
     find papers for a query with or operator
     '''
 
-    selected_papers = self.sql_manager.search_with_OR_operator(query,year_from=year_from,year_to=year_to)
+    selected_papers = self.sql_manager.search_with_OR_operator(query,year_from=year_from,year_to=year_to,top_n=top_n)
     selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
 
-  def get_papers_with_AND_operator(self,query: str, year_from=0, year_to=3000) -> tuple:
+  def get_papers_with_AND_operator(self,query: str, year_from=0, year_to=3000,top_n=5) -> tuple:
     '''
     find papers for a query with and operator
     '''
 
-    selected_papers = self.sql_manager.search_with_AND_operator(query,year_from=year_from,year_to=year_to)
+    selected_papers = self.sql_manager.search_with_AND_operator(query,year_from=year_from,year_to=year_to,top_n=top_n)
     selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
-  def get_papers_for_tfidf_semantics(self,query: str, year_from=0, year_to=3000) -> tuple:
+  def get_papers_for_tfidf_semantics(self,query: str, year_from=0, year_to=3000,top_n=5) -> tuple:
     '''
     find papers using tf idf
     :param query:
@@ -170,7 +170,7 @@ class Querier:
     '''
 
     lemmatized_query = lemmatize_query(self.nlp,query)
-    selected_papers = self.sql_manager.get_by_query_for_tf_model(lemmatized_query=lemmatized_query,year_from=year_from,year_to=year_to)
+    selected_papers = self.sql_manager.get_by_query_for_tf_model(lemmatized_query=lemmatized_query,year_from=year_from,year_to=year_to,top_n=top_n)
     selected_papers_fnames = list(selected_papers)
     return selected_papers, selected_papers_fnames
 
@@ -191,7 +191,7 @@ class Querier:
   #   selected_papers2 = {elt: selected_papers[elt] for elt in selected_papers_fnames2}
   #   return selected_papers2, selected_papers_fnames2
 
-  def get_all_similar_papers(self, query: str, query_type: int, year_from=0, year_to=3000) -> tuple:
+  def get_all_similar_papers(self, query: str, query_type: int, year_from=0, year_to=3000,top_n=5) -> tuple:
     '''
     Get all similar papers & their fnames based on the query and query type. Here, we return tuple instead of list of fnames
     as in custom querier to get return the papers too, instead of looking up for them each time.
@@ -203,16 +203,16 @@ class Querier:
 
     selected_papers, selected_papers_fnames= [],[]
     if query_type == 0:  # AND operator
-      selected_papers, selected_papers_fnames = self.get_papers_with_AND_operator(query,year_from=year_from,year_to=year_to)
+      selected_papers, selected_papers_fnames = self.get_papers_with_AND_operator(query,year_from=year_from,year_to=year_to,top_n=top_n)
 
     elif query_type == 1:  # OR operator
-      selected_papers, selected_papers_fnames = self.get_papers_with_OR_operator(query,year_from=year_from,year_to=year_to)
+      selected_papers, selected_papers_fnames = self.get_papers_with_OR_operator(query,year_from=year_from,year_to=year_to,top_n=top_n)
 
     elif query_type == 2:  # exact match
-      selected_papers, selected_papers_fnames = self.get_papers_with_exact_match(query,year_from=year_from,year_to=year_to)
+      selected_papers, selected_papers_fnames = self.get_papers_with_exact_match(query,year_from=year_from,year_to=year_to,top_n=top_n)
 
     elif query_type == 3:  # semantics
-      selected_papers, selected_papers_fnames = self.get_papers_for_tfidf_semantics(query,year_from=year_from,year_to=year_to)
+      selected_papers, selected_papers_fnames = self.get_papers_for_tfidf_semantics(query,year_from=year_from,year_to=year_to,top_n=top_n)
 
     return selected_papers, selected_papers_fnames
 
@@ -250,7 +250,7 @@ class Querier:
     # 2. Get all similar papers and their fnames using encoder & field faiss index
     if verbose:
       print('>> All similar papers selection.. [querier.py]')
-    selected_papers, selected_papers_fnames = self.get_all_similar_papers(query, query_type,year_from=year_from,year_to=year_to)
+    selected_papers, selected_papers_fnames = self.get_all_similar_papers(query, query_type,year_from=year_from,year_to=year_to,top_n=top_n)
 
     if selected_papers:
       #  3. Apply year range filter :
