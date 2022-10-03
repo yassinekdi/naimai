@@ -28,8 +28,11 @@ def to_sql(papers,conn):
   print('indexing..')
   paps_df['fname'] = paps_df.index
   paps_df = paps_df.reset_index(drop=True)
-  print('filling na..')
+  print('filling na.. & classifying by numCitedBy')
   paps_df=paps_df.fillna('')
+  paps_df['numCitedBy'] = paps_df['numCitedBy'].replace('', 0)
+  paps_df = paps_df.sort_values(['numCitedBy'],ascending=False)
+  # paps_df = paps_df.sort()
   paps_df = paps_df.astype(str)
   print('saving..')
   paps_df.to_sql(name='all_papers',con=conn)
