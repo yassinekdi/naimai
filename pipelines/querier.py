@@ -95,13 +95,16 @@ class Querier:
 
     return len_words
 
-  def rank_papers_with_numCitedBy(self, papers: dict) -> list:
+  def rank_papers_with_numCitedBy(self, papers: dict,len_query: int) -> list:
     '''
-    Rank first papers papers using numCitedBy parameter
+    Rank first papers papers using numCitedBy parameter. if len query > 3 : rank only first 5
     :param papers:
     :return:
     '''
-    nb_papers_ranked_CitedBy = 5
+    if len_query>3:
+      nb_papers_ranked_CitedBy = 5
+    else:
+      nb_papers_ranked_CitedBy = len(papers)
     for fname in papers:
       if 'numCitedBy' not in papers[fname]:
         papers[fname]['numCitedBy'] = .5
@@ -260,6 +263,7 @@ class Querier:
       # root_fnames_year_filtered = list(root_papers_year_filtered)
 
       # 4. Reclassify using tf idf model (need corresponding fname)
+      len_query = -1
       if query_type!=3:
         if verbose:
           print('>> Reclassify using tf idf.. [querier.py]')
@@ -269,9 +273,16 @@ class Querier:
         tf = tfidf_model(query=query, papers=corresponding_papers)
         tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
       else:
-        tf = tfidf_model(query=query, papers=selected_papers)
-        tf.vectorizer.min_df = .05
-        tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
+        # if more than 4 words in query, use tf idf
+        lemmatized_query = lemmatize_query(self.nlp, query)
+        len_query = len(lemmatized_query)
+        if  len_query> 3:
+          tf = tfidf_model(query=query, papers=selected_papers)
+          tf.vectorizer.min_df = .05
+          tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
+        else:
+          tf_ranked_papers_fnames = selected_papers
+          scores = [1]*len(tf_ranked_papers_fnames)
 
       if scores[0] < threshold_tf_similarity:
         print('>> WARNING : These results may not be relevant!')
@@ -279,11 +290,8 @@ class Querier:
       # 5. Rank first papers by numCitedBy using all_papers (need root fname)
       if verbose:
         print('>> numCitedBy Ranking.. [querier.py]')
-      # ranked_root_fnames = [get_root_fname(fname) for fname in tf_ranked_papers_fnames]
-      # ranked_root_papers = {fname: selected_papers[fname] for fname in ranked_root_fnames}
-      # ranked_root_fnames2 = self.rank_papers_with_numCitedBy(ranked_root_papers)
       tf_ranked_papers = {fname: selected_papers[fname] for fname in tf_ranked_papers_fnames}
-      ranked_root_fnames2 = self.rank_papers_with_numCitedBy(tf_ranked_papers)
+      ranked_root_fnames2 = self.rank_papers_with_numCitedBy(tf_ranked_papers,len_query)
 
       # 6. Get corresponding names
       corresponding_papers_fnames2 = self.get_corresponding_papers(selected_papers_fnames, ranked_root_fnames2)

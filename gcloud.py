@@ -100,17 +100,22 @@ class gcloud_data:
         path_gcloud = os.path.join(self.prefix, field, 'encodings.index')
         self.upload(path_drive2, path_gcloud)
 
-    def upload_field(self, field: str):
+    def upload_field(self, field: str,upload_papers=True,upload_field_index=True,upload_search_model=True):
         '''
         upload field from drive to bucket
         '''
         path_drive_field = os.path.join(path_produced, field)
-        print('>> Uploading papers..')
-        self.upload_papers(field, path_drive_field)
-        print('>> Uploading index..')
-        self.upload_index(field, path_drive_field)
-        print('>> Uploading search model..')
-        self.upload_search_model(field, path_drive_field)
+        if upload_papers:
+            print('>> Uploading papers..')
+            self.upload_papers(field, path_drive_field)
+
+        if upload_field_index:
+            print('>> Uploading index..')
+            self.upload_index(field, path_drive_field)
+
+        if upload_search_model:
+            print('>> Uploading search model..')
+            self.upload_search_model(field, path_drive_field)
         print('>> Done !')
 
     def get_folder(self,dir_gcloud,dir_local):
@@ -189,16 +194,21 @@ class gcloud_data:
             for blob in blobs:
                 blob.download_to_filename(blob.name)
 
-    def get_files(self,field: str):
+    def get_files(self,field: str, upload_papers=True,upload_field_index=True,upload_search_model=True):
         '''
         get papers, index and search model
         :param field:
         :return:
         '''
-        print('>> Getting papers..')
-        self.get_papers(field)
-        print('>> Getting index..')
-        self.get_index(field)
-        print('>> Getting search model..')
-        self.get_search_model(field)
+        if upload_papers:
+            print('>> Getting papers..')
+            self.get_papers(field)
+
+        if upload_field_index:
+            print('>> Getting index..')
+            self.get_index(field)
+
+        if upload_search_model:
+            print('>> Getting search model..')
+            self.get_search_model(field)
         print('>> Done downloading!')
