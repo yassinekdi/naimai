@@ -9,7 +9,7 @@ class SQLiteManager:
     connexion = sqlite3.connect(path_db)
     self.cursor = connexion.cursor()
 
-  def get_by_multiple_ids(self,list_ids:  list)-> dict:
+  def get_by_multiple_ids(self,list_ids:  list, year_from=0, year_to=3000,)-> dict:
     '''
       get papers using list of ids
     '''
@@ -17,6 +17,8 @@ class SQLiteManager:
     self.cursor.execute("SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE rowid IN {}".format(tuple_ids))
     results = self.cursor.fetchall()
     dict_result = {elt[9]: self.to_dict(elt) for elt in results}
+    # filter by years range
+    dict_result = {elt: dict_result[elt] for elt in dict_result if dict_result[elt]['year']>year_from and dict_result[elt]['year']<year_to}
     return dict_result
 
   def search_with_exact_match(self, query: str, year_from=0, year_to=3000,top_n=5) -> dict:
