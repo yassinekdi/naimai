@@ -51,25 +51,42 @@ class BaseQuerier:
 
     return results_papers_fnames
 
-  def rank_papers_with_numCitedBy(self, papers: dict,len_query: int) -> list:
+  def sort_using_citations(self, papers: dict,top_n=5) -> list:
     '''
-    Rank first papers papers using numCitedBy parameter. if len query > 3 : rank only first 5
+    Rank papers papers using numCitedBy parameter.
     :param papers:
     :return:
     '''
-    if len_query>3:
-      nb_papers_ranked_CitedBy = 5
-    else:
-      nb_papers_ranked_CitedBy = len(papers)
+    nb_papers_ranked_CitedBy = len(papers)
+
     for fname in papers:
       if 'numCitedBy' not in papers[fname]:
         papers[fname]['numCitedBy'] = .5
     keys = list(papers.keys())
-    papers_to_rank = [papers[fname] for fname in keys[:nb_papers_ranked_CitedBy]]
+    papers_to_rank = [papers[fname] for fname in papers]
     papers_to_rank.sort(key=lambda x: float(x['numCitedBy']), reverse=True)
     fnames_ranked = [elt['fname'] for elt in papers_to_rank]
     rest_of_papers_fnames = [fname for fname in keys[nb_papers_ranked_CitedBy:]]
     papers_ranked = fnames_ranked + rest_of_papers_fnames
-    return papers_ranked
+    return papers_ranked[:top_n]
+
+  def sort_using_dates(self, papers, top_n) -> list:
+    '''
+    rank papers using their publications date
+    :param papers:
+    :param top_n:
+    :return:
+    '''
+
+    nb_papers = len(papers)
+
+    keys = list(papers.keys())
+    papers_to_rank = [papers[fname] for fname in papers]
+    papers_to_rank.sort(key=lambda x: float(x['year']), reverse=True)
+    fnames_ranked = [elt['fname'] for elt in papers_to_rank]
+    rest_of_papers_fnames = [fname for fname in keys[nb_papers:]]
+    papers_ranked = fnames_ranked + rest_of_papers_fnames
+    return papers_ranked[:top_n]
+
 
 

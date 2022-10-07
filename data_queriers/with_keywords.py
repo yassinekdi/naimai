@@ -99,7 +99,6 @@ class KeywordsQuerier(BaseQuerier):
         determine the query type : Simple operator (simple keywords), AND operator or exact match. OR operator is removed for the moment since it's rarely used.
         '''
         AND_operator = re.findall(regex_and_operators, query)
-        # OR_operator = re.findall(regex_or_operators, query)
         exact_match = re.findall(regex_exact_match, query)
 
         if AND_operator:
@@ -108,14 +107,40 @@ class KeywordsQuerier(BaseQuerier):
           return self.search_operators['match']
         return self.search_operators['single']
 
+    def sort_results(self,papers,query,method='pertinence',top_n=5):
+        '''
 
-    def find_papers(self, query: str, top_n=5, year_from=0, year_to=3000, verbose=True) -> list:
+        :param fnames:
+        :return:
+        '''
+        if method == 'pertinence':
+            sorted_papers_fnames = self.sort_using_tf_model(query, papers, top_n)
+        elif method =='citations':
+            sorted_papers_fnames = self.sort_using_citations(papers,top_n)
+        elif method =='date':
+            sorted_papers_fnames = self.sort_using_dates(papers, top_n)
+        return sorted_papers_fnames
+
+
+
+    def sort_using_tf_model(self,query,papers,top_n):
+        tf = tfidf_model(query=query, papers=papers)
+        tf.vectorizer.min_df = .05
+        tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
+
+        if scores[0] < threshold_tf_similarity:
+            print('>> WARNING : These results may not be relevant!')
+        return tf_ranked_papers_fnames
+
+
+
+
+    def find_papers(self, query: str, top_n=5, year_from=0, year_to=3000, verbose=True,sort_by='pertinence') -> list:
         '''
         1. Get query type : simple operator, AND operator or exact match.
         2. Get 200 relevant papers and their fnames following the operator type
         3. Classify using tf idf model
-        5. Rank first papers by numCitedBy using all_papers ()
-        6. Get corresponding names
+        4. Can sort either by pertinence, numcitations, or date
         '''
 
         # 1. Get query type : simple operator, AND operator or exact match.
@@ -128,49 +153,14 @@ class KeywordsQuerier(BaseQuerier):
         if verbose:
           print('>> All similar papers selection.. [base.py]')
         selected_papers, selected_papers_fnames = self.get_relevant_papers(query, query_type, year_from=year_from, year_to=year_to, top_n=self.default_top_n)
+        if len(selected_papers)>self.default_top_n:
+            print(f'More than {self.default_top_n} papers!')
 
-        # 2. Classify using tf idf model
-        scores=[1]
+        # 3. Classify using a sorting method
         if selected_papers:
-            tf = tfidf_model(query=query, papers=selected_papers)
-            tf.vectorizer.min_df = .05
-            tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
+            sorted_fnames = self.sort_results(selected_papers,query,sort_by,top_n)
 
-          # root_fnames = [get_root_fname(fname) for fname in selected_papers_fnames]
-          #
-          # len_query = -1
-          # if query_type!= self.search_operators['single']:
-          #   if verbose:
-          #     print('>> Reclassify using tf idf.. [base.py]')
-          #   corresponding_papers_fnames = self.get_corresponding_papers(selected_papers_fnames, root_fnames)
-          #   corresponding_papers = {fname: selected_papers[fname] for fname in corresponding_papers_fnames}
-          #
-          #   tf = tfidf_model(query=query, papers=corresponding_papers)
-          #   tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
-          # else:
-          #   # if more than 4 words in query, use tf idf
-          #   lemmatized_query = lemmatize_query(self.nlp, query)
-          #   len_query = len(lemmatized_query)
-          #   if  len_query> 3:
-          #     tf = tfidf_model(query=query, papers=selected_papers)
-          #     tf.vectorizer.min_df = .05
-          #     tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
-          #   else:
-          #     tf_ranked_papers_fnames = selected_papers
-          #     scores = [1]*len(tf_ranked_papers_fnames)
-
-            if scores[0] < threshold_tf_similarity:
-                print('>> WARNING : These results may not be relevant!')
-
-              # 5. Rank first papers by numCitedBy using all_papers (need root fname)
-            if verbose:
-                print('>> numCitedBy Ranking.. [base.py]')
-              # tf_ranked_papers = {fname: selected_papers[fname] for fname in tf_ranked_papers_fnames}
-              # ranked_root_fnames2 = self.rank_papers_with_numCitedBy(tf_ranked_papers,len_query)
-
-              # 6. Get corresponding names
-            corresponding_papers_fnames2 = self.get_corresponding_papers(selected_papers_fnames, tf_ranked_papers_fnames)
             if verbose:
                 print(' ')
-            return corresponding_papers_fnames2
+            return sorted_fnames
         return []

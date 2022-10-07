@@ -87,8 +87,7 @@ class SQLiteManager:
     command= "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND "+kwords_in_msg
 
     self.cursor.execute(command, params)
-    # result = self.cursor.fetchmany(top_n)
-    result = self.cursor.fetchall()
+    result = self.cursor.fetchmany(top_n)
     papers_list = clean_lst(result)
     dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
     if len(lemmatized_query)==1:
