@@ -107,10 +107,13 @@ class KeywordsQuerier(BaseQuerier):
           return self.search_operators['match']
         return self.search_operators['single']
 
-    def sort_results(self,papers,query,method='pertinence',top_n=5):
+    def sort_results(self,papers: dict,query: str,method='pertinence',top_n=5) -> list:
         '''
-
-        :param fnames:
+        Sort by 'pertinence', 'citations' or 'date'
+        :param papers:
+        :param query:
+        :param method:
+        :param top_n:
         :return:
         '''
         if method == 'pertinence':
@@ -123,7 +126,7 @@ class KeywordsQuerier(BaseQuerier):
 
 
 
-    def sort_using_tf_model(self,query,papers,top_n):
+    def sort_using_tf_model(self,query: str,papers: dict,top_n: int) -> list:
         tf = tfidf_model(query=query, papers=papers)
         tf.vectorizer.min_df = .05
         tf_ranked_papers_fnames, scores = tf.get_similar_fnames(top_n=top_n)
@@ -137,6 +140,7 @@ class KeywordsQuerier(BaseQuerier):
 
     def find_papers(self, query: str, top_n=5, year_from=0, year_to=3000, verbose=True,sort_by='pertinence') -> list:
         '''
+        Sort by 'pertinence', 'citations' or 'date'
         1. Get query type : simple operator, AND operator or exact match.
         2. Get 200 relevant papers and their fnames following the operator type
         3. Classify using tf idf model
