@@ -12,7 +12,7 @@ from naimai.constants.nlp import nlp_vocab
 import re
 
 
-class KeyordsQuerier(BaseQuerier):
+class KeywordsQuerier(BaseQuerier):
     def __init__(self,field,nlp=None):
         super().__init__()
         self.field = field
