@@ -8,7 +8,7 @@ import os
 
 class SemanticsQuerier(BaseQuerier):
     def __init__(self, field,encoder=None, field_index=None):
-        super().__init__()
+        super().__init__(field=field)
         self.field = field
         self.encoder = encoder
         self.field_index = field_index

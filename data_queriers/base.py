@@ -7,6 +7,7 @@ import re
 class BaseQuerier:
   def __init__(self,field, encoder=None, field_index=None, nlp=None):
     self.encoder = encoder
+    self.default_top_n = 200
     self.field = field
     self.field_index = field_index
     path_sqlite = os.path.join(path_produced, self.field, 'all_papers_sqlite')

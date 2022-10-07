@@ -74,19 +74,21 @@ class SQLiteManager:
 
     return similar_papers
 
-  def get_by_query_for_tf_model(self,lemmatized_query: list,year_from=0,year_to=3000,top_n=5) -> dict:
+  def get_by_lemmatized_query(self, lemmatized_query: list, year_from=0, year_to=3000, top_n=5) -> dict:
     '''
-    get all papers in range of years using a lemmatized query. The difference with get_by_query is that the query here is lemmatized +
-    range of years are taken into account to be used in tf idf process instead of bert + semantic process.
+    get all papers in range of years using a lemmatized query. The difference with get_by_query is that the lemmatized query is in list format!
     :return:
     '''
 
-    params=[year_to,year_from]+['%'+w+'%' for w in lemmatized_query]
-    kwords_in_msg = '(' + ' AND '.join(['messages LIKE ?' for _ in lemmatized_query]) + ' )'
+    params_lemmatized_query = ['%'+w+'%' for w in lemmatized_query]
+
+    params=[year_to,year_from]+[params_lemmatized_query[i//2] for i in range(len(params_lemmatized_query)*2)]
+    kwords_in_msg = ' AND '.join(['(title LIKE ? OR messages LIKE ?)' for _ in lemmatized_query])
     command= "SELECT website,year, database, messages, reported, title, journal, authors, numCitedBy, fname, allauthors FROM all_papers WHERE (year < ? AND year > ?) AND "+kwords_in_msg
 
     self.cursor.execute(command, params)
-    result = self.cursor.fetchmany(top_n)
+    # result = self.cursor.fetchmany(top_n)
+    result = self.cursor.fetchall()
     papers_list = clean_lst(result)
     dict_result = {elt[9]: self.to_dict(elt) for elt in papers_list}
     if len(lemmatized_query)==1:
@@ -114,7 +116,7 @@ class SQLiteManager:
 
   def get_by_query(self, query: str, year_from=0, year_to=3000,top_n=5) -> dict:
     '''
-    get papers that contains query in title or message
+    get papers that contains query in title or message. Here, the input query is not lemmatized.
     :param query:
     :return:
     '''
