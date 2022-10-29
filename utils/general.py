@@ -30,7 +30,7 @@ def to_sql(papers,conn,for_semantic=False):
   paps_df = paps_df.reset_index(drop=True)
   print('filling na & sorting ..')
   paps_df=paps_df.fillna('')
-  if for_semantic:
+  if not for_semantic:
       paps_df['numCitedBy'] = paps_df['numCitedBy'].replace('', 0)
       paps_df = paps_df.sort_values(['numCitedBy'],ascending=False)
   else:
