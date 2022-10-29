@@ -363,6 +363,9 @@ class Production_Zone(Zone):
                     if not 'year' in new_produced_papers[fname]:
                         new_produced_papers[fname]['year']=produced_papers[root_fname]['year']
                         new_produced_papers[fname]['numCitedBy'] = produced_papers[root_fname]['numCitedBy']
+                    else:
+                        new_produced_papers = {}
+                        break
                 except:
                     pbs+=1
         print('>> Pbs in : ', pbs)
