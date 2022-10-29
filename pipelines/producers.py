@@ -168,8 +168,8 @@ class Paper_Producer:
                       'numCitedBy': self.paper['numCitedBy'],
                       "journal": journal,
                       "authors": self.authors}
-        methods = {"messages": self.omr['methods']}
-        results = {"messages": self.omr['results']}
+        methods = {"messages": self.omr['methods'],"numCitedBy": self.paper['numCitedBy'],"year": year}
+        results = {"messages": self.omr['results'],"numCitedBy": self.paper['numCitedBy'],"year": year}
         self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
 
     def produce_paper(self):

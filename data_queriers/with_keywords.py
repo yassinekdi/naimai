@@ -1,6 +1,5 @@
 from .base import BaseQuerier
 from naimai.constants.paths import path_produced
-from naimai.utils.general import get_root_fname
 from naimai.utils.regex import lemmatize_query
 from naimai.constants.regex import regex_and_operators,regex_exact_match
 from naimai.constants.models import threshold_tf_similarity
@@ -94,7 +93,7 @@ class KeywordsQuerier(BaseQuerier):
 
         return selected_papers, selected_papers_fnames
 
-    def get_query_type(self, query):
+    def get_query_type(self, query: str) -> int:
         '''
         determine the query type : Simple operator (simple keywords), AND operator or exact match. OR operator is removed for the moment since it's rarely used.
         '''
@@ -116,6 +115,7 @@ class KeywordsQuerier(BaseQuerier):
         :param top_n:
         :return:
         '''
+        sorted_papers_fnames=[]
         if method == 'pertinence':
             sorted_papers_fnames = self.sort_using_tf_model(query, papers, top_n)
         elif method =='citations':
@@ -123,8 +123,6 @@ class KeywordsQuerier(BaseQuerier):
         elif method =='date':
             sorted_papers_fnames = self.sort_using_dates(papers, top_n)
         return sorted_papers_fnames
-
-
 
     def sort_using_tf_model(self,query: str,papers: dict,top_n: int) -> list:
         tf = tfidf_model(query=query, papers=papers)
@@ -143,8 +141,7 @@ class KeywordsQuerier(BaseQuerier):
         Sort by 'pertinence', 'citations' or 'date'
         1. Get query type : simple operator, AND operator or exact match.
         2. Get 200 relevant papers and their fnames following the operator type
-        3. Classify using tf idf model
-        4. Can sort either by pertinence, numcitations, or date
+        3. Classify using a sorting method
         '''
 
         # 1. Get query type : simple operator, AND operator or exact match.
