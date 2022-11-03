@@ -115,9 +115,9 @@ class KeywordsQuerier(BaseQuerier):
         :param top_n:
         :return:
         '''
-        sorted_papers_fnames=[]
+        sorted_papers_fnames = self.sort_using_tf_model(query, papers, top_n)
+
         if method == 'pertinence':
-            sorted_papers_fnames = self.sort_using_tf_model(query, papers, top_n)
             return sorted_papers_fnames
         new_papers = {name: papers[name] for name in sorted_papers_fnames}
 
