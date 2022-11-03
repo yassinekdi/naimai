@@ -118,11 +118,16 @@ class KeywordsQuerier(BaseQuerier):
         sorted_papers_fnames=[]
         if method == 'pertinence':
             sorted_papers_fnames = self.sort_using_tf_model(query, papers, top_n)
-        elif method =='citations':
-            sorted_papers_fnames = self.sort_using_citations(papers,top_n)
+            return sorted_papers_fnames
+        new_papers = {name: papers[name] for name in sorted_papers_fnames}
+
+        if method =='citations':
+            sorted_papers_fnames = self.sort_using_citations(new_papers,top_n)
+            return sorted_papers_fnames
         elif method =='date':
-            sorted_papers_fnames = self.sort_using_dates(papers, top_n)
-        return sorted_papers_fnames
+            sorted_papers_fnames = self.sort_using_dates(new_papers, top_n)
+            return sorted_papers_fnames
+
 
     def sort_using_tf_model(self,query: str,papers: dict,top_n: int) -> list:
         tf = tfidf_model(query=query, papers=papers)
