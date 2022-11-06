@@ -1,17 +1,30 @@
-import re
 import random
 import os
-from tqdm.notebook import tqdm
 from naimai.utils.general import load_gzip, save_gzip
 from naimai.constants.paths import naimai_dois_path
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
 from naimai.processing import TextCleaner
+from tqdm.notebook import tqdm
+import pandas as pd
+import numpy as np
+from ast import literal_eval
+import spacy
+from naimai.constants.paths import path_open_citations
+from naimai.utils.general import get_soup
+from naimai.constants.nlp import nlp_vocab
+
+from naimai.utils.regex import multiple_replace
+from naimai.decorators import update_naimai_dois
+
+from spacy.language import Language
+from spacy_langdetect import LanguageDetector
 
 class paper_base:
-    def __init__(self):
+    def __init__(self,df,idx_in_df):
         self.pdf_path=''
-        self.database='raw'
-        self.file_name = ''
+        self.database=''
+        self.file_name = idx_in_df
+        self.paper_infos = df.iloc[idx_in_df,:]
         self.raw_text = ''
         self.fields = []
         self.numCitedBy = .5
@@ -20,7 +33,6 @@ class paper_base:
         self.Journal = ''
         self.highlights = []
         self.Abstract = ''
-        # self.is_Abstract_structured=False
         self.Conclusion = ''
         self.Keywords = ''
         self.Authors = ''
@@ -71,17 +83,61 @@ class paper_base:
                 return True
             else:
                 return False
-        # lang = language_score['language']
-        # score = language_score['score']
-        # print(f'Langage {lang} - Score {score}')
         return True
+
+    def get_doi(self):
+        self.doi = self.paper_infos['doi']
+
+    def get_fields(self):
+        # list
+        self.fields = literal_eval(self.paper_infos['fields'])
+
+    def get_Abstract(self):
+        abstract = self.paper_infos['abstract']
+        if isinstance(abstract,str):
+            self.Abstract = abstract.replace('-\n', '').replace('\n', ' ')
+        else:
+            self.Abstract = ''
+
+    def get_Title(self):
+        self.Title = self.paper_infos['title'].replace('-\n', '').replace('\n', ' ')
+
+    def get_Authors(self):
+        self.Authors = self.paper_infos['authors'].replace(';',',')
+
+    
+    def get_year(self):
+        try:
+            self.year = int(self.paper_infos['date'])
+        except:
+            self.year = ''
+            print('Year to be corrected in ', self.doi)
 
     def save_dict(self):
         attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting', 'highlights','Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
+    def get_journal(self):
+        self.Journal = self.paper_infos['journals']
 
+    def replace_abbreviations(self):
+        abbreviations_dict = self.get_abbreviations_dict()
+        if abbreviations_dict:
+            self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
+            self.Title = multiple_replace(abbreviations_dict, self.Title)
+
+    def get_numCitedBy(self):
+        if 'numCitedBy' in self.paper_infos:
+            self.numCitedBy = self.paper_infos['numCitedBy']
+            if np.isnan(self.numCitedBy):
+                self.numCitedBy = 0.5    
+        else:
+            path = path_open_citations + self.doi
+            soup = get_soup(path)
+            soup_list = literal_eval(soup.text)
+            if isinstance(soup_list, list):
+                self.numCitedBy = len(soup_list)
 
 
 class paper_full_base(paper_base):
@@ -137,10 +193,22 @@ class paper_full_base(paper_base):
 
 
 class papers:
-    def __init__(self):
+    def __init__(self, papers_path,database,nlp=None):
         self.elements = {}
-        self.path_errors_log = 'drive/MyDrive/MyProject/errors_log/'
-        self.database='mine'
+        self.database=database
+        self.data = pd.read_csv(papers_path)
+        print('Len data : ', len(self.data))
+
+        # Getting nlp
+        if nlp:
+            self.nlp = nlp
+        else:
+            print('Loading nlp vocab..')
+            self.nlp = spacy.load(nlp_vocab)
+            Language.factory("language_detector", func=LanguageDetector())
+            self.nlp.add_pipe('language_detector', last=True)
+
+        # Getting naimai dois
         if os.path.exists(naimai_dois_path):
             self.naimai_dois = load_gzip(naimai_dois_path)
         else:
@@ -163,36 +231,33 @@ class papers:
         papers_list = [self.elements[el] for el in rds]
         return papers_list
 
-    # @paper_reading_error_log_decorator
-    # def add_paper(self,portion=1/6,use_ocr=False):
-    #         new_paper = paper()
-    #         new_paper.read_pdf(use_ocr)
-    #         if new_paper.converted_text:
-    #             new_paper.get_Introduction(portion=portion)
-    #             new_paper.get_Abstract()
-    #             # new_paper.get_authors()
-    #             new_paper.get_Conclusion()
-    #             new_paper.get_year()
-    #             new_paper.get_kwords()
-    #             self.elements[new_paper.file_name] = new_paper.save_dict()
-    #         else:
-    #             self.elements[new_paper.file_name] = "USE OCR"
+    def add_paper(self,idx_in_data):
+            new_paper = paper_base(df=self.data,
+                                    idx_in_df=idx_in_data)
+            new_paper.get_doi()
+            new_paper.get_Title()
+            if not new_paper.is_in_database(self.naimai_dois):
+                if new_paper.is_paper_english(self.nlp):
+                    new_paper.get_Abstract()
+                    if len(new_paper.Abstract.split()) > 5:
+                        new_paper.get_fields()
+                        new_paper.get_journal()
+                        new_paper.get_Authors()
+                        new_paper.get_year()
+                        new_paper.replace_abbreviations()
+                        new_paper.get_numCitedBy()
+                        self.elements[new_paper.doi] = new_paper.save_dict()
+                        self.naimai_dois.append(new_paper.doi)
 
-
-    def get_papers(self,portion=1/6,list_files=[],path_chunks='',use_ocr=False):
-        all_files=[]
-        if list_files:
-            all_files = list_files
-
-        idx=0
-        for file_name in tqdm(all_files):
-            if re.findall('pdf', file_name, flags=re.I):
-                self.add_paper(portion=portion,use_ocr=use_ocr)
-                if idx % 500 == 0 and path_chunks:
-                    print('  Saving papers - idx {} for filename {}'.format(idx, file_name))
-                    self.save(path_chunks)
-                idx+=1
-        print('Objs problem exported in objectives_pbs.txt')
+    @update_naimai_dois
+    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False):
+        if show_tqdm:
+            range_ = tqdm(self.data.iterrows(),total=len(self.data))
+        else:
+            range_= self.data.iterrows()
+        for idx,_ in range_:
+            self.add_paper(idx_in_data=idx)
+            
 
     def save_elements(self, file_dir,update=False):
         papers_to_save = self.__dict__['elements']
@@ -207,8 +272,3 @@ class papers:
     def update_naimai_dois(self):
         if self.naimai_dois:
             save_gzip(naimai_dois_path,self.naimai_dois)
-#
-# class papers_full(papers):
-#     def __init__(self):
-#         super().__init__()
-#         self.naimai_dois=[]
