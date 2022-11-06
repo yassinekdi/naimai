@@ -1,3 +1,9 @@
+'''
+Since the arxiv database could not be processed with papers class (in papers/raw.py), many methods are overwritten in
+paper_ssrn and papers_ssrn.
+
+[Documentation here can be more detailed if needed]
+'''
 from tqdm.notebook import tqdm
 import pandas as pd
 import numpy as np

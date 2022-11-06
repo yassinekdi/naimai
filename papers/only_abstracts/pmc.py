@@ -1,3 +1,9 @@
+'''
+Since the arxiv database could not be processed with papers class (in papers/raw.py), many methods are overwritten in
+paper_pmc and papers_pmc.
+
+[Documentation here can be more detailed if needed]
+'''
 import ast
 import re
 import pandas as pd

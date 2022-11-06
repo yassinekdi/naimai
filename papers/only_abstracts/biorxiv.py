@@ -1,21 +1,42 @@
+'''
+The biorxiv papers could not be processed with papers class (in papers/raw.py) because of the fields and journal data.
+So the get_fields and get_journal methods are overwritten in paper_biorxiv class, and the add_paper method is
+overwritten in papers_biorxiv to use paper_biorxiv (instead of paper_base).
+'''
+
 from naimai.papers.raw import papers, paper_base
 
 class paper_biorxiv(paper_base):
-    def __init__(self,df,idx_in_df):
+    '''
+    Paper class that map a row if the csv file with data about papers to a dictionary.
+    '''
+    def __init__(self,df,idx_in_df: int):
         super().__init__(df,idx_in_df)
 
-    def get_fields(self) -> list:
+    def get_fields(self):
         self.fields = [self.paper_infos['field_paper'],]
 
-    def get_journal(self) -> str:
+    def get_journal(self):
         self.Journal =  'BioRxiv'
 
 
 class papers_biorxiv(papers):
-    def __init__(self,papers_path,database,nlp=None):
+    def __init__(self,papers_path: str,database: str,nlp=None):
+        '''
+        inherits from the papers class
+        :param papers_path: path of the csv file
+        :param database: name of the database if all the papers in the csv file are coming from the same source.
+        :param nlp:  spaCy nlp pipeline
+        '''
         super().__init__(papers_path,database,nlp) # loading self.naimai_dois & other attributes
 
-    def add_paper(self,idx_in_data,check_database=True):
+    def add_paper(self,idx_in_data: int,check_database=True):
+        '''
+        Add a paper data as element
+        :param idx_in_data: idx of the paper in the csv file
+        :param check_database: if True, the paper is not added as element if already contained in the database.
+        :return:
+        '''
         new_paper = paper_biorxiv(df=self.data,
                                 idx_in_df=idx_in_data)
         new_paper.get_doi()

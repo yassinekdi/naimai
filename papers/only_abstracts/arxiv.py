@@ -1,3 +1,9 @@
+'''
+Since the arxiv database could not be processed with papers class (in papers/raw.py), many methods are overwritten in
+paper_arxiv and papers_arxiv.
+
+[Documentation here can be more detailed if needed]
+'''
 from tqdm.notebook import tqdm
 import dask.bag as db
 import json
@@ -86,7 +92,6 @@ class papers_arxiv(papers):
         self.metadata_df['year'] = self.metadata_df['versions'].apply(lambda x: re.findall(regex_year, x[0]['created'])[0])
         self.files_ids = self.metadata_df['id']
 
-    # @paper_reading_error_log_decorator
     def add_paper(self,arxiv_id,idx_in_metadata_df,force_naimai_dois=False):
             new_paper = paper_arxiv(arxiv_id=arxiv_id,
                                     metadata_df=self.metadata_df,

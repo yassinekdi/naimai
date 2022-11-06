@@ -1,3 +1,10 @@
+'''
+Since some covid preprint papers could not be processed with papers class (in papers/raw.py), many methods are overwritten in
+paper_covid_preprint and papers_covid_preprint.
+
+[Documentation here can be more detailed if needed]
+'''
+
 import ast
 from tqdm.notebook import tqdm
 from naimai.papers.raw import papers, paper_base

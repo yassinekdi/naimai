@@ -1,3 +1,10 @@
+'''
+Since some elsevier open papers could not be processed with papers class (in papers/raw.py), many methods are overwritten in
+paper_elsevier and papers_elsevier.
+
+[Documentation here can be more detailed if needed]
+'''
+
 import os
 import json
 from tqdm.notebook import tqdm
