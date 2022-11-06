@@ -185,12 +185,16 @@ class papers:
         papers_list = [self.elements[el] for el in rds]
         return papers_list
 
-    def add_paper(self,idx_in_data):
+    def add_paper(self,idx_in_data,check_database=True):
             new_paper = paper_base(df=self.data,
                                     idx_in_df=idx_in_data)
             new_paper.get_doi()
             new_paper.get_Title()
-            if not new_paper.is_in_database(self.naimai_dois):
+            if check_database:
+                is_in_database_condition = new_paper.is_in_database(self.naimai_dois)
+            else:
+                is_in_database_condition = False
+            if not is_in_database_condition:
                 if new_paper.is_paper_english(self.nlp):
                     new_paper.get_Abstract()
                     if len(new_paper.Abstract.split()) > 5:
@@ -205,13 +209,13 @@ class papers:
                         self.naimai_dois.append(new_paper.doi)
 
     @update_naimai_dois
-    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False):
+    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False,check_database=True):
         if show_tqdm:
             range_ = tqdm(self.data.iterrows(),total=len(self.data))
         else:
             range_= self.data.iterrows()
         for idx,_ in range_:
-            self.add_paper(idx_in_data=idx)
+            self.add_paper(idx_in_data=idx,check_database=check_database)
             
 
     def save_elements(self, file_dir,update=False):
