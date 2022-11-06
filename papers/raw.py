@@ -3,7 +3,7 @@ import os
 from naimai.utils.general import load_gzip, save_gzip
 from naimai.constants.paths import naimai_dois_path
 from naimai.models.abbreviation import extract_abbreviation_definition_pairs
-from naimai.processing import TextCleaner
+# from naimai.processing import TextCleaner
 from tqdm.notebook import tqdm
 import pandas as pd
 import numpy as np
@@ -19,6 +19,14 @@ from naimai.decorators import update_naimai_dois
 from spacy.language import Language
 from spacy_langdetect import LanguageDetector
 
+
+''' 
+input papers in csv should have columns. Otherwise overwrite 
+the method in paper & papers like in ISSN
+'''
+def create_lang_detector(nlp, name):
+    return LanguageDetector()
+
 class paper_base:
     def __init__(self,df,idx_in_df):
         self.pdf_path=''
@@ -28,7 +36,6 @@ class paper_base:
         self.raw_text = ''
         self.fields = []
         self.numCitedBy = .5
-        self.numCiting = .5
         self.Introduction = ''
         self.Journal = ''
         self.highlights = []
@@ -55,15 +62,15 @@ class paper_base:
             corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
         return corrected_abbrevs
 
-    def clean_text(self,text):
-        '''
-        clean the text based on TextCleaner object
-        :param text:
-        :return:
-        '''
-        cleaner = TextCleaner(text)
-        cleaner.clean()
-        return cleaner.cleaned_text
+    # def clean_text(self,text):
+    #     '''
+    #     clean the text based on TextCleaner object
+    #     :param text:
+    #     :return:
+    #     '''
+    #     cleaner = TextCleaner(text)
+    #     cleaner.clean()
+    #     return cleaner.cleaned_text
 
     def is_in_database(self,list_dois):
         if self.doi in list_dois:
@@ -114,7 +121,7 @@ class paper_base:
             print('Year to be corrected in ', self.doi)
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','numCiting', 'highlights','Journal']
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords', 'Title','numCitedBy','Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
 
@@ -139,6 +146,87 @@ class paper_base:
             if isinstance(soup_list, list):
                 self.numCitedBy = len(soup_list)
 
+class papers:
+    def __init__(self, papers_path,database,nlp=None):
+        self.elements = {}
+        self.database=database
+        self.data = pd.read_csv(papers_path)
+        print('Len data : ', len(self.data))
+
+        # Getting nlp
+        if nlp:
+            self.nlp = nlp
+        else:
+            print('Loading nlp vocab..')
+            self.nlp = spacy.load(nlp_vocab)
+            Language.factory("language_detector", func=create_lang_detector)
+            self.nlp.add_pipe('language_detector', last=True)
+
+        # Getting naimai dois
+        if os.path.exists(naimai_dois_path):
+            self.naimai_dois = load_gzip(naimai_dois_path)
+        else:
+            print('No naimai dois..')
+            self.naimai_dois=[]
+
+    def __len__(self):
+        return len(self.elements.keys())
+
+    def __setitem__(self, key, value):
+        self.elements[key] = value
+
+    def __getitem__(self, item):
+        return self.elements[item]
+
+    def random_papers(self,k=3, seed=None):
+        elts = list(self.elements)
+        random.seed(seed)
+        rds = random.sample(elts, k)
+        papers_list = [self.elements[el] for el in rds]
+        return papers_list
+
+    def add_paper(self,idx_in_data):
+            new_paper = paper_base(df=self.data,
+                                    idx_in_df=idx_in_data)
+            new_paper.get_doi()
+            new_paper.get_Title()
+            if not new_paper.is_in_database(self.naimai_dois):
+                if new_paper.is_paper_english(self.nlp):
+                    new_paper.get_Abstract()
+                    if len(new_paper.Abstract.split()) > 5:
+                        new_paper.database = self.database
+                        new_paper.get_fields()
+                        new_paper.get_journal()
+                        new_paper.get_Authors()
+                        new_paper.get_year()
+                        new_paper.replace_abbreviations()
+                        new_paper.get_numCitedBy()
+                        self.elements[new_paper.doi] = new_paper.save_dict()
+                        self.naimai_dois.append(new_paper.doi)
+
+    @update_naimai_dois
+    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False):
+        if show_tqdm:
+            range_ = tqdm(self.data.iterrows(),total=len(self.data))
+        else:
+            range_= self.data.iterrows()
+        for idx,_ in range_:
+            self.add_paper(idx_in_data=idx)
+            
+
+    def save_elements(self, file_dir,update=False):
+        papers_to_save = self.__dict__['elements']
+        if update and os.path.exists(file_dir):
+            loaded_papers = load_gzip(file_dir)
+            loaded_papers.update(papers_to_save)
+            save_gzip(file_dir,loaded_papers)
+        else:
+            save_gzip(file_dir,papers_to_save)
+
+
+    def update_naimai_dois(self):
+        if self.naimai_dois:
+            save_gzip(naimai_dois_path,self.naimai_dois)
 
 class paper_full_base(paper_base):
     def __init__(self):
@@ -187,88 +275,6 @@ class paper_full_base(paper_base):
         return False
 
     def save_dict(self):
-        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords','Title','numCitedBy','numCiting', 'Journal']
+        attr_to_save = ['doi', 'Authors', 'year','database','fields','Abstract','Keywords','Title','numCitedBy', 'Journal']
         paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
         return paper_to_save
-
-
-class papers:
-    def __init__(self, papers_path,database,nlp=None):
-        self.elements = {}
-        self.database=database
-        self.data = pd.read_csv(papers_path)
-        print('Len data : ', len(self.data))
-
-        # Getting nlp
-        if nlp:
-            self.nlp = nlp
-        else:
-            print('Loading nlp vocab..')
-            self.nlp = spacy.load(nlp_vocab)
-            Language.factory("language_detector", func=LanguageDetector())
-            self.nlp.add_pipe('language_detector', last=True)
-
-        # Getting naimai dois
-        if os.path.exists(naimai_dois_path):
-            self.naimai_dois = load_gzip(naimai_dois_path)
-        else:
-            print('No naimai dois..')
-            self.naimai_dois=[]
-
-    def __len__(self):
-        return len(self.elements.keys())
-
-    def __setitem__(self, key, value):
-        self.elements[key] = value
-
-    def __getitem__(self, item):
-        return self.elements[item]
-
-    def random_papers(self,k=3, seed=None):
-        elts = list(self.elements)
-        random.seed(seed)
-        rds = random.sample(elts, k)
-        papers_list = [self.elements[el] for el in rds]
-        return papers_list
-
-    def add_paper(self,idx_in_data):
-            new_paper = paper_base(df=self.data,
-                                    idx_in_df=idx_in_data)
-            new_paper.get_doi()
-            new_paper.get_Title()
-            if not new_paper.is_in_database(self.naimai_dois):
-                if new_paper.is_paper_english(self.nlp):
-                    new_paper.get_Abstract()
-                    if len(new_paper.Abstract.split()) > 5:
-                        new_paper.get_fields()
-                        new_paper.get_journal()
-                        new_paper.get_Authors()
-                        new_paper.get_year()
-                        new_paper.replace_abbreviations()
-                        new_paper.get_numCitedBy()
-                        self.elements[new_paper.doi] = new_paper.save_dict()
-                        self.naimai_dois.append(new_paper.doi)
-
-    @update_naimai_dois
-    def get_papers(self,update_dois=False,idx_start=0,idx_finish=-1,show_tqdm=False):
-        if show_tqdm:
-            range_ = tqdm(self.data.iterrows(),total=len(self.data))
-        else:
-            range_= self.data.iterrows()
-        for idx,_ in range_:
-            self.add_paper(idx_in_data=idx)
-            
-
-    def save_elements(self, file_dir,update=False):
-        papers_to_save = self.__dict__['elements']
-        if update and os.path.exists(file_dir):
-            loaded_papers = load_gzip(file_dir)
-            loaded_papers.update(papers_to_save)
-            save_gzip(file_dir,loaded_papers)
-        else:
-            save_gzip(file_dir,papers_to_save)
-
-
-    def update_naimai_dois(self):
-        if self.naimai_dois:
-            save_gzip(naimai_dois_path,self.naimai_dois)
