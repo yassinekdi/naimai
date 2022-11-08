@@ -8,7 +8,7 @@ class papersTest(TestCase):
     '''
     @classmethod
     def setUpClass(cls) -> None:
-        cls.fnames = ['10.28991/esj-2021-01258', '10.28991/esj-2018-01135', '10.28991/esj-2018-01149']
+        cls.fnames = ['10.28991/esj-2021-01258', '10.28991/esj-2018-01149']
         cls.title = 'Mathematical Modelling of the Relationship between Two Different Temperament Classifications: During the Covid-19 Pandemic'
         cls.numcitedby = float(4)
         cls.journal = 'Emerging Science Journal'
