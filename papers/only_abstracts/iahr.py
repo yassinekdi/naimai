@@ -51,6 +51,7 @@ class papers_iahr(papers):
             if not is_in_database_condition:
                 new_paper.get_Abstract()
                 if len(new_paper.Abstract.split())>5:
+                    new_paper.database = self.database
                     new_paper.get_fields()
                     new_paper.get_journal()
                     new_paper.get_Authors()

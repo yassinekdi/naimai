@@ -47,6 +47,7 @@ class papers_biorxiv(papers):
             else:
                 is_in_database_condition = False
             if not is_in_database_condition:
+                new_paper.database = self.database
                 new_paper.get_Abstract()
                 new_paper.get_journal()
                 new_paper.get_fields()
