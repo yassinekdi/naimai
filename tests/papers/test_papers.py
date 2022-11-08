@@ -8,10 +8,10 @@ class papersTest(TestCase):
     '''
     @classmethod
     def setUpClass(cls) -> None:
-        cls.fnames = ['10.28991/esj-2021-01258', '10.28991/esj-2018-01149']
-        cls.title = 'Mathematical Modelling of the Relationship between Two Different Temperament Classifications: During the Covid-19 Pandemic'
-        cls.numcitedby = float(4)
-        cls.journal = 'Emerging Science Journal'
+        cls.fnames = ['10.21776/ub.jam.2020.018.04.02', '10.21776/ub.jam.2021.019.02.15', '10.21776/ub.jam.2017.015.02.06']
+        cls.title = 'DETERMINANTS OF INTEREST IN USING TRAVEL VLOGS ON YOUTUBE AS A REFERENCE FOR TRAVELING'
+        cls.numcitedby = 0.5
+        cls.journal = 'Jurnal Aplikasi Manajemen                                Journal of Applied Management'
         cls.database = "doij"
 
         path = os.path.join('naimai', 'tests', 'papers', 'input_data', 'doij_input.csv')
