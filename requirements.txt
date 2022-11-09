@@ -1,6 +1,6 @@
 beautifulsoup4==4.11.1
-Bio==1.4.0
-dask==2022.2.0
+#Bio==1.4.0
+#dask==2022.2.0
 datasets==2.6.1
 faiss==1.5.3
 habanero==1.2.2
@@ -12,7 +12,7 @@ pdf2image==1.16.0
 pdfminer==20191125
 protobuf==4.21.9
 pyinflect==0.5.1
-PyPDF2==2.11.1
+#PyPDF2==2.11.1
 pytesseract==0.3.10
 requests==2.23.0
 scikit_learn==1.1.3
