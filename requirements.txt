@@ -1,7 +1,7 @@
 beautifulsoup4==4.11.1
 #Bio==1.4.0
 #dask==2022.2.0
-datasets==1.5.2
+#datasets==1.5.2
 faiss-gpu==1.7.1.post3
 habanero==1.2.2
 keybert==0.7.0
