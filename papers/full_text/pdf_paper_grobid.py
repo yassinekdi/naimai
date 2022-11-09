@@ -30,7 +30,6 @@ class paper_grobid(paper_full_base):
         self.xml_data = paper_xml
         self.xml_soup = None
 
-
         if paper_path:
             self.read_file(paper_path,is_path=True)
         else:

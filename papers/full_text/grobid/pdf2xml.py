@@ -1,5 +1,6 @@
 '''
-Modified grobid client from Grobid source: https://github.com/kermitt2/grobid.
+Modified grobid client from Grobid source: https://github.com/kermitt2/grobid. The GrobidClient object
+takes a directory of PDFs and converts it to XML files as explained in the process method.
 '''
 import os
 import json
@@ -58,7 +59,7 @@ class GrobidClient(ApiClient):
     def process(
             self,
             service,
-            input_path,
+            input_path: str,
             n=10,
             generateIDs=False,
             consolidate_header=True,
@@ -73,12 +74,25 @@ class GrobidClient(ApiClient):
             idx_start=0,
             idx_finish=-1
     ):
+        '''
+        Process a path of PDFs (input_path) and converts the files into XML files exported in
+        path_export.
+
+        :param input_path: of PDF files
+        :param path_export: where the PDF files are exported in XML format
+        :param path_export_new_fnames_pdfs: where the XML files are exported with title as filename
+        :param idx_start: can process all the files in input_path starting from idx_start^th file
+        :param idx_finish: can process all the files in input_path until the idx_start^th file
+        :return:
+        '''
+
         input_files = []
         result = {}
         if idx_finish==-1:
             filenames = sorted(os.listdir(input_path))[idx_start:]
         else:
             filenames = sorted(os.listdir(input_path))[idx_start:idx_finish]
+
         for filename in tqdm(filenames):
             if filename.endswith(".pdf") or filename.endswith(".PDF") or \
                     (service == 'processCitationList' and (filename.endswith(".txt") or filename.endswith(".TXT"))):
@@ -86,7 +100,7 @@ class GrobidClient(ApiClient):
                     try:
                         print(filename)
                     except Exception:
-                        # may happen on linux see https://stackoverflow.com/questions/27366479/python-3-os-walk-file-paths-unicodeencodeerror-utf-8-codec-cant-encode-s
+
                         pass
                 input_files.append(os.sep.join([input_path, filename]))
 
@@ -124,8 +138,6 @@ class GrobidClient(ApiClient):
 
                 with open(output_fname,'w',encoding='utf8') as xml_file:
                     xml_file.write(text)
-
-
 
         return result
 
@@ -199,14 +211,24 @@ class GrobidClient(ApiClient):
             tei_coordinates,
             segment_sentences
     ):
-        files = {
-            "input": (
-                pdf_file,
-                open(pdf_file, "rb"),
-                "application/pdf",
-                {"Expires": "0"},
-            )
-        }
+        if isinstance(pdf_file,bytes):
+            files = {
+                "input": (
+                    pdf_file,
+                    pdf_file,
+                    "application/pdf",
+                    {"Expires": "0"},
+                )
+            }
+        else:
+            files = {
+                "input": (
+                    pdf_file,
+                    open(pdf_file, "rb"),
+                    "application/pdf",
+                    {"Expires": "0"},
+                )
+            }
         the_url = self.config['url']
         the_url += "/api/" + service
 
