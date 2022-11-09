@@ -28,11 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Reformating the code using black
-        run: |
-          pip install black
-          black . -l 127
-
       - name: Linting with flake8
         run: |
           pip install flake8
@@ -42,7 +37,7 @@ jobs:
       - name: Installing en core web sm
         run: |
           python -m spacy download en_core_web_sm
-          
+
       - name: Testing with Pytest
         run: |
           pytest tests/
