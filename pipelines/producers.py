@@ -1,3 +1,11 @@
+'''
+- Paper_Producer Class : takes a paper (as a dictionary) and structures its abstract into objectives, methods and results.
+
+- Field_Producer Class : takes a field (directory with papers of the same field) and produces all the papers using Paper_Producer object.
+
+- Custom_Producer Class :
+'''
+
 from naimai.models.papers_classification.obj_classifier import Objective_classifier
 from naimai.models.papers_classification.bomr_classif.ner_classifier import NER_BOMR_classifier
 from naimai.models.papers_classification.bomr_classif.omr_segmentors import segment
@@ -34,14 +42,19 @@ class Paper_Producer:
              'messages': xx,
              'reported': xx,
              'title': xx,
-             'journal': xx},
-     'methods': {'messages': xx},
-     'results': {'messages': xx}
+             'journal': xx,
+             ' numCitedBy': xx},
+     'methods': {'messages': xx,
+                'year': xx,
+                ' numCitedBy': xx},
+     'results': {'messages': xx,
+                'year': xx,
+                ' numCitedBy': xx}
      }
     When no objective is found after segmentation, we correct by looking for it in results, otherwise in methods.
     '''
 
-    def __init__(self, paper, paper_name='', obj_classifier=None, bomr_classifier=None, nlp=None):
+    def __init__(self, paper: dict, paper_name='', obj_classifier=None, bomr_classifier=None, nlp=None):
         self.paper_name = paper_name
         self.paper = paper
         self.authors = ''
@@ -58,6 +71,11 @@ class Paper_Producer:
         self.load_nlp(nlp)
 
     def load_obj_classifier(self, obj_classifier):
+        '''
+        Load the objective classifier: model that selects the objective sentence in the abstract.
+        :param obj_classifier:
+        :return:
+        '''
         if obj_classifier:
             self.obj_classifier = obj_classifier
         else:
@@ -65,6 +83,12 @@ class Paper_Producer:
             self.obj_classifier = Objective_classifier()
 
     def load_bomr_classifier(self, bomr_classifier):
+        '''
+        Load the bomr classifier, the model that structures the abstract into bibliography, objectives, methods
+        and results.
+        :param bomr_classifier:
+        :return:
+        '''
         if bomr_classifier:
             self.bomr_classifier = bomr_classifier
         else:
@@ -72,7 +96,7 @@ class Paper_Producer:
             self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
                                                        predict_mode=True)
 
-    def clean_abstract(self,text) -> str:
+    def clean_abstract(self,text: str) -> str:
         '''
         clean abstract by removing the non converted expressions
         :param text:
@@ -81,13 +105,18 @@ class Paper_Producer:
         return re.sub(regex_not_converted2,'',text)
 
     def load_nlp(self, nlp):
+        '''
+        Load nlp model (spaCy)
+        :param nlp:
+        :return:
+        '''
         if nlp:
             self.nlp = nlp
         else:
             print('>> Loading nlp..')
             self.nlp = spacy.load(nlp_vocab)
 
-    def get_omr_dict(self) -> dict:
+    def get_omr_dict(self):
         '''
         get {'obj': [xx,yy], 'methods': [xx,yy], 'results': [zz,ff]}
         :return:
@@ -105,9 +134,9 @@ class Paper_Producer:
             label = segments[stc_idx]
             self.omr[label].append(sentences[stc_idx])
 
-    def report(self) -> str:
+    def report(self):
         '''
-        report objectives, else report results, else methods
+        report objectives (write objective sentences in reported speech), else report results, else methods
         :return:
         '''
         objectives, methods, results = self.omr['objectives'], self.omr['methods'], self.omr['results']
@@ -122,6 +151,11 @@ class Paper_Producer:
             self.reported = messages_reported
 
     def report_messages(self, messages: list) -> list:
+        '''
+        takes the messages and transform them into reported speech format.
+        :param messages: list of sentences
+        :return:
+        '''
         messages_reported = []
         review = Paper2Reported(paper=self.paper,
                                 paper_name=self.paper_name,
@@ -135,7 +169,11 @@ class Paper_Producer:
             messages_reported = review.reported_objective
         return messages_reported
 
-    def format_paper(self) -> dict:
+    def format_paper(self):
+        '''
+        Format the paper (in self.paper) and structures it into a dictionary with objectives, methods and results.
+        :return:
+        '''
         journal = self.paper['Journal']
         if journal and re.findall('[a-zA-Z]', journal):
             journal = re.sub('^nd|ISSN','',journal).strip()
@@ -173,6 +211,11 @@ class Paper_Producer:
         self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
 
     def produce_paper(self):
+        '''
+        Produce the paper by reporting its objectives sentence (in reported speech format) and formatting it
+        (finding the objectives, methods and results)
+        :return:
+        '''
         self.get_omr_dict()
         objectives, methods, results = self.omr['objectives'], self.omr['methods'], self.omr['results']
         if objectives or methods or results:
@@ -221,6 +264,11 @@ class Field_Producer:
 
 
     def load_obj_classifier(self, obj_classifier):
+        '''
+        Load the objective classifier: model that selects the objective sentence in the abstract.
+        :param obj_classifier:
+        :return:
+        '''
         if obj_classifier:
             self.obj_classifier = obj_classifier
         else:
@@ -228,6 +276,12 @@ class Field_Producer:
             self.obj_classifier = Objective_classifier()
 
     def load_bomr_classifier(self, bomr_classifier):
+        '''
+        Load the bomr classifier, the model that structures the abstract into bibliography, objectives, methods
+        and results.
+        :param bomr_classifier:
+        :return:
+        '''
         if bomr_classifier:
             self.bomr_classifier = bomr_classifier
         else:
@@ -236,6 +290,11 @@ class Field_Producer:
                                                        predict_mode=True)
 
     def load_nlp(self, nlp):
+        '''
+        Load nlp model (spaCy)
+        :param nlp:
+        :return:
+        '''
         if nlp:
             self.nlp = nlp
         else:
@@ -243,6 +302,11 @@ class Field_Producer:
             self.nlp = spacy.load(nlp_vocab)
 
     def load_encoder(self, encoder):
+        '''
+        Load the bert encoder, finetuned on the field produced papers.
+        :param nlp:
+        :return:
+        '''
         if encoder:
           self.encoder = encoder
         else:
@@ -299,7 +363,6 @@ class Field_Producer:
                 return True
         return False
 
-
     def get_in_refs_papers(self,dispatched_paper_name: str) -> dict:
         '''
         check if the same paper was produced in other fields, and return dictionary with omr if the paper exists
@@ -314,9 +377,6 @@ class Field_Producer:
                 if dispatched_paper_name in fname:
                     omr[fname] = self.papers_ref_fields[fname]
         return omr
-
-
-
 
     def produce_paper(self, paper: dict, paper_name: str) -> dict:
         '''
@@ -458,6 +518,10 @@ class Field_Producer:
 
 
     def load_field_index(self):
+        '''
+        Load field faiss index if it exists
+        :return:
+        '''
         if not self.field_index:
           path = os.path.join(path_produced,self.field,'encodings.index')
           self.field_index = faiss.read_index(path)
@@ -487,15 +551,8 @@ class Field_Producer:
                 keys = list(data.keys())
                 if len(data)>size_each_all_papers:
                     keys_selected= random.sample(keys,size_each_all_papers)
-                    # rest_keys = [elt for elt in keys if elt not in keys_selected]
-                    # try:
-                    #     keys_eval_selected = random.sample(rest_keys,int(size_each_all_papers/2))
-                    # except:
-                    #     keys_eval_selected = rest_keys
                 else:
                     keys_selected = keys
-                    # keys_eval_selected = keys[:500]
-                # eval_data = {key: data[key] for key in keys_eval_selected}
                 data = {key: data[key] for key in keys_selected}
 
             all_paps.update(data)
@@ -524,46 +581,68 @@ class Field_Producer:
           self.save_model()
 
     def save_model(self):
+        '''
+        Saving the encoder model (when trained on the field papers)
+        :return:
+        '''
         path = os.path.join(path_produced, self.field, 'search_model')
         self.encoder.save(path)
 
     def produce_field_papers(self):
-      print('>> Producing field papers..')
-      for fname in tqdm(self.dispatched_field_papers):
-          pap = self.dispatched_field_papers[fname]
-          if pap['Abstract']:
-              try:
-                  self.produce_paper(paper=pap, paper_name=fname)
-              except:
-                  pass
-      print(' ')
+        '''
+        Produce papers contained in field (dispatched files).
+        :return:
+        '''
+        print('>> Producing field papers..')
+        for fname in tqdm(self.dispatched_field_papers):
+            pap = self.dispatched_field_papers[fname]
+            if pap['Abstract']:
+                try:
+                    self.produce_paper(paper=pap, paper_name=fname)
+                except:
+                    pass
+        print(' ')
 
-    def produce(self,save_papers=False,save_field_index=False):
-        if self.encoder:
-            # produce field papers
-            self.produce_field_papers()
-
-            #compute Faiss index
-            self.get_field_index()
-
-            #save
-            if save_papers:
-                print('>> Saving papers..')
-                self.save_papers()
-
-            if save_field_index:
-                print('>> Saving field index..')
-                self.save_field_index()
-            print(' ')
-            print('>> Done!')
-        else:
-            print('>> The production is not done (no field encoder). You need to fine tune.')
+    # def produce(self,save_papers=False,save_field_index=False):
+    #     '''
+    #     Produce field papers > getting field faiss index.
+    #     :param save_papers:
+    #     :param save_field_index:
+    #     :return:
+    #     '''
+    #     if self.encoder:
+    #         # produce field papers
+    #         self.produce_field_papers()
+    #
+    #         #compute Faiss index
+    #         self.get_field_index()
+    #
+    #         #save
+    #         if save_papers:
+    #             print('>> Saving papers..')
+    #             self.save_papers()
+    #
+    #         if save_field_index:
+    #             print('>> Saving field index..')
+    #             self.save_field_index()
+    #         print(' ')
+    #         print('>> Done!')
+    #     else:
+    #         print('>> The production is not done (no field encoder). You need to fine tune.')
 
     def save_field_index(self):
+        '''
+        save field faiss index for semantic search
+        :return:
+        '''
         path = os.path.join(path_produced, self.field, 'encodings.index')
         faiss.write_index(self.field_index, path)
 
     def save_papers(self):
+        '''
+        save produced papers
+        :return:
+        '''
         if self.extracted:
             file_name = f'{self.all_papers}_{self.idx_start}_{self.idx_finish}'
         else:
@@ -594,14 +673,30 @@ class Custom_Producer:
         self.load_nlp()
 
     def load_obj_classifier(self):
+        '''
+        Load the objective classifier: model that selects the objective sentence in the abstract.
+        :param obj_classifier:
+        :return:
+        '''
         print('>> Loading obj classifier..')
         self.obj_classifier = Objective_classifier()
 
     def load_bomr_classifier(self):
+        '''
+        Load the bomr classifier, the model that structures the abstract into bibliography, objectives, methods
+        and results.
+        :param bomr_classifier:
+        :return:
+        '''
         print('>> Loading bomr classifier..')
         self.bomr_classifier = NER_BOMR_classifier(load_model=True, path_model=path_bomr_classifier,
                                                        predict_mode=True)
     def load_nlp(self):
+        '''
+        Load nlp model (spaCy)
+        :param nlp:
+        :return:
+        '''
         print('>> Loading nlp..')
         self.nlp = spacy.load(nlp_vocab)
 
@@ -642,12 +737,16 @@ class Custom_Producer:
         return messages
 
     def produce_custom_papers(self):
-      print('>> Producing custom papers..')
-      for fname in tqdm(self.all_papers):
-          pap = self.all_papers[fname]
-          if pap['Abstract']:
-              # try:
-              self.produce_paper(paper=pap, paper_name=fname)
-              # except:
-              #     pass
-      print(' ')
+        '''
+        produce read papers.
+        :return:
+        '''
+        print('>> Producing custom papers..')
+        for fname in tqdm(self.all_papers):
+            pap = self.all_papers[fname]
+            if pap['Abstract']:
+                # try:
+                self.produce_paper(paper=pap, paper_name=fname)
+                # except:
+                #     pass
+        print(' ')

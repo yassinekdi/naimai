@@ -1,3 +1,9 @@
+'''
+Attemps to extract data from the whole pmc papers (in xml). [Not Finished]
+
+[Documentation here can be more detailed if needed]
+'''
+
 import ast
 import re
 import pandas as pd
@@ -20,10 +26,10 @@ class paper_pmc(paper_full_base):
         self.database ="pmc"
         self.paper_infos = df.iloc[idx_in_df,:]
 
-    def get_doi(self) -> str:
+    def get_doi(self):
         self.doi = self.paper_infos['doi']
 
-    def get_Keywords_from_dict_abstract(self) -> str:
+    def get_Keywords_from_dict_abstract(self):
         '''
         get keywords from abstract when it's in a dict format & filter from abstract
         :return:
@@ -36,7 +42,7 @@ class paper_pmc(paper_full_base):
                 regex_filter = 'key\s?words:\s?' + self.Keywords
                 self.Abstract[elt] = re.sub(regex_filter,'',txt,flags=re.I).strip()
 
-    def get_Keywords_from_str_abstract(self)-> str:
+    def get_Keywords_from_str_abstract(self):
         '''
         get keywords from abstract when it's in str format & filter from abstract
         :return:
@@ -48,7 +54,7 @@ class paper_pmc(paper_full_base):
             regex_filter = 'key\s?words:\s?' + self.Keywords
             self.Abstract = re.sub(regex_filter, '', txt, flags=re.I).strip()
 
-    def get_Keywords(self) -> str:
+    def get_Keywords(self):
         '''
         Get keywords from abstracts elements & remove them from abstract
         :return:
@@ -59,7 +65,7 @@ class paper_pmc(paper_full_base):
             self.get_Keywords_from_str_abstract()
 
 
-    def get_Abstract(self,stacked=True,dict_format=False) -> str:
+    def get_Abstract(self,stacked=True,dict_format=False):
         '''
         clean & stack (if stacked=True) abstract elements into one text & get Keywords from abstract.
         The spaced abstract case (a b s t r a c t..) is considered. if stacked = False, it puts the abstract elements in
@@ -162,7 +168,7 @@ class paper_pmc(paper_full_base):
                 cleaned_text = self.clean_text(text)
                 self.unclassified_section[head] =cleaned_text
 
-    def get_Introduction(self,body,imr_sections) -> dict:
+    def get_Introduction(self,body,imr_sections):
         '''
         get introductions elements & clean & stack them in introduction section
         :param body:
@@ -176,7 +182,7 @@ class paper_pmc(paper_full_base):
                 cleaned_text = self.clean_text(text)
                 self.Introduction[head] =cleaned_text
 
-    def get_Methods(self,body,imr_sections) -> dict:
+    def get_Methods(self,body,imr_sections):
         '''
         get methods elements & clean & stack them in method section
         :param body:
@@ -190,7 +196,7 @@ class paper_pmc(paper_full_base):
                 cleaned_text = self.clean_text(text)
                 self.Methods[head]= cleaned_text
 
-    def get_Results(self, body, imr_sections) -> dict:
+    def get_Results(self, body, imr_sections):
         '''
         get methods elements & clean & stack them in method section
         :param body:

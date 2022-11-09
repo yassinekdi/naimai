@@ -1,8 +1,12 @@
+'''
+Extract data from an article in PDF using grobid package modified for naimai.
+The modified grobid package is in the grobid file.
+'''
+
 from naimai.papers.raw import papers, paper_full_base
 from naimai.constants.regex import regex_paper_year
 from naimai.constants.paths import path_open_citations
 from naimai.utils.general import get_soup
-from naimai.decorators import update_naimai_dois
 from spacy_langdetect import LanguageDetector
 from naimai.utils.regex import multiple_replace
 from naimai.constants.nlp import nlp_vocab
@@ -133,8 +137,15 @@ class paper_grobid(paper_full_base):
 
 
 class papers_grobid(papers):
-    def __init__(self, papers_path='',papers_dict={},nlp=None):
-        super().__init__() # loading self.naimai_dois & other attributes
+    def __init__(self, database='',papers_path='',papers_dict={},nlp=None):
+        '''
+        process papers read with grobid
+        :param database: name of database used
+        :param papers_path:
+        :param papers_dict:
+        :param nlp:
+        '''
+        super().__init__(papers_path, database, nlp)
         self.naimai_dois = []
         self.papers_path = papers_path
         self.papers_dict = {}
@@ -151,6 +162,7 @@ class papers_grobid(papers):
             self.nlp = spacy.load(nlp_vocab)
             Language.factory("language_detector", func=create_lang_detector)
             self.nlp.add_pipe('language_detector', last=True)
+
 
     def add_paper(self,paper_path='',paper_xml=''):
             if paper_path:

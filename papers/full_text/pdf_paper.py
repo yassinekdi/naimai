@@ -1,3 +1,10 @@
+'''
+Attempt to read and extract data from an article in PDF (instead of only the abstract). [Not finished]
+
+[Documentation here can be more detailed if needed]
+'''
+
+
 import re
 from naimai.processing import SentenceToProcess
 from naimai.utils.regex import str1_str2_from_txt, get_pattern, filter_min_length, starts_with_capital, \

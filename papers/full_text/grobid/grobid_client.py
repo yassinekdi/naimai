@@ -1,3 +1,6 @@
+'''
+Modified grobid client from Grobid source: https://github.com/kermitt2/grobid.
+'''
 import os
 import json
 import time
