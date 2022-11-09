@@ -14,7 +14,7 @@ class papersTest(TestCase):
         cls.journal = 'Jurnal Aplikasi Manajemen                                Journal of Applied Management'
         cls.database = "doij"
 
-        path = os.path.join('naimai', 'tests', 'papers', 'input_data', 'doij_input.csv')
+        path = os.path.join('tests', 'papers', 'input_data', 'doij_input.csv')
         obj = papers(path, database="doij")
         obj.get_papers(update_dois=False, show_tqdm=False, check_database=False)
         result = obj.elements

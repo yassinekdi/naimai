@@ -14,7 +14,7 @@ class papers_eguTest(TestCase):
         cls.journal = 'Atmospheric Chemistry and Physics'
         cls.database = "egu"
 
-        path = os.path.join('naimai', 'tests', 'papers', 'input_data', 'egu_input.csv')
+        path = os.path.join('tests', 'papers', 'input_data', 'egu_input.csv')
         obj = papers_egu(path, database="egu")
         obj.get_papers(update_dois=False, show_tqdm=False, check_database=False)
         result = obj.elements

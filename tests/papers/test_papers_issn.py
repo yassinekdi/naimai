@@ -14,7 +14,7 @@ class papers_issnTest(TestCase):
         cls.journal = 'Agriculture'
         cls.database = "issn"
 
-        path = os.path.join('naimai', 'tests', 'papers', 'input_data', 'issn_input.csv')
+        path = os.path.join('tests', 'papers', 'input_data', 'issn_input.csv')
         obj = papers_issn(path, database="issn")
         obj.get_papers(update_dois=False, show_tqdm=False, check_database=False)
         result = obj.elements
