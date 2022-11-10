@@ -217,9 +217,6 @@ class papers_pdf:
     def get_papers(self):
         data = self.read_content()
 
-        for fname in data:
-            try:
-                self.add_paper(fname=fname,pdf_content=data[fname])
-            except:
-                print('problem in pdf: ', fname)
+        for fname in tqdm(data):
+            self.add_paper(fname=fname,pdf_content=data[fname])
 
