@@ -1,4 +1,5 @@
 beautifulsoup4==4.6.3
+lxml==4.9.1
 habanero==1.2.2
 keybert==0.7.0
 matplotlib==3.2.2
