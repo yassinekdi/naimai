@@ -214,9 +214,13 @@ class papers_pdf:
             new_paper.get_numCitedBy()
             self.elements[fname] = new_paper.save_dict()
 
-    def get_papers(self):
+    def get_papers(self,show_tqdm=False):
         data = self.read_content()
+        if show_tqdm:
+            range_ = tqdm(data)
+        else:
+            range_=data
 
-        for fname in tqdm(data):
+        for fname in range_:
             self.add_paper(fname=fname,pdf_content=data[fname])
 
