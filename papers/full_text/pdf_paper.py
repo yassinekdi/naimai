@@ -3,35 +3,30 @@ Extract data from an article in PDF using grobid package modified for naimai.
 The modified grobid package is in the grobid file.
 '''
 
-from naimai.papers.raw import papers, paper_full_base
+from naimai.models.abbreviation import extract_abbreviation_definition_pairs
 from naimai.constants.regex import regex_paper_year
 from naimai.constants.paths import path_open_citations, grobid_url
 from naimai.papers.full_text.grobid.pdf2dict import GrobidClient
 from naimai.utils.general import get_soup
-from spacy_langdetect import LanguageDetector
 from naimai.utils.regex import multiple_replace
-from naimai.constants.nlp import nlp_vocab
 from tqdm.notebook import tqdm
-import spacy
+from bs4 import BeautifulSoup
 import ast
 import os
-from bs4 import BeautifulSoup
 import re
 
-from spacy.language import Language
-
-def create_lang_detector(nlp, name):
-    return LanguageDetector()
-
-
-class paper_pdf(paper_full_base):
-    def __init__(self,paper_path,paper_xml=''):
-        super().__init__()
+class paper_pdf:
+    def __init__(self,fname,pdf_content):
         self.database = 'pdf'
-        self.xml_data = paper_xml
-        self.xml_soup = None
-        self.content = None
-        self.get_pdf_content(paper_path)
+        self.fname = fname
+        self.content = BeautifulSoup(pdf_content, "lxml")
+        self.numCitedBy = .5
+        self.Journal = ''
+        self.Abstract = ''
+        self.Authors = ''
+        self.doi = ''
+        self.year = 999
+        self.Title = ''
 
         # if paper_path:
         #     self.read_xml_file(paper_path, is_path=True)
@@ -50,19 +45,6 @@ class paper_pdf(paper_full_base):
     #     else:
     #         xml_file = xml
     #     self.xml_soup = BeautifulSoup(xml_file, "lxml")
-
-    def get_pdf_content(self,path,grobid_service='processHeaderDocument'):
-        '''
-        read pdf content using grobid services
-        :return:
-        '''
-        with open(path, "rb") as f:
-            data = f.read()
-
-        client = GrobidClient(url=grobid_url)
-        content = client.process(grobid_service,input_path=data)
-        key = list(content.keys())[0]
-        self.content = content[key]
 
 
     def get_data(self,name,attrs={},findall=False,is_text=True):
@@ -90,8 +72,6 @@ class paper_pdf(paper_full_base):
         name = 'idno'
         attrs = {'type': 'DOI'}
         self.doi= self.get_data(name=name,attrs=attrs)
-        if not self.doi:
-            self.database = 'mine'
 
     def get_Abstract(self):
         name = 'abstract'
@@ -152,16 +132,35 @@ class paper_pdf(paper_full_base):
             if isinstance(soup_list,list):
                 self.numCitedBy = len(soup_list)
 
+    def get_abbreviations_dict(self) -> dict:
+        '''
+        Get abbreviations and their meanings from the title and the abstract in a dictionary.
+        Modified code from : https://gist.github.com/ijmarshall/b3d1de6ccf4fb8b5ee53
+        :return:
+        '''
+        abstract_abbrevs = extract_abbreviation_definition_pairs(doc_text=self.Abstract)
+        corrected_abbrevs = {}
+        for k in abstract_abbrevs:
+            corrected_abbrevs[' ' + k] = ' ' + abstract_abbrevs[k] + ' ' + '(' + k + ')'
+        return corrected_abbrevs
+
     def replace_abbreviations(self):
         abbreviations_dict = self.get_abbreviations_dict()
         if abbreviations_dict:
             self.Abstract = multiple_replace(abbreviations_dict, self.Abstract)
-            self.Title = multiple_replace(abbreviations_dict, self.Title)
-            self.Keywords = multiple_replace(abbreviations_dict, self.Title)
 
+    def save_dict(self) -> dict:
+        '''
+        Format the read data of the paper into a dictionary
+        :return:
+        '''
+        attr_to_save = ['doi', 'Authors', 'year', 'database', 'Abstract', 'Title', 'numCitedBy',
+                        'Journal']
+        paper_to_save = {key: self.__dict__[key] for key in attr_to_save}
+        return paper_to_save
 
 class papers_pdf:
-    def __init__(self, database='',papers_path='',nlp=None):
+    def __init__(self, papers_path):
         '''
         process papers read with grobid
         :param database: name of database used
@@ -172,7 +171,6 @@ class papers_pdf:
         # super().__init__(papers_path, database, nlp)
         self.papers_path = papers_path
         self.elements = {}
-        self.database = database
         # if papers_path:
         #     self.list_files = [elt for elt in os.listdir(papers_path) if '.xml' in elt]
         # else:
@@ -180,44 +178,48 @@ class papers_pdf:
         #     self.papers_dict = papers_dict
         self.list_files = [elt for elt in os.listdir(papers_path) if elt.endswith('.pdf')]
         print('Len data : ', len(self.list_files))
-        if nlp:
-            self.nlp = nlp
-        else:
-            print('Loading nlp vocab..')
-            self.nlp = spacy.load(nlp_vocab)
-            Language.factory("language_detector", func=create_lang_detector)
-            self.nlp.add_pipe('language_detector', last=True)
 
+    def read_content(self):
+        '''
 
-    def add_paper(self,paper_path):
-        new_paper = paper_pdf(paper_path=paper_path)
+        :return:
+        '''
+        pdf_files = [elt for elt in os.listdir(self.papers_path) if elt.endswith('.pdf')]
+        data_dict = {}
+
+        for fname in pdf_files:
+            path = os.path.join(self.papers_path, fname)
+            with open(path, "rb") as f:
+                data_dict[fname] = f.read()
+        client = GrobidClient(url=grobid_url)
+        results = client.process("processHeaderDocument", input_path=data_dict)
+
+        return results
+
+    def add_paper(self,fname,pdf_content):
+        new_paper = paper_pdf(fname=fname,pdf_content=pdf_content)
         # if paper_path:
         #     new_paper = paper_pdf(paper_path=paper_path)
         # else:
         #     new_paper = paper_pdf(paper_xml=paper_xml)
         new_paper.get_doi()
         new_paper.get_Title()
-        if new_paper.is_paper_english(self.nlp):
-            new_paper.get_Abstract()
-            if len(new_paper.Abstract.split()) > 5:
-                new_paper.database = self.database
-                new_paper.get_Journal()
-                new_paper.get_Authors()
-                new_paper.get_year()
-                new_paper.get_Keywords()
-                new_paper.replace_abbreviations()
-                new_paper.get_numCitedBy()
-                if new_paper.doi:
-                    self.elements[new_paper.doi] = new_paper.save_dict()
-                else:
-                    self.elements[new_paper.Title] = new_paper.save_dict()
+        new_paper.get_Abstract()
+        if len(new_paper.Abstract.split()) > 5:
+            new_paper.get_Journal()
+            new_paper.get_Authors()
+            new_paper.get_year()
+            new_paper.get_Keywords()
+            new_paper.replace_abbreviations()
+            new_paper.get_numCitedBy()
+            self.elements[fname] = new_paper.save_dict()
 
     def get_papers(self):
+        data = self.read_content()
 
-        for pdf in tqdm(self.list_files):
+        for fname in tqdm(data):
             try:
-                path = os.path.join(self.papers_path, pdf)
-                self.add_paper(paper_path=path)
+                self.add_paper(fname=fname,pdf_content=data[fname])
             except:
-                print('problem in pdf: ', pdf)
+                print('problem in pdf: ', fname)
 
