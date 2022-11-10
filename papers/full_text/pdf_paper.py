@@ -19,7 +19,7 @@ class paper_pdf:
     def __init__(self,fname,pdf_content):
         self.database = 'pdf'
         self.fname = fname
-        self.content = BeautifulSoup(pdf_content, "lxml")
+        self.content = BeautifulSoup(pdf_content, "lxml-xml")
         self.numCitedBy = .5
         self.Journal = ''
         self.Abstract = ''
