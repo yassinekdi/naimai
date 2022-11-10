@@ -10,7 +10,7 @@ import os
 # else:
 
 
-# path_nlp = os.path.join('paper2','deps','SpaCy_Ner_data')
+grobid_url = "https://cloud.science-miner.com/grobid"
 path_nlp = 'drive/MyDrive/MyProject/paper2/deps/SpaCy_Ner_data'
 path_objective_classifier = 'drive/MyDrive/MyProject/data/Intent_classif_data/distil_bert_obj_classifier'
 path_bomr_classifier = "drive/MyDrive/MyProject/data/Intent_classif_data/OMR_classifier/bigbird_roberta16"
