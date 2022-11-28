@@ -23,13 +23,13 @@ import spacy
 import random
 from tqdm.notebook import tqdm
 from sentence_transformers import SentenceTransformer
-import faiss
+# import faiss
 import numpy as np
 
-D = 768
-vecs = faiss.IndexFlatIP(D)
-ncentroids = 256
-code_size = 32
+# D = 768
+# vecs = faiss.IndexFlatIP(D)
+# ncentroids = 256
+# code_size = 32
 
 
 class Paper_Producer:
