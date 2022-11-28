@@ -3,7 +3,9 @@
 
 - Field_Producer Class : takes a field (directory with papers of the same field) and produces all the papers using Paper_Producer object.
 
-- Custom_Producer Class :
+- Custom_Producer Class : takes a pdf papers in dict format and structures them into abstract into objectives, methods and results.
+
+Semantics using faiss & bert are commented
 '''
 
 from naimai.models.papers_classification.obj_classifier import Objective_classifier
@@ -491,9 +493,9 @@ class Field_Producer:
         encoded_fields = np.asarray(encoded_fields.astype('float32'))
 
         print('>> Getting ids ..')
-        self.field_index = faiss.IndexIVFPQ(vecs,D,ncentroids,code_size ,8)
-        self.field_index.train(encoded_fields)
-        self.field_index.add(encoded_fields)
+        # self.field_index = faiss.IndexIVFPQ(vecs,D,ncentroids,code_size ,8)
+        # self.field_index.train(encoded_fields)
+        # self.field_index.add(encoded_fields)
 
     def update_field_index(self,new_all_papers: str):
         '''
@@ -526,7 +528,7 @@ class Field_Producer:
         '''
         if not self.field_index:
           path = os.path.join(path_produced,self.field,'encodings.index')
-          self.field_index = faiss.read_index(path)
+          # self.field_index = faiss.read_index(path)
 
     def load_combine_produced_allpapers(self, size_data=0):
         '''
@@ -638,7 +640,7 @@ class Field_Producer:
         :return:
         '''
         path = os.path.join(path_produced, self.field, 'encodings.index')
-        faiss.write_index(self.field_index, path)
+        # faiss.write_index(self.field_index, path)
 
     def save_papers(self):
         '''
