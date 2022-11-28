@@ -179,9 +179,9 @@ class papers_pdf:
         self.list_files = [elt for elt in os.listdir(papers_path) if elt.endswith('.pdf')]
         print('Len data : ', len(self.list_files))
 
-    def read_content(self):
+    def read_content(self) -> dict:
         '''
-
+        read pdf files and extract data using grobid.
         :return:
         '''
         pdf_files = [elt for elt in os.listdir(self.papers_path) if elt.endswith('.pdf')]
@@ -198,10 +198,6 @@ class papers_pdf:
 
     def add_paper(self,fname,pdf_content):
         new_paper = paper_pdf(fname=fname,pdf_content=pdf_content)
-        # if paper_path:
-        #     new_paper = paper_pdf(paper_path=paper_path)
-        # else:
-        #     new_paper = paper_pdf(paper_xml=paper_xml)
         new_paper.get_doi()
         new_paper.get_Title()
         new_paper.get_Abstract()

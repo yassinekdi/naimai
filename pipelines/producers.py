@@ -54,12 +54,13 @@ class Paper_Producer:
     When no objective is found after segmentation, we correct by looking for it in results, otherwise in methods.
     '''
 
-    def __init__(self, paper: dict, paper_name='', obj_classifier=None, bomr_classifier=None, nlp=None):
+    def __init__(self, paper: dict, paper_name='', obj_classifier=None, bomr_classifier=None, nlp=None,is_custom=False):
         self.paper_name = paper_name
         self.paper = paper
         self.authors = ''
         self.bomr_classifier = None
         self.obj_classifier = None
+        self.is_custom= is_custom
         self.nlp = None
         self.production_paper = {}
         self.omr = {'objectives': [], 'methods': [], 'results': [], 'other': []}
@@ -185,27 +186,28 @@ class Paper_Producer:
         else:
             year = self.paper['year']
             print('Year problem in paper: ', self.paper_name)
-        if 'all_authors' in self.paper:
-            objectives = {"website": get_ref_url(self.paper),
-                      "year": year,
-                      "database": self.paper['database'],
-                      "messages": self.omr['objectives'],
-                      "reported": self.reported,
-                      "title": self.paper['Title'],
-                      'numCitedBy': self.paper['numCitedBy'],
-                      "journal": journal,
-                      "authors": self.authors,
-                      'allauthors': self.paper['allauthors']}
+
+        if self.is_custom:
+            objectives = {"website": '',
+                          "year": year,
+                          "database": self.paper['database'],
+                          "messages": self.omr['objectives'],
+                          "reported": self.reported,
+                          "title": self.paper['Title'],
+                          'numCitedBy': self.paper['numCitedBy'],
+                          "journal": journal,
+                          "authors": self.authors}
         else:
+
             objectives = {"website": get_ref_url(self.paper),
-                      "year": year,
-                      "database": self.paper['database'],
-                      "messages": self.omr['objectives'],
-                      "reported": self.reported,
-                      "title": self.paper['Title'],
-                      'numCitedBy': self.paper['numCitedBy'],
-                      "journal": journal,
-                      "authors": self.authors}
+                          "year": year,
+                          "database": self.paper['database'],
+                          "messages": self.omr['objectives'],
+                          "reported": self.reported,
+                          "title": self.paper['Title'],
+                          'numCitedBy': self.paper['numCitedBy'],
+                          "journal": journal,
+                          "authors": self.authors}
         methods = {"messages": self.omr['methods'],"numCitedBy": self.paper['numCitedBy'],"year": year}
         results = {"messages": self.omr['results'],"numCitedBy": self.paper['numCitedBy'],"year": year}
         self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
@@ -656,14 +658,14 @@ class Custom_Producer:
     1 Takes formatted custom papers in dictionary all_papers and transform them into a produced all_paper using Paper Producer obj
     2 no need of field index
     '''
-    def __init__(self, all_papers):
+    def __init__(self, papers_dict):
         self.obj_classifier = None
         self.bomr_classifier = None
         self.nlp = None
         self.smodel = None
         self.papers_ref_fields = {} # fields used to check if same paper is already produced
 
-        self.all_papers = all_papers
+        self.all_papers = papers_dict
 
         self.produced_custom_papers = {}
         self.produce_only_fnames=False
@@ -711,6 +713,7 @@ class Custom_Producer:
         pap_producer = Paper_Producer(paper=paper, paper_name=paper_name,
                               obj_classifier=self.obj_classifier,
                               bomr_classifier=self.bomr_classifier,
+                              is_custom=True,
                               nlp=self.nlp)
 
         pap_producer.produce_paper()
