@@ -13,9 +13,9 @@ spacy_langdetect==0.1.2
 torch==1.12.1
 tqdm==4.64.1
 Unidecode==1.3.6
+datasets==1.5.2
 #Bio==1.4.0
 #dask==2022.2.0
-#datasets==1.5.2
 #faiss-gpu==1.7.1.post3
 #pdf2image==1.16.0
 #pdfminer==20191125
