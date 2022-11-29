@@ -75,7 +75,7 @@ class CustomProducerTest(TestCase):
         test first message of the first paper
         :return:
         '''
-        message_first_paper = self.first_paper['messages']
+        message_first_paper = self.first_paper['messages'][0]
         self.assertEqual(message_first_paper, self.first_message)
 
     def test_reported(self):
