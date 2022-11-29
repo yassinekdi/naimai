@@ -592,13 +592,18 @@ class Field_Producer:
         path = os.path.join(path_produced, self.field, 'search_model')
         self.encoder.save(path)
 
-    def produce_field_papers(self):
+    def produce_field_papers(self,show_tqdm=True):
         '''
         Produce papers contained in field (dispatched files).
         :return:
         '''
         print('>> Producing field papers..')
-        for fname in tqdm(self.dispatched_field_papers):
+        if show_tqdm:
+            range_ =  tqdm(self.dispatched_field_papers)
+        else:
+            range_ = self.dispatched_field_papers
+
+        for fname in range_:
             pap = self.dispatched_field_papers[fname]
             if pap['Abstract']:
                 try:
@@ -741,13 +746,17 @@ class Custom_Producer:
       else:
         return messages
 
-    def produce_custom_papers(self):
+    def produce_custom_papers(self,show_tqdm=True):
         '''
         produce read papers.
         :return:
         '''
         print('>> Producing custom papers..')
-        for fname in tqdm(self.all_papers):
+        if show_tqdm:
+            range_ = tqdm(self.all_papers)
+        else:
+            range_ = self.all_papers
+        for fname in range_:
             pap = self.all_papers[fname]
             if pap['Abstract']:
                 # try:

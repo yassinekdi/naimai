@@ -25,7 +25,7 @@ class CustomProducerTest(TestCase):
         obj.get_papers()
 
         producer = Custom_Producer(papers_dict=obj.elements)
-        producer.produce_custom_papers()
+        producer.produce_custom_papers(show_tqdm=False)
 
         result = producer.produced_custom_papers
         cls.keys = list(result.keys())
