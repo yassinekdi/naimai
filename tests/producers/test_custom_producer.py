@@ -29,7 +29,7 @@ class CustomProducerTest(TestCase):
 
         result = producer.produced_custom_papers
         cls.keys = list(result.keys())
-        cls.first_paper = result[cls.keys[0]]
+        cls.first_paper = result[cls.keys[1]]
 
     def test_fnames(self):
         '''
