@@ -43,7 +43,7 @@ class CustomProducerTest(TestCase):
         test title of the first paper
         :return:
         '''
-        title_first_paper = self.first_paper['Title']
+        title_first_paper = self.first_paper['title']
         self.assertEqual(title_first_paper, self.title)
 
     def test_numcitedby(self):
@@ -59,7 +59,7 @@ class CustomProducerTest(TestCase):
         test journal of the first paper
         :return:
         '''
-        journal_first_paper = self.first_paper['Journal']
+        journal_first_paper = self.first_paper['journal']
         self.assertEqual(journal_first_paper, self.journal)
 
     def test_authors(self):
