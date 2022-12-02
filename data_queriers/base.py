@@ -229,7 +229,35 @@ class BaseQuerier:
     '''
 
     papers = self.find_papers(query=query,top_n=top_n, sort_by=sort_by, verbose=False)
+
+    # Get text
     reported_list = ['- ' + pap['reported'] for pap in papers if 'reported' in pap]
     review_text = '\n'.join(reported_list)
-    return review_text
 
+    # Get references
+    references_list =[]
+    for pap in papers:
+      if 'reported' in pap and pap['reported']:
+        paper_refs = '- ' + self.get_reference(pap)
+        references_list.append(paper_refs)
+    references_text =  '\n'.join(references_list)
+    return review_text,references_text
+
+  def get_reference(self, paper_objectives: dict) -> str:
+    '''get paper references in format : Authors + year + Title + Journal, using root paper'''
+
+    authors, year, title, journal = '', '', '', ''
+    if 'allauthors' in paper_objectives:
+      authors = paper_objectives['allauthors']
+
+    if 'year' in paper_objectives:
+      year = paper_objectives['year']
+
+    if 'title' in paper_objectives:
+      title = paper_objectives['title']
+
+    if 'journal' in paper_objectives:
+      journal = paper_objectives['journal']
+
+    reference = authors + ', ' + str(year) + ', ' + title + ', ' + journal + '.'
+    return reference

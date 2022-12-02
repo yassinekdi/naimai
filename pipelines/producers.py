@@ -198,7 +198,8 @@ class Paper_Producer:
                           "title": self.paper['Title'],
                           'numCitedBy': self.paper['numCitedBy'],
                           "journal": journal,
-                          "authors": self.authors}
+                          "authors": self.authors,
+                          'allauthors': self.paper['Authors']}
         else:
 
             objectives = {"website": get_ref_url(self.paper),
@@ -209,7 +210,8 @@ class Paper_Producer:
                           "title": self.paper['Title'],
                           'numCitedBy': self.paper['numCitedBy'],
                           "journal": journal,
-                          "authors": self.authors}
+                          "authors": self.authors,
+                          'allauthors': self.paper['Authors']}
         methods = {"messages": self.omr['methods'],"numCitedBy": self.paper['numCitedBy'],"year": year}
         results = {"messages": self.omr['results'],"numCitedBy": self.paper['numCitedBy'],"year": year}
         self.production_paper = {'objectives': objectives, "methods": methods, "results": results}
