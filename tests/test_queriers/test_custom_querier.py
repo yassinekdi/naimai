@@ -60,7 +60,7 @@ class CustomQuerierTest(TestCase):
         """
         papers = self.querier.find_papers(self.query)
         first_paper = papers[0]
-        self.assertEqual(type(first_paper),list)
+        self.assertEqual(type(papers),list)
         self.assertEqual(first_paper, self.first_paper_result)
 
     def test_review(self):
