@@ -37,7 +37,7 @@ class CustomQuerierTest(TestCase):
             "allauthors": "Samuel I. Haruna, N. Nkongolo",
         }
         # reading data
-        path = os.path.join("naimai", "tests", "papers", "input_data", "issn_input.csv")
+        path = os.path.join("tests", "papers", "input_data", "issn_input.csv")
         obj = papers_issn(path, database="issn")
         obj.get_papers(update_dois=False, show_tqdm=False, check_database=False)
 
@@ -60,6 +60,7 @@ class CustomQuerierTest(TestCase):
         """
         papers = self.querier.find_papers(self.query)
         first_paper = papers[0]
+        self.assertEqual(type(first_paper),list)
         self.assertEqual(first_paper, self.first_paper_result)
 
     def test_review(self):
