@@ -43,7 +43,7 @@ class CustomQuerierTest(TestCase):
 
         # producing data
         producer = Custom_Producer(papers_dict=obj.elements)
-        producer.produce_custom_papers()
+        producer.produce_custom_papers(show_tqdm=False)
 
         # querying
         produced_papers = producer.produced_custom_papers
