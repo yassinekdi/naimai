@@ -60,7 +60,7 @@ class CustomQuerierTest(TestCase):
         """
         papers = self.querier.find_papers(self.query)
         first_paper = papers[0]
-        self.assertEqual(type(papers),list)
+        self.assertIsInstance(papers,list)
         self.assertEqual(first_paper, self.first_paper_result)
 
     def test_review(self):
@@ -68,11 +68,11 @@ class CustomQuerierTest(TestCase):
         test if correct fnames are read
         :return:
         """
-        self.assertEqual(self.review_result[:400], self.review)
+        self.assertIn(self.review_result[:400], self.review)
 
     def test_references(self):
         """
         test title of the first paper
         :return:
         """
-        self.assertEqual(self.references_result[:400], self.references)
+        self.assertIn(self.references_result[:400], self.references)
