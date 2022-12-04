@@ -1,0 +1,15 @@
+[build-system]
+requires= ["setuptools>=42",'wheel']
+
+build-backend = "setuptools.build_meta"
+
+exclude = '''
+(
+  /(
+      \.git         # exclude a few common directories in the
+    | build          # root of the project
+    | dist
+    | __pycache__
+  )
+)
+'''
