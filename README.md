@@ -1,9 +1,43 @@
-References : 
-abbreviation : https://gist.github.com/ijmarshall/b3d1de6ccf4fb8b5ee53
+NaimAI is a Python package that structures each scientific paper using their abstract into 3 categories : objectives methods and results. 
+Hence, when searching, the results will be showed by category. The results can also be reviewed and a review text will be 
+automatically generated along with the references.
+<br>
+All the features are deployed on the <a href="https://www.naimai.fr">NaimAI's website</a>, where millions of paper are processed. 
+<br>
+A <a href="">Medium article</a> goes more in depth with naimai's features of the <a href="https://www.naimai.fr">web app</a>. 
+<h1>Search in your own papers</h1>
 
-grobid : https://github.com/kermitt2/grobid
+You can either give a directory of folder with articles in PDF format or a csv file with abstracts and other meta data as showed 
+<a href="tests/papers/input_data">here</a>.
+<br>
+The processing, the results and searching are explained in 
+<a href="https://colab.research.google.com/drive/1xUDOkalxR7MFO6Zug48Cx1ysmgipaJCT?usp=sharing">this colab</a>.
 
-Shield: [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+<h1> Search in millions of papers </h1>
+To search in the millions of papers already processed, you can use the <a href="https://www.naimai.fr">naimai website</a>.
+I might open source this part too if needed.
+
+<h1>Structure your abstract</h1>
+If you already have an abstract and want to test the segmentor (naimai's algorithm that structures abstract into Background, 
+Objectives, Methods and Results), <a href="https://colab.research.google.com/drive/16PMGC7yxkTcFpUnlZtioBMa22tpaTid5?usp=sharing">this colab</a>
+walks you through the necessary steps.
+
+<h1> Features to improve </h2>
+
+
+
+<h1>References</h1>
+<ul>
+    <li>
+    For abbreviations purposes, I used <a href="https://gist.github.com/ijmarshall/b3d1de6ccf4fb8b5ee53">this code</a>.
+    </li>
+    <li>
+    For PDF processing, I used <a href="https://github.com/kermitt2/grobid">Grobid</a>.
+    </li>
+</ul>
+
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 This work is licensed under a
 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
