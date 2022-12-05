@@ -1,5 +1,6 @@
 <center>
-  <img src="https://github.com/yassinekdi/naimai/blob/master/logo.png?raw=true" alt="Naimai logo"/>
+  <img src="https://github.com/yassinekdi/naimai/blob/master/logo.png?raw=true" 
+  alt="Naimai logo" height="40%" width="40%"/>
 </center>
 
 NaimAI is a Python package that structures each scientific paper using their abstract into 3 categories : objectives methods and results. 
