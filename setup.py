@@ -26,6 +26,5 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent"
     ],
-    package_dir = {'': 'naimai'},
     packages = find_packages()
 )
