@@ -1,12 +1,12 @@
 __pycache__/
-naimai/crawlers/__pycache__/
-naimai/models/__pycache__/
-naimai/models/papers_classification/.ipynb_checkpoints/
-naimai/models/papers_classification/__pycache__/
-naimai/models/papers_classification/authors classif/
-naimai/models/text_generation/__pycache__/
-naimai/pipelines/__pycache__/
+crawlers/__pycache__/
+models/__pycache__/
+models/papers_classification/.ipynb_checkpoints/
+models/papers_classification/__pycache__/
+models/papers_classification/authors classif/
+models/text_generation/__pycache__/
+pipelines/__pycache__/
 build/
 dist/
 naimai.egg-info/
-naimai/naimai.egg-info/
+gcloud.py
