@@ -236,7 +236,7 @@ class papers:
         if os.path.exists(naimai_dois_path):
             self.naimai_dois = load_gzip(naimai_dois_path)
         else:
-            print('No naimai dois..')
+            # print('No naimai dois..')
             self.naimai_dois=[]
 
     def __len__(self):

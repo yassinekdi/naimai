@@ -9,11 +9,12 @@ with open('README.md', 'r', encoding='utf-8') as fh:
 
 setup(
     name = 'naimai',
-    version = '1.0.0.3',
+    version = '1.0.0.5',
     author=  'Yassine Kaddi',
     author_email = 'yassine@naimai.fr',
     description = 'Python library to help with scientific literature research',
     long_description = long_description,
+    install_requires = requirements,
     long_description_content_type = 'text/markdown',
     maintainer = "Yassine Kaddi",
     maintainer_email = "yassine@naimai.fr",

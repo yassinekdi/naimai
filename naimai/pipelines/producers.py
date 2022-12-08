@@ -82,7 +82,7 @@ class Paper_Producer:
         if obj_classifier:
             self.obj_classifier = obj_classifier
         else:
-            print('>> Loading obj classifier..')
+            print('>> Loading objective classifier..')
             self.obj_classifier = Objective_classifier()
 
     def load_bomr_classifier(self, bomr_classifier):
@@ -278,7 +278,7 @@ class Field_Producer:
         if obj_classifier:
             self.obj_classifier = obj_classifier
         else:
-            print('>> Loading obj classifier..')
+            print('>> Loading objective classifier..')
             self.obj_classifier = Objective_classifier()
 
     def load_bomr_classifier(self, bomr_classifier):
@@ -689,7 +689,7 @@ class Custom_Producer:
         :param obj_classifier:
         :return:
         '''
-        print('>> Loading obj classifier..')
+        print('>> Loading objective classifier..')
         self.obj_classifier = Objective_classifier()
 
     def load_bomr_classifier(self):
