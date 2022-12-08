@@ -9,7 +9,7 @@ automatically generated along with the references.
 <br>
 All the features are deployed on the <a href="https://www.naimai.fr" target="_blank">NaimAI's website</a>, where millions of paper are processed. 
 <br>
-A <a href="" target="_blank">Medium article</a> goes more in depth with naimai's features of the <a href="https://www.naimai.fr" target="_blank">web app</a>. 
+A <a href="https://yaassinekaddi.medium.com/literature-review-with-naimai-open-sourced-fcbdb36762de" target="_blank">Medium article</a> goes more in depth with naimai's features of the <a href="https://www.naimai.fr" target="_blank">web app</a>. 
 <h1>Search in your own papers</h1>
 
 You can either give a directory of the folder with articles in PDF format or a csv file with abstracts and other meta data as showed 
