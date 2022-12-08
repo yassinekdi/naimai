@@ -29,7 +29,7 @@ walks you through the necessary steps.
 
 Example of structured abstract :
 <p>
-  <img src="https://github.com/yassinekdi/naimai/blob/master/bomr_classif.JPG?raw=true" 
+  <img src="https://github.com/yassinekdi/naimai/blob/master/bomr_classif.jpg?raw=true" 
   alt="classified abstract"/>
 </p>
 
