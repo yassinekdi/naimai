@@ -25,7 +25,14 @@ I might open source this part too if needed.
 <h1>Structure your abstract</h1>
 If you already have an abstract and want to test the segmentor (naimai's algorithm that structures abstract into Background, 
 Objectives, Methods and Results), <a href="https://colab.research.google.com/drive/16PMGC7yxkTcFpUnlZtioBMa22tpaTid5?usp=sharing">this colab</a>
-walks you through the necessary steps.
+walks you through the necessary steps. 
+
+Example of structured abstract :
+<p>
+  <img src="https://github.com/yassinekdi/naimai/blob/master/bomr_classif.JPG?raw=true" 
+  alt="classified abstract"/>
+</p>
+
 
 <h1> Features to improve </h2>
 <h3>Review Generation </h3>
